@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>ShambaCare Kenya - Login / Sign Up | Smart Farming Assistant</title>
+    <meta name="description" content="Access your ShambaCare account to manage crops, get AI disease diagnosis, and receive farming insights for Kenyan farmers.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .background-slideshow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; overflow: hidden; }
+        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 0; transition: opacity 1.5s ease-in-out; animation: kenBurns 20s ease-in-out infinite alternate; }
+        .slide.active { opacity: 1; }
+        @keyframes kenBurns { 0% { transform: scale(1) translateX(0); } 100% { transform: scale(1.1) translateX(-2%); } }
+        .background-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.75) 100%); z-index: -1; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #e5e7eb; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #4c9f70; border-radius: 10px; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .animate-fadeInUp { animation: fadeInUp 0.6s ease-out; }
+        .animate-fadeIn { animation: fadeIn 0.5s ease-out; }
+        .animate-slideInRight { animation: slideInRight 0.5s ease-out; }
+        .animate-scaleIn { animation: scaleIn 0.4s ease-out; }
+        .float-animation { animation: float 3s ease-in-out infinite; }
+        .card-hover { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .gradient-text { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); transition: all 0.3s ease; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(59,130,246,0.3); }
+        .desktop-nav { display: flex; align-items: center; gap: 1.5rem; }
+        .nav-link { position: relative; font-weight: 500; transition: color 0.3s ease; color: white; }
+        .nav-link:hover { color: #3b82f6; }
+        .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: linear-gradient(135deg, #3b82f6, #2563eb); transition: width 0.3s ease; }
+        .nav-link:hover::after { width: 100%; }
+        .mobile-menu-btn { display: none; }
+        .mobile-menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 40; opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
+        .mobile-menu-overlay.active { opacity: 1; visibility: visible; }
+        .mobile-menu-panel { position: fixed; top: 0; right: 0; width: 280px; height: 100%; background-color: white; z-index: 50; transform: translateX(100%); transition: transform 0.3s ease-in-out; display: flex; flex-direction: column; }
+        .mobile-menu-panel.active { transform: translateX(0); }
+        @media (max-width: 768px) { .desktop-nav { display: none; } .mobile-menu-btn { display: block; } }
+        .role-selector { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
+        .role-btn { flex: 1; padding: 0.625rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.875rem; transition: all 0.3s ease; cursor: pointer; text-align: center; border: 1.5px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.15); color: white; }
+        .role-btn.active { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-color: transparent; box-shadow: 0 2px 8px rgba(59,130,246,0.4); }
+        .role-btn i { margin-right: 0.5rem; }
+        .role-hint { font-size: 0.7rem; color: rgba(255,255,255,0.7); margin-top: 0.25rem; text-align: center; }
+        .input-field { transition: all 0.3s ease; border: 1.5px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.15); color: white !important; font-weight: 500; }
+        .input-field::placeholder { color: rgba(255,255,255,0.7); }
+        .input-field:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.3); outline: none; background: rgba(255,255,255,0.25); color: white; }
+        select.input-field option { background-color: #1e293b; color: white; }
+        .dark select.input-field option { background-color: #0f172a; color: #facc15; }
+        .glassy-modal { background: rgba(255,255,255,0.25); backdrop-filter: blur(12px); border-radius: 2rem; border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 25px 45px rgba(0,0,0,0.2); }
+        .dark .glassy-modal { background: rgba(30,41,59,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(250,204,21,0.3); }
+        .glassy-modal label, .glassy-modal .text-gray-700, .glassy-modal span, .glassy-modal .text-sm { color: white !important; }
+        .toast { animation: slideInRight 0.3s ease-out, fadeOut 0.3s ease-out 2.7s forwards; z-index: 1000; position: fixed; bottom: 24px; right: 16px; padding: 12px 20px; border-radius: 8px; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
+        .welcome-text { color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .subtitle-text { color: rgba(255,255,255,0.9); text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+        nav { background: rgba(0,0,0,0.4) !important; backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.2); }
+        h1, .text-gray-800, .text-gray-700 { color: white !important; }
+        .text-gray-500 { color: rgba(255,255,255,0.8) !important; }
+        .dark { background-color: #0f172a !important; color: #f1f5f9 !important; }
+        .dark .bg-white, .dark .bg-gray-50, .dark .bg-white\/95 { background-color: #1e293b !important; color: #f1f5f9 !important; }
+        .dark .glassy-modal { background: rgba(30,41,59,0.9) !important; border: 1px solid #facc15 !important; }
+        .dark .glassy-modal label, .dark .glassy-modal span { color: #facc15 !important; }
+        .dark .nav-link { color: #f1f5f9 !important; }
+        .dark .nav-link:hover { color: #facc15 !important; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="background-slideshow">
+        <div class="slide" style="background-image: url('coffee1.jpg')"></div>
+        <div class="slide" style="background-image: url('maize1.0.jpg')"></div>
+        <div class="slide" style="background-image: url('passion1.jpg')"></div>
+        <div class="slide" style="background-image: url('havest.jpg')"></div>
+    </div>
+    <div class="background-overlay"></div>
+    
+    <nav class="backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-white/20">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-leaf text-3xl text-green-400 float-animation"></i>
+                    <div>
+                        <h1 class="text-xl font-bold text-white">ShambaCare<span class="gradient-text"> Kenya</span></h1>
+                        <p class="text-xs text-white/80">Smart Farming Assistant • Tuma Picha, Pata Matokeo</p>
+                    </div>
+                </div>
+                <div class="desktop-nav">
+                    <a href="#" onclick="switchToSignup(); return false;" class="nav-link">Sign Up</a>
+                    <a href="#" onclick="switchToLogin(); return false;" class="nav-link">Login</a>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="toggleTheme()" class="bg-white/10 hover:bg-white/20 p-2 rounded-lg backdrop-blur-sm"><i id="themeIcon" class="fas fa-moon text-white"></i></button>
+                    <button id="mobileMenuToggle" class="mobile-menu-btn bg-white/10 p-2 rounded-lg backdrop-blur-sm"><i class="fas fa-bars text-white text-xl"></i></button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
+    <div id="mobileMenuPanel" class="mobile-menu-panel">
+        <div class="flex justify-between items-center p-4 border-b bg-gradient-to-r from-green-50 to-emerald-50">
+            <span class="font-bold"><i class="fas fa-leaf text-green-600 mr-2"></i>Menu</span>
+            <button id="closeMobileMenu"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        <div class="flex flex-col p-4 space-y-3">
+            <a href="#" onclick="switchToLogin(); closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 flex items-center"><i class="fas fa-sign-in-alt w-6 text-green-600"></i> Login</a>
+            <a href="#" onclick="switchToSignup(); closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 flex items-center"><i class="fas fa-user-plus w-6 text-green-600"></i> Sign Up</a>
+        </div>
+    </div>
+
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <div class="text-center animate-fadeInUp">
+                <div class="flex justify-center"><div class="bg-gradient-to-r from-green-500 to-green-600 rounded-full p-4 shadow-lg"><i class="fas fa-seedling text-white text-4xl"></i></div></div>
+                <h2 class="mt-6 text-3xl font-extrabold welcome-text">Welcome to <span class="gradient-text">ShambaCare</span></h2>
+                <p class="mt-2 text-sm subtitle-text">Your smart farming companion for Kenyan agriculture</p>
+            </div>
+
+            <div class="flex gap-3 rounded-xl bg-black/30 backdrop-blur-sm p-1 animate-fadeInUp" style="animation-delay: 0.1s">
+                <button id="loginTabBtn" onclick="switchToLogin()" class="flex-1 py-2.5 rounded-lg font-semibold transition-all duration-300 bg-white text-green-600 shadow-sm"><i class="fas fa-sign-in-alt mr-2"></i> Login</button>
+                <button id="signupTabBtn" onclick="switchToSignup()" class="flex-1 py-2.5 rounded-lg font-semibold transition-all duration-300 text-white"><i class="fas fa-user-plus mr-2"></i> Sign Up</button>
+            </div>
+
+            <div id="loginRoleSelector" class="role-selector animate-fadeInUp" style="animation-delay: 0.05s">
+                <div class="role-btn active" onclick="selectRole('farmer', this)"><i class="fas fa-tractor"></i> Farmer</div>
+                <div class="role-btn" onclick="selectRole('admin', this)"><i class="fas fa-user-shield"></i> Admin</div>
+            </div>
+            <div id="loginRoleHint" class="role-hint animate-fadeInUp" style="animation-delay: 0.05s">
+                <i class="fas fa-info-circle"></i> Select Farmer for crop diagnosis or Admin for management
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginForm" class="glassy-modal p-6 sm:p-8 space-y-6 animate-scaleIn">
+                <div class="space-y-4">
+                    <div><label class="block text-sm font-semibold text-white mb-2"><i class="fas fa-envelope mr-2 text-green-400"></i> Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="farmer@shambacare.com" class="input-field w-full px-4 py-3 rounded-xl transition"></div>
+                    <div><label class="block text-sm font-semibold text-white mb-2"><i class="fas fa-lock mr-2 text-green-400"></i> Password</label>
+                    <div class="relative"><input type="password" id="loginPassword" placeholder="••••••••" class="input-field w-full px-4 py-3 rounded-xl transition">
+                    <button type="button" onclick="togglePassword('loginPassword', this)" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/70 hover:text-green-400"><i class="fas fa-eye"></i></button></div></div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center"><input type="checkbox" class="rounded border-gray-300 text-green-600"><span class="ml-2 text-sm text-white">Remember me</span></label>
+                    <a href="#" onclick="openForgotPasswordModal(); return false;" class="text-sm text-green-400 hover:text-green-300">Forgot password?</a>
+                </div>
+                <button onclick="handleLogin()" class="btn-primary w-full text-white font-semibold py-3 rounded-xl transition transform hover:scale-[1.02] shadow-lg"><i class="fas fa-sign-in-alt mr-2"></i> Sign In</button>
+                <div class="relative"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/30"></div></div><div class="relative flex justify-center text-sm"><span class="px-2 bg-transparent text-white/80">Or continue with</span></div></div>
+                <div class="grid grid-cols-1 gap-3">
+                    <div id="googleButton"></div>
+                </div>
+            </div>
+
+            <!-- Sign Up Form -->
+            <div id="signupForm" class="glassy-modal p-6 sm:p-8 space-y-6 animate-scaleIn hidden">
+                <div class="space-y-4">
+                    <div><label class="block text-sm font-semibold text-white mb-2"><i class="fas fa-user mr-2 text-green-400"></i> Full Name</label>
+                    <input type="text" id="signupName" placeholder="James Mwangi" class="input-field w-full px-4 py-3 rounded-xl transition"></div>
+                    <div><label class="block text-sm font-semibold text-white mb-2"><i class="fas fa-envelope mr-2 text-green-400"></i> Email Address</label>
+                    <input type="email" id="signupEmail" placeholder="farmer@shambacare.com" class="input-field w-full px-4 py-3 rounded-xl transition"></div>
+                    <div><label class="block text-sm font-semibold text-white mb-2"><i class="fas fa-phone-alt mr-2 text-green-400"></i> Phone Number</label>
+                    <input type="tel" id="signupPhone" placeholder="+254712345678" class="input-field w-full px-4 py-3 rounded-xl transition"></div>
+                    <div><label class="block text-sm font-semibold text-white mb-2"><i class="fas fa-map-marker-alt mr-2 text-green-400"></i> County</label>
+                    <select id="signupCounty" class="input-field w-full px-4 py-3 rounded-xl transition">
+                        <option value="">Select your county</option>
+                        <option>Baringo</option><option>Bomet</option><option>Bungoma</option><option>Busia</option>
+                        <option>Elgeyo-Marakwet</option><option>Embu</option><option>Garissa</option><option>Homa Bay</option>
+                        <option>Isiolo</option><option>Kajiado</option><option>Kakamega</option><option>Kericho</option>
+                        <option>Kiambu</option><option>Kilifi</option><option>Kirinyaga</option><option>Kisii</option>
+                        <option>Kisumu</option><option>Kitui</option><option>Kwale</option><option>Laikipia</option>
+                        <option>Lamu</option><option>Machakos</option><option>Makueni</option><option>Mandera</option>
+                        <option>Marsabit</option><option>Meru</option><option>Migori</option><option>Mombasa</option>
+                        <option>Murang'a</option><option>Nairobi</option><option>Nakuru</option><option>Nandi</option>
+                        <option>Narok</option><option>Nyamira</option><option>Nyandarua</option><option>Nyeri</option>
+                        <option>Samburu</option><option>Siaya</option><option>Taita-Taveta</option><option>Tana River</option>
+                        <option>Tharaka-Nithi</option><option>Trans Nzoia</option><option>Turkana</option><option>Uasin Gishu</option>
+                        <option>Vihiga</option><option>Wajir</option><option>West Pokot</option>
+                    </select></div>
+                    <div><label class="block text-sm font-semibold text-white mb-2"><i class="fas fa-lock mr-2 text-green-400"></i> Password</label>
+                    <div class="relative"><input type="password" id="signupPassword" placeholder="••••••••" class="input-field w-full px-4 py-3 rounded-xl transition">
+                    <button type="button" onclick="togglePassword('signupPassword', this)" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/70 hover:text-green-400"><i class="fas fa-eye"></i></button></div>
+                    <p class="text-xs text-white/70 mt-1">Password must be at least 6 characters</p></div>
+                    <div><label class="block text-sm font-semibold text-white mb-2"><i class="fas fa-check-circle mr-2 text-green-400"></i> Confirm Password</label>
+                    <div class="relative"><input type="password" id="signupConfirmPassword" placeholder="••••••••" class="input-field w-full px-4 py-3 rounded-xl transition">
+                    <button type="button" onclick="togglePassword('signupConfirmPassword', this)" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/70 hover:text-green-400"><i class="fas fa-eye"></i></button></div></div>
+                </div>
+                <div class="flex items-start"><div class="flex items-center h-5"><input type="checkbox" id="termsCheckbox" class="rounded border-gray-300 text-green-600"></div><div class="ml-3 text-sm"><label class="text-white">I agree to the <a href="#" onclick="showToast('Terms and conditions', 'info')" class="text-green-400">Terms of Service</a> and <a href="#" onclick="showToast('Privacy policy', 'info')" class="text-green-400">Privacy Policy</a></label></div></div>
+                <button onclick="handleSignup()" class="btn-primary w-full text-white font-semibold py-3 rounded-xl transition transform hover:scale-[1.02] shadow-lg"><i class="fas fa-user-plus mr-2"></i> Create Account</button>
+                <div class="text-center text-sm text-white/80">By signing up, you'll get access to:<div class="flex justify-center gap-4 mt-2 text-xs"><span><i class="fas fa-microscope text-green-400"></i> AI Diagnosis</span><span><i class="fas fa-chart-line text-green-400"></i> Crop Tracking</span><span><i class="fas fa-cloud-sun text-green-400"></i> Weather Alerts</span></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('forgotPasswordModal')">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 animate-scaleIn" onclick="event.stopPropagation()">
+            <h3 class="text-xl font-bold mb-4">Reset Password</h3>
+            <p class="text-gray-600 mb-4">Enter your email address and we'll send you a link to reset your password.</p>
+            <input type="email" id="resetEmail" placeholder="Your email address" class="w-full p-3 border rounded-lg mb-4">
+            <div class="flex gap-3">
+                <button onclick="closeModal('forgotPasswordModal')" class="flex-1 bg-gray-300 py-2 rounded-lg">Cancel</button>
+                <button onclick="sendPasswordReset()" class="flex-1 btn-primary text-white py-2 rounded-lg">Send Reset Link</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let selectedRole = 'farmer';
+
+        // Background Slideshow
+        class BackgroundSlideshow {
+            constructor(slides, interval = 8000) {
+                this.slides = slides;
+                this.currentIndex = 0;
+                this.interval = interval;
+            }
+            init() { 
+                if (this.slides.length) { 
+                    this.slides[0].classList.add('active'); 
+                    setInterval(() => { 
+                        this.slides[this.currentIndex].classList.remove('active'); 
+                        this.currentIndex = (this.currentIndex + 1) % this.slides.length; 
+                        this.slides[this.currentIndex].classList.add('active'); 
+                    }, this.interval); 
+                } 
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+            if (slides.length) { 
+                const slideshow = new BackgroundSlideshow(slides, 8000); 
+                slideshow.init(); 
+            }
+            if (localStorage.getItem('theme') === 'dark') { 
+                document.body.classList.add('dark'); 
+                document.getElementById('themeIcon')?.classList.replace('fa-moon', 'fa-sun'); 
+            }
+            // Initialize Google Sign-In button
+            if (typeof google !== 'undefined') {
+                google.accounts.id.initialize({
+                    client_id: '465814682507-i3gjom5ulgb8oiq4tl7a8a64tuj3muho.apps.googleusercontent.com',
+                    callback: handleGoogleCredential
+                });
+                google.accounts.id.renderButton(
+                    document.getElementById('googleButton'),
+                    { theme: 'outline', size: 'large', width: '100%' }
+                );
+            }
+        });
+
+        function handleGoogleCredential(response) {
+            const idToken = response.credential;
+            fetch(`${API_URL}/auth/google`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.setItem('shambacare_token', data.token);
+                    localStorage.setItem('shambacare_user', JSON.stringify(data.user));
+                    showToast('Google login successful! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = data.user.role === 'admin' ? 'admin.html' : 'index.html';
+                    }, 1500);
+                } else {
+                    showToast(data.message || 'Google login failed', 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Network error. Please try again.', 'error');
+            });
+        }
+
+        function selectRole(role, element) { 
+            selectedRole = role; 
+            document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active')); 
+            element.classList.add('active'); 
+        }
+
+        function switchToLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('signupForm').classList.add('hidden');
+            document.getElementById('loginRoleSelector').style.display = 'flex';
+            document.getElementById('loginRoleHint').style.display = 'block';
+            document.getElementById('loginTabBtn').classList.add('bg-white', 'text-green-600', 'shadow-sm');
+            document.getElementById('signupTabBtn').classList.remove('bg-white', 'text-green-600', 'shadow-sm');
+            document.getElementById('signupTabBtn').classList.add('text-white');
+        }
+        
+        function switchToSignup() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('signupForm').classList.remove('hidden');
+            document.getElementById('loginRoleSelector').style.display = 'none';
+            document.getElementById('loginRoleHint').style.display = 'none';
+            document.getElementById('signupTabBtn').classList.add('bg-white', 'text-green-600', 'shadow-sm');
+            document.getElementById('loginTabBtn').classList.remove('bg-white', 'text-green-600', 'shadow-sm');
+            document.getElementById('loginTabBtn').classList.add('text-white');
+        }
+        
+        function togglePassword(inputId, btn) { 
+            const input = document.getElementById(inputId); 
+            const icon = btn.querySelector('i'); 
+            if (input.type === 'password') { 
+                input.type = 'text'; 
+                icon.classList.replace('fa-eye', 'fa-eye-slash'); 
+            } else { 
+                input.type = 'password'; 
+                icon.classList.replace('fa-eye-slash', 'fa-eye'); 
+            } 
+        }
+        
+        function toggleTheme() { 
+            document.body.classList.toggle('dark'); 
+            const icon = document.getElementById('themeIcon'); 
+            if (document.body.classList.contains('dark')) { 
+                icon.classList.replace('fa-moon', 'fa-sun'); 
+                localStorage.setItem('theme', 'dark'); 
+            } else { 
+                icon.classList.replace('fa-sun', 'fa-moon'); 
+                localStorage.setItem('theme', 'light'); 
+            } 
+        }
+        
+        function showToast(msg, type) { 
+            const toast = document.createElement('div'); 
+            toast.className = `toast ${type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`; 
+            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>${msg}`; 
+            document.body.appendChild(toast); 
+            setTimeout(() => toast.remove(), 3000); 
+        }
+        
+        function openMobileMenu() { 
+            document.getElementById('mobileMenuOverlay').classList.add('active'); 
+            document.getElementById('mobileMenuPanel').classList.add('active'); 
+        }
+        
+        function closeMobileMenu() { 
+            document.getElementById('mobileMenuOverlay').classList.remove('active'); 
+            document.getElementById('mobileMenuPanel').classList.remove('active'); 
+        }
+        
+        document.getElementById('mobileMenuToggle')?.addEventListener('click', openMobileMenu);
+        document.getElementById('closeMobileMenu')?.addEventListener('click', closeMobileMenu);
+        document.getElementById('mobileMenuOverlay')?.addEventListener('click', closeMobileMenu);
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+            document.getElementById(id).classList.remove('flex');
+        }
+
+        // ==================== EMAIL LOGIN / SIGNUP ====================
+        async function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            if (!email || !password) {
+                showToast('Please enter email and password', 'error');
+                return;
+            }
+            showToast('Logging in...', 'info');
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, role: selectedRole })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    localStorage.setItem('shambacare_token', data.token);
+                    localStorage.setItem('shambacare_user', JSON.stringify(data.user));
+                    showToast('Login successful! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = data.user.role === 'admin' ? 'admin.html' : 'index.html';
+                    }, 1500);
+                } else {
+                    showToast(data.message || 'Login failed', 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Network error. Please make sure the backend server is running on port 5000', 'error');
+            }
+        }
+        
+        async function handleSignup() {
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const phone = document.getElementById('signupPhone').value.trim();
+            const county = document.getElementById('signupCounty').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+            const termsChecked = document.getElementById('termsCheckbox').checked;
+            
+            if (!name || !email || !phone || !county || !password) {
+                showToast('Please fill all fields', 'error');
+                return;
+            }
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match', 'error');
+                return;
+            }
+            if (password.length < 6) {
+                showToast('Password must be at least 6 characters', 'error');
+                return;
+            }
+            if (!termsChecked) {
+                showToast('Please agree to the Terms of Service', 'error');
+                return;
+            }
+            
+            showToast('Creating account...', 'info');
+            try {
+                const response = await fetch(`${API_URL}/auth/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, phone, county, password })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    localStorage.setItem('shambacare_token', data.token);
+                    localStorage.setItem('shambacare_user', JSON.stringify(data.user));
+                    showToast('Account created successfully! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                } else {
+                    showToast(data.message || 'Signup failed', 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Network error. Please make sure the backend server is running on port 5000', 'error');
+            }
+        }
+
+        // ==================== FORGOT PASSWORD ====================
+        function openForgotPasswordModal() {
+            document.getElementById('resetEmail').value = '';
+            document.getElementById('forgotPasswordModal').classList.remove('hidden');
+            document.getElementById('forgotPasswordModal').classList.add('flex');
+        }
+
+        async function sendPasswordReset() {
+            const email = document.getElementById('resetEmail').value.trim();
+            if (!email) {
+                showToast('Please enter your email address', 'error');
+                return;
+            }
+            showToast('Sending reset link...', 'info');
+            try {
+                const response = await fetch(`${API_URL}/auth/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('If the email exists, a reset link has been sent.', 'success');
+                    closeModal('forgotPasswordModal');
+                } else {
+                    showToast(data.message || 'Failed to send reset link', 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Network error', 'error');
+            }
+        }
+
+        // Check if already logged in
+        const token = localStorage.getItem('shambacare_token');
+        const user = localStorage.getItem('shambacare_user');
+        if (token && user) {
+            const parsedUser = JSON.parse(user);
+            if (parsedUser.role === 'admin') {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>
