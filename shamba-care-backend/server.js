@@ -12,29 +12,20 @@ const { User, Farm, Crop, Diagnosis, Disease } = require('./models');
 const { verifyToken, isAdmin } = require('./middleware/auth');
 
 const app = express();
-app.set('trust proxy', 1);  // trust ngrok as proxy (fixes rate-limiter warning)
+app.set('trust proxy', 1); // trust proxy (for rate limiter behind Render/ngrok)
 
 const PORT = process.env.PORT || 5000;
 
-// ==================== MIDDLEWARE ====================
-app.use(helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
-app.use(compression());
-app.use(morgan('dev'));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// ==================== CORS CONFIGURATION ====================
-// Base allowed origins
+// ==================== CORS CONFIGURATION (MUST BE FIRST) ====================
+// Define allowed origins – add your Vercel frontend URL here
 let allowedOrigins = [
     'http://localhost:5500',
     'http://127.0.0.1:5500',
     'http://localhost:5001',
-    'https://shambacare-1.vercel.app',               
+    'https://shambacare-1.vercel.app'      // your live frontend
 ];
 
-// Also add any origins from FRONTEND_URL environment variable (comma-separated)
+// Also read from FRONTEND_URL environment variable (if set on Render)
 if (process.env.FRONTEND_URL) {
     const envOrigins = process.env.FRONTEND_URL.split(',');
     allowedOrigins.push(...envOrigins);
@@ -43,10 +34,10 @@ if (process.env.FRONTEND_URL) {
 // Remove duplicates
 const uniqueOrigins = [...new Set(allowedOrigins)];
 
-// CORS middleware with logging
+// CORS middleware with detailed logging
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps, curl, Postman)
+        // Allow requests with no origin (e.g., curl, mobile apps)
         if (!origin) return callback(null, true);
         
         if (uniqueOrigins.includes(origin)) {
@@ -63,8 +54,16 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Explicitly handle preflight OPTIONS requests
-app.options('*', cors());
+// No explicit app.options('*', cors()) needed – cors() handles OPTIONS automatically
+
+// ==================== OTHER MIDDLEWARE (after CORS) ====================
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+app.use(compression());
+app.use(morgan('dev'));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ==================== RATE LIMITING ====================
 const limiter = rateLimit({
