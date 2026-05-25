@@ -30,8 +30,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 let allowedOrigins = [
     'http://localhost:5500',
     'http://127.0.0.1:5500',
-    'https://shambacare.github.io',        // your GitHub Pages frontend
-    'http://localhost:5001'                // local AI service (if needed)
+    'http://localhost:5001' 
+    'https://shambacare-1.vercel.app',               
 ];
 
 // Also add any origins from FRONTEND_URL environment variable (comma-separated)
