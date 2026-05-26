@@ -12,37 +12,34 @@ app = Flask(__name__)
 CORS(app)
 
 # ----------------------------------------------------------------------
-# Paths to your local model and class names (absolute paths)
+# Paths to model and class names (now using relative paths)
+# Assume both files are in the same directory as this script
 # ----------------------------------------------------------------------
-MODEL_PATH = r"C:\Users\User\OneDrive\Desktop\shamba-care\plant-disease-model\best_model.h5"
-CLASS_NAMES_PATH = r"C:\Users\User\OneDrive\Desktop\shamba-care\plant-disease-model\class_names.json"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "best_model.h5")
+CLASS_NAMES_PATH = os.path.join(BASE_DIR, "class_names.json")
 
-print("Loading model...")
+# Check if files exist
 if not os.path.exists(MODEL_PATH):
     raise FileNotFoundError(f"Model not found at {MODEL_PATH}")
+if not os.path.exists(CLASS_NAMES_PATH):
+    raise FileNotFoundError(f"Class names not found at {CLASS_NAMES_PATH}")
 
-# Load model – this model was saved from EfficientNetV2 training and does not require custom objects.
+print("Loading model...")
 model = load_model(MODEL_PATH)
 print("✅ Model loaded successfully.")
+print(f"Model input shape: {model.input_shape}")
 
-# Print input shape for debugging
-input_shape = model.input_shape
-print(f"Model input shape: {input_shape}")  # Should be (None, 224, 224, 3)
-
-# ----------------------------------------------------------------------
-# Load class names – the JSON contains keys: "raw", "clean", "class_indices"
-# ----------------------------------------------------------------------
+# Load class names
 with open(CLASS_NAMES_PATH, 'r') as f:
     class_data = json.load(f)
 
 if isinstance(class_data, dict):
-    # Prefer the "clean" names (e.g., "Apple - Apple scab")
     if "clean" in class_data:
         CLASS_NAMES = class_data["clean"]
     elif "raw" in class_data:
         CLASS_NAMES = class_data["raw"]
     else:
-        # Fallback: use values of the dictionary (assuming it's a mapping)
         CLASS_NAMES = list(class_data.values())
 else:
     CLASS_NAMES = class_data
@@ -51,20 +48,19 @@ print(f"✅ Loaded {len(CLASS_NAMES)} disease classes.")
 print(f"First few classes: {CLASS_NAMES[:3]}")
 
 # ----------------------------------------------------------------------
-# Image preprocessing: resize to (224, 224) and normalize to [0,1]
+# Image preprocessing
 # ----------------------------------------------------------------------
 def preprocess_image(image_bytes):
     img = image.load_img(io.BytesIO(image_bytes), target_size=(224, 224))
     img_array = image.img_to_array(img)
     img_array = np.expand_dims(img_array, axis=0)
-    img_array = img_array / 255.0   # EfficientNet expects [0,1] input
+    img_array = img_array / 255.0   # EfficientNetV2 expects [0,1]
     return img_array
 
 # ----------------------------------------------------------------------
 # Treatment database (expand as needed)
 # ----------------------------------------------------------------------
 def get_treatment(disease_name):
-    # Simple placeholder – replace with a comprehensive dictionary
     treatments = {
         "Corn (maize) - Common rust": {
             "organic": "Apply neem oil or sulfur spray. Remove infected leaves.",
@@ -81,7 +77,6 @@ def get_treatment(disease_name):
             "prevention": "Resistant varieties, avoid overhead watering."
         }
     }
-    # Return specific treatment if found, else generic
     return treatments.get(disease_name, {
         "organic": "Consult local agrovet for organic options.",
         "chemical": "Consult local agrovet for chemical control.",
@@ -91,7 +86,7 @@ def get_treatment(disease_name):
     })
 
 # ----------------------------------------------------------------------
-# Prediction endpoint – compatible with your Node.js frontend
+# Prediction endpoint
 # ----------------------------------------------------------------------
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -109,7 +104,6 @@ def predict():
         idx = np.argmax(probabilities)
         confidence = float(probabilities[idx]) * 100
         disease_raw = CLASS_NAMES[idx]
-        # Format disease name for display (replace underscores and separators)
         disease_display = disease_raw.replace('___', ' - ').replace('_', ' ')
 
         treatment = get_treatment(disease_display)
@@ -123,7 +117,7 @@ def predict():
             'symptoms': treatment['symptoms'],
             'estimated_cost': treatment['cost'],
             'prevention_tips': treatment['prevention'],
-            'source': 'EfficientNetV2 (PlantVillage - local)'
+            'source': 'EfficientNetV2 (PlantVillage)'
         }
         return jsonify(response)
     except Exception as e:
@@ -135,5 +129,7 @@ def health():
     return jsonify({'status': 'ok', 'model_loaded': True})
 
 if __name__ == '__main__':
-    print("🚀 Starting AI service with local EfficientNetV2 model...")
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    port = int(os.environ.get('PORT', 5001))
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    print(f"🚀 Starting AI service on port {port} (debug={debug_mode})...")
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)
