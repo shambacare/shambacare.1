@@ -530,7 +530,7 @@
     <script>
         // Configuration
         const API_URL = 'https://shambacare-1.onrender.com/api';
-        const AI_SERVICE_URL = 'https://shambacare-ai.onrender.com';
+        const AI_SERVICE_URL = 'http://localhost:5001';
         let currentUser = null;
         let currentToken = null;
         let currentLang = 'en';
@@ -716,33 +716,36 @@
             }
         }
 
-        // ==================== AUTHENTICATION ====================
-        function checkAuth() {
-            currentToken = localStorage.getItem('shambacare_token');
-            const userStr = localStorage.getItem('shambacare_user');
-            if (!currentToken || !userStr) { 
-                window.location.href = 'login.html'; 
-                return false; 
-            }
-            try {
-                currentUser = JSON.parse(userStr);
-                if (currentUser.role === 'admin') { 
-                    window.location.href = 'admin.html'; 
-                    return false; 
-                }
-                return true;
-            } catch(e) { 
-                window.location.href = 'login.html'; 
-                return false; 
-            }
+      // ==================== AUTHENTICATION ====================
+function checkAuth() {
+    currentToken = localStorage.getItem('shambacare_token');
+    const userStr = localStorage.getItem('shambacare_user');
+    if (!currentToken || !userStr) { 
+        window.location.href = 'login.html'; 
+        return false; 
+    }
+    try {
+        currentUser = JSON.parse(userStr);
+        // If user is admin but is allowed to access farmer portal (allowFarmerPortal === true), let them stay.
+        if (currentUser.role === 'admin' && !currentUser.allowFarmerPortal) { 
+            window.location.href = 'admin.html'; 
+            return false; 
         }
-        
-        function handleLogout() { 
-            localStorage.clear(); 
-            window.location.href = 'login.html'; 
-        }
-        
-        function loadUserProfile() {
+        // If role is farmer, continue normally.
+        // If role is admin and allowFarmerPortal is true, we do NOT redirect.
+        return true;
+    } catch(e) { 
+        window.location.href = 'login.html'; 
+        return false; 
+    }
+}
+
+function handleLogout() { 
+    localStorage.clear(); 
+    window.location.href = 'login.html'; 
+}
+
+function loadUserProfile() {
             if (currentUser) {
                 document.getElementById('farmerName').textContent = currentUser.name || 'Farmer';
                 document.getElementById('profileName').textContent = currentUser.name || 'Farmer';
