@@ -37,10 +37,30 @@ router.post('/signup', async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ success: false, message: 'Email already registered' });
         }
-        const user = await User.create({ name, email, phone, county, password_hash: password });
+        // Always create as farmer (role 'farmer' is the default in model)
+        const user = await User.create({ 
+            name, 
+            email, 
+            phone, 
+            county, 
+            password_hash: password,
+            role: 'farmer'  // Explicitly set to farmer for security
+        });
         const token = generateToken(user.id);
         await user.update({ last_login: new Date() });
-        res.status(201).json({ success: true, message: 'Account created successfully', token, user: { id: user.id, name: user.name, email: user.email, phone: user.phone, county: user.county, role: user.role } });
+        res.status(201).json({ 
+            success: true, 
+            message: 'Account created successfully', 
+            token, 
+            user: { 
+                id: user.id, 
+                name: user.name, 
+                email: user.email, 
+                phone: user.phone, 
+                county: user.county, 
+                role: user.role 
+            } 
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Server error' });
@@ -48,8 +68,9 @@ router.post('/signup', async (req, res) => {
 });
 
 // ==================== LOGIN ====================
+// Removed role parameter - system automatically determines user role
 router.post('/login', async (req, res) => {
-    const { email, password, role } = req.body;
+    const { email, password } = req.body;
     if (!email || !password) {
         return res.status(400).json({ success: false, message: 'Email and password required' });
     }
@@ -57,12 +78,27 @@ router.post('/login', async (req, res) => {
         const user = await User.findOne({ where: { email } });
         if (!user) return res.status(401).json({ success: false, message: 'Invalid credentials' });
         if (!user.is_active) return res.status(401).json({ success: false, message: 'Account is deactivated' });
-        if (role && user.role !== role) return res.status(401).json({ success: false, message: 'No ' + role + ' account found' });
+        
         const isMatch = await user.comparePassword(password);
         if (!isMatch) return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        
         const token = generateToken(user.id);
         await user.update({ last_login: new Date() });
-        res.json({ success: true, message: 'Login successful', token, user: { id: user.id, name: user.name, email: user.email, phone: user.phone, county: user.county, role: user.role } });
+        
+        // Return user with role - frontend will redirect based on this
+        res.json({ 
+            success: true, 
+            message: 'Login successful', 
+            token, 
+            user: { 
+                id: user.id, 
+                name: user.name, 
+                email: user.email, 
+                phone: user.phone, 
+                county: user.county, 
+                role: user.role 
+            } 
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Server error' });
@@ -191,7 +227,7 @@ router.post('/reset-password', async (req, res) => {
     }
 });
 
-// ==================== GOOGLE SIGN-IN (ENHANCED) ====================
+// ==================== GOOGLE SIGN-IN ====================
 router.post('/google', async (req, res) => {
     const { idToken } = req.body;
     
@@ -242,6 +278,7 @@ router.post('/google', async (req, res) => {
         
         if (!user) {
             console.log('👤 Creating new user for:', email);
+            // New Google users are always farmers by default
             user = await User.create({
                 name: name || email.split('@')[0],
                 email: email,
@@ -249,7 +286,8 @@ router.post('/google', async (req, res) => {
                 county: 'Unknown',
                 password_hash: crypto.randomBytes(20).toString('hex'),
                 email_verified: email_verified || true,
-                profile_image: picture || null
+                profile_image: picture || null,
+                role: 'farmer'  // Explicitly set as farmer
             });
             console.log('✅ New user created with ID:', user.id);
         } else {
@@ -316,6 +354,7 @@ router.get('/debug-user/:email', async (req, res) => {
             exists: true,
             email: user.email,
             name: user.name,
+            role: user.role,
             has_reset_token: !!user.reset_token,
             reset_token: user.reset_token,
             reset_expires: user.reset_expires
