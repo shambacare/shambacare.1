@@ -260,8 +260,14 @@
                     localStorage.setItem('shambacare_user', JSON.stringify(data.user));
                     showToast('Google login successful! Redirecting...', 'success');
                     setTimeout(() => {
-                        // Redirect based on user role from backend
-                        window.location.href = data.user.role === 'admin' ? 'admin.html' : 'index.html';
+                        // Redirect respecting allowFarmerPortal flag
+                        if (data.user.role === 'admin' && data.user.allowFarmerPortal === true) {
+                            window.location.href = 'index.html';
+                        } else if (data.user.role === 'admin') {
+                            window.location.href = 'admin.html';
+                        } else {
+                            window.location.href = 'index.html';
+                        }
                     }, 1500);
                 } else {
                     showToast(data.message || 'Google login failed', 'error');
@@ -361,8 +367,14 @@
                     localStorage.setItem('shambacare_user', JSON.stringify(data.user));
                     showToast('Login successful! Redirecting...', 'success');
                     setTimeout(() => {
-                        // Redirect based on user role from backend
-                        window.location.href = data.user.role === 'admin' ? 'admin.html' : 'index.html';
+                        // Redirect respecting allowFarmerPortal flag
+                        if (data.user.role === 'admin' && data.user.allowFarmerPortal === true) {
+                            window.location.href = 'index.html';
+                        } else if (data.user.role === 'admin') {
+                            window.location.href = 'admin.html';
+                        } else {
+                            window.location.href = 'index.html';
+                        }
                     }, 1500);
                 } else {
                     showToast(data.message || 'Login failed', 'error');
@@ -458,12 +470,14 @@
             }
         }
 
-        // Check if already logged in
+        // Check if already logged in (respects allowFarmerPortal)
         const token = localStorage.getItem('shambacare_token');
         const user = localStorage.getItem('shambacare_user');
         if (token && user) {
             const parsedUser = JSON.parse(user);
-            if (parsedUser.role === 'admin') {
+            if (parsedUser.role === 'admin' && parsedUser.allowFarmerPortal === true) {
+                window.location.href = 'index.html';
+            } else if (parsedUser.role === 'admin') {
                 window.location.href = 'admin.html';
             } else {
                 window.location.href = 'index.html';
