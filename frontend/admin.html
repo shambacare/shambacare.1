@@ -18,6 +18,25 @@
         .slide.active { opacity: 1; }
         @keyframes kenBurns { 0% { transform: scale(1) translateX(0); } 100% { transform: scale(1.1) translateX(-2%); } }
         .background-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.85) 100%); z-index: -1; }
+        /* Light mode override for top nav text */
+        body:not(.dark) nav .nav-link,
+        body:not(.dark) nav h1,
+        body:not(.dark) nav p,
+        body:not(.dark) nav .nav-link i {
+            color: #166534 !important;
+            text-shadow: none !important;
+        }
+        body:not(.dark) nav .gradient-text {
+            background: linear-gradient(135deg, #15803d, #166534);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        body:not(.dark) nav .nav-link:hover { color: #facc15 !important; text-shadow: none; }
+        body:not(.dark) .bottom-nav { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-top: 1px solid #e5e7eb; }
+        body:not(.dark) .bottom-nav-item { color: #374151; }
+        body:not(.dark) .bottom-nav-item.active { color: #15803d; }
+        
         ::-webkit-scrollbar { width: 10px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #4c9f70; border-radius: 10px; }
@@ -34,8 +53,7 @@
         .btn-primary { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); transition: all 0.3s ease; cursor: pointer; color: white !important; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(59,130,246,0.3); }
         .desktop-nav { display: flex; align-items: center; gap: 1.5rem; }
-        .nav-link { position: relative; font-weight: 600; transition: color 0.3s ease; color: white !important; text-shadow: 0 1px 2px rgba(0,0,0,0.5); cursor: pointer; }
-        .nav-link:hover { color: #facc15 !important; text-shadow: none; }
+        .nav-link { position: relative; font-weight: 600; transition: color 0.3s ease; cursor: pointer; }
         .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: linear-gradient(135deg, #facc15, #eab308); transition: width 0.3s ease; }
         .nav-link:hover::after { width: 100%; }
         .mobile-menu-btn { display: none; }
@@ -44,9 +62,8 @@
         .mobile-menu-panel { position: fixed; top: 0; right: 0; width: 280px; height: 100%; background: white; z-index: 50; transform: translateX(100%); transition: transform 0.3s ease-in-out; }
         .mobile-menu-panel.active { transform: translateX(0); }
         @media (max-width: 768px) { .desktop-nav { display: none; } .mobile-menu-btn { display: block; } }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,0.2); display: none; justify-content: space-around; padding: 10px 16px 20px; z-index: 40; }
-        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: rgba(255,255,255,0.8); transition: all 0.2s ease; cursor: pointer; }
-        .bottom-nav-item.active { color: #facc15; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,0.2); display: none; justify-content: space-around; padding: 10px 16px 20px; z-index: 40; }
+        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.2s ease; cursor: pointer; }
         .bottom-nav-item i { font-size: 24px; }
         .bottom-nav-item span { font-size: 11px; font-weight: 500; }
         @media (max-width: 768px) { .bottom-nav { display: flex; } body { padding-bottom: 70px; } }
@@ -103,12 +120,12 @@
         .back-to-inbox { display: inline-flex; align-items: center; gap: 0.5rem; background: none; border: none; color: #3b82f6; font-weight: 500; cursor: pointer; margin-right: auto; }
         .whatsapp-float { background: #25D366 !important; color: white !important; }
         
-        /* Profile modal - light mode dark text */
+        /* Profile modal - light mode */
         .profile-modal-content { background: white; border-radius: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
         .profile-modal-content .text-gray-800, .profile-modal-content .font-semibold { color: #1e293b !important; }
         .profile-modal-content .text-gray-500 { color: #4b5563 !important; }
         
-        /* DARK MODE - complete consistent */
+        /* DARK MODE */
         .dark { background-color: #0f172a; }
         .dark .bg-white, .dark .bg-gray-50, .dark .bg-white\/95, .dark .stat-card, .dark .admin-table td, 
         .dark .section-header-container, .dark .profile-modal-content, .dark .communications-container, 
@@ -150,10 +167,10 @@
         .dark .chat-messages-scroll { background-color: #0f172a; }
         .dark #chatMessagesContainer { background-color: #0f172a; }
         .dark .communications-container { border-color: #334155; }
-        
-        /* Top nav title contrast fix */
-        nav h1, nav p { text-shadow: 0 2px 4px rgba(0,0,0,0.6); }
-        .gradient-text { background: linear-gradient(135deg, #facc15, #eab308); -webkit-background-clip: text; background-clip: text; }
+        .dark nav .nav-link, .dark nav h1, .dark nav p, .dark nav .nav-link i { color: white !important; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+        .dark .bottom-nav { background: rgba(0,0,0,0.9); border-top: 1px solid rgba(255,255,255,0.2); }
+        .dark .bottom-nav-item { color: rgba(255,255,255,0.8); }
+        .dark .bottom-nav-item.active { color: #facc15; }
     </style>
 </head>
 <body class="antialiased">
@@ -169,8 +186,8 @@
         <div class="container mx-auto px-4 py-3">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <i class="fas fa-leaf text-3xl text-green-400 float-animation drop-shadow-lg"></i>
-                    <div><h1 class="text-xl font-bold text-white drop-shadow-md">ShambaCare<span class="gradient-text"> Kenya</span></h1><p class="text-xs text-white/90 drop-shadow">Admin Dashboard • Complete Control</p></div>
+                    <i class="fas fa-leaf text-3xl text-green-600 dark:text-green-400 float-animation drop-shadow-lg"></i>
+                    <div><h1 class="text-xl font-bold text-gray-800 dark:text-white drop-shadow-md">ShambaCare<span class="gradient-text"> Kenya</span></h1><p class="text-xs text-gray-600 dark:text-white/90 drop-shadow">Admin Dashboard • Complete Control</p></div>
                 </div>
                 <div class="desktop-nav">
                     <a href="#" onclick="showSection('overview')" class="nav-link">Overview</a>
@@ -180,11 +197,11 @@
                     <a href="#" onclick="showSection('alerts')" class="nav-link">Alerts</a>
                     <a href="#" onclick="showSection('communications')" class="nav-link">Communications</a>
                     <a href="#" onclick="openProfileModal()" class="nav-link"><i class="fas fa-user-shield mr-1"></i> Admin</a>
-                    <a href="#" onclick="handleLogout()" class="nav-link text-red-300"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
+                    <a href="#" onclick="handleLogout()" class="nav-link text-red-600 dark:text-red-400"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <button onclick="toggleTheme()" class="bg-white/20 hover:bg-white/30 p-2 rounded-lg backdrop-blur-sm transition"><i id="themeIcon" class="fas fa-moon text-white drop-shadow"></i></button>
-                    <button id="mobileMenuToggle" class="mobile-menu-btn bg-white/20 p-2 rounded-lg"><i class="fas fa-bars text-white text-xl"></i></button>
+                    <button onclick="toggleTheme()" class="bg-white/20 hover:bg-white/30 p-2 rounded-lg backdrop-blur-sm transition"><i id="themeIcon" class="fas fa-moon text-gray-800 dark:text-white drop-shadow"></i></button>
+                    <button id="mobileMenuToggle" class="mobile-menu-btn bg-white/20 p-2 rounded-lg"><i class="fas fa-bars text-gray-800 dark:text-white text-xl"></i></button>
                 </div>
             </div>
         </div>
@@ -213,7 +230,7 @@
         </div>
     </div>
 
-    <!-- Profile Modal - light mode text fixed -->
+    <!-- Profile Modal -->
     <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('profileModal')">
         <div class="profile-modal-content rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
             <div class="p-4 border-b rounded-t-2xl flex justify-between items-center">
@@ -271,7 +288,7 @@
         <!-- DIAGNOSES SECTION -->
         <div id="diagnosesSection" class="section hidden">
             <div class="section-header-container"><h2 class="text-xl font-bold"><i class="fas fa-stethoscope text-green-600 mr-2"></i> All Farmer Diagnoses</h2><div class="flex gap-2"><button onclick="exportDiagnoses()" class="blue-button"><i class="fas fa-download"></i> Export</button></div></div>
-            <div class="bg-white rounded-xl overflow-hidden shadow-lg"><div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Farmer</th><th>Crop</th><th>Disease</th><th>Confidence</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="diagnosesTable"><tr><td colspan="7" class="text-center py-8 text-gray-500">Loading diagnoses...</td></tr></tbody></table></div></div>
+            <div class="bg-white rounded-xl overflow-hidden shadow-lg"><div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Farmer</th><th>Crop</th><th>Disease</th><th>Confidence</th><th>Date</th><th>Status</th><th>Actions</th><tr></thead><tbody id="diagnosesTable"><tr><td colspan="7" class="text-center py-8 text-gray-500">Loading diagnoses...</td></tr></tbody></table></div></div>
         </div>
         
         <!-- SUBSCRIPTIONS SECTION -->
@@ -304,7 +321,7 @@
             <div id="recentAlertsList" class="space-y-3"><div class="text-center py-8 text-gray-500 bg-white rounded-xl p-8">No email alerts sent yet. Create your first alert above!</div></div>
         </div>
         
-        <!-- COMMUNICATIONS SECTION - light mode fully fixed -->
+        <!-- COMMUNICATIONS SECTION -->
         <div id="communicationsSection" class="section hidden">
             <div class="section-header-container"><div><h2 class="text-xl font-bold"><i class="fas fa-comments text-green-600 mr-2"></i> Farmer Support Inbox</h2><p class="text-sm text-gray-500 mt-1">Chat with farmers individually • Respond to their queries</p></div><div class="flex gap-2"><button onclick="refreshChatInbox()" class="blue-button text-sm"><i class="fas fa-sync-alt"></i> Refresh</button><button onclick="markAllAsRead()" class="blue-button text-sm bg-gray-500"><i class="fas fa-check-double"></i> Mark all read</button></div></div>
             <div class="communications-container">
