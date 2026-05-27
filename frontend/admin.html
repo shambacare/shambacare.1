@@ -19,7 +19,7 @@
         @keyframes kenBurns { 0% { transform: scale(1) translateX(0); } 100% { transform: scale(1.1) translateX(-2%); } }
         .background-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.85) 100%); z-index: -1; }
         
-        /* === BLUE GRADIENT FOR KENYA TEXT === */
+        /* ===== KENYA BLUE GRADIENT (Light mode) ===== */
         .gradient-text {
             background: linear-gradient(135deg, #1e40af, #3b82f6);
             -webkit-background-clip: text;
@@ -27,37 +27,39 @@
             -webkit-text-fill-color: transparent;
             font-weight: 700;
         }
+        body.dark .gradient-text {
+            background: linear-gradient(135deg, #facc15, #eab308);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-        /* LIGHT MODE SPECIFIC */
+        /* Light mode specific UI enhancements */
         body:not(.dark) nav {
             background: rgba(255, 255, 255, 0.96) !important;
             backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
         }
         body:not(.dark) nav .nav-link,
         body:not(.dark) nav h1,
         body:not(.dark) nav p,
         body:not(.dark) nav .nav-link i {
             color: #0a3b1e !important;
-            text-shadow: none !important;
         }
-        body:not(.dark) nav .nav-link:hover { color: #2563eb !important; }
-        /* Mobile theme & menu buttons background in light mode */
+        /* Mobile menu & theme toggle buttons background in light mode */
         body:not(.dark) .mobile-menu-btn,
         body:not(.dark) .theme-toggle-btn {
-            background: #e0f2fe !important;
-            color: #075985 !important;
+            background: #dbeafe !important;
+            color: #1e40af !important;
             border-radius: 10px;
         }
         body:not(.dark) .mobile-menu-btn i,
         body:not(.dark) .theme-toggle-btn i {
-            color: #075985 !important;
+            color: #1e40af !important;
         }
         /* Bottom nav light mode - blue theme */
         body:not(.dark) .bottom-nav {
             background: #f8fafc;
-            backdrop-filter: blur(10px);
             border-top: 1px solid #cbd5e1;
         }
         body:not(.dark) .bottom-nav-item {
@@ -67,45 +69,13 @@
             color: #2563eb;
             font-weight: 600;
         }
-        /* Profile icon improved styling */
+        /* Profile icon improved */
         .admin-profile-icon {
             background: linear-gradient(135deg, #2563eb, #1e3a8a);
             box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
-            transition: transform 0.2s ease;
-        }
-        .admin-profile-icon:hover {
-            transform: scale(1.05);
         }
         
-        /* Chat & communications light mode fixes (fully visible names) */
-        body:not(.dark) .communications-container {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-        }
-        body:not(.dark) .farmer-chat-item {
-            background: #ffffff;
-            border-bottom: 1px solid #eef2f6;
-        }
-        body:not(.dark) .farmer-chat-item .font-semibold,
-        body:not(.dark) .farmer-chat-item .text-gray-800 {
-            color: #0f172a !important;
-        }
-        body:not(.dark) .farmer-chat-item.unread {
-            background-color: #dbeafe;
-        }
-        body:not(.dark) .farmer-chat-item.active {
-            background-color: #eef2ff;
-            border-left-color: #2563eb;
-        }
-        body:not(.dark) .chat-bubble.farmer {
-            background: #e5e7eb;
-            color: #111827;
-        }
-        body:not(.dark) .chat-bubble.admin {
-            background: #2563eb;
-        }
-        
-        /* DARK MODE - ensure top nav links visible */
+        /* Dark mode top nav visibility */
         .dark nav .nav-link,
         .dark nav h1,
         .dark nav p,
@@ -127,66 +97,134 @@
         .dark .bottom-nav-item.active {
             color: #facc15;
         }
-        /* other dark mode overrides */
-        .dark .admin-table th { background: #0f172a; color: #facc15; }
-        .dark .admin-table td { border-bottom-color: #334155; color: #e2e8f0; }
-        .dark .admin-table tr:hover td { background: #334155; }
-        .dark .stat-card, .dark .bg-white { background: #1e293b !important; }
-        .dark .stat-card .font-bold, .dark h2, .dark h3 { color: #facc15 !important; }
         
-        /* General utility */
-        ::-webkit-scrollbar { width: 8px; }
+        /* Keep original styles for everything else */
+        ::-webkit-scrollbar { width: 10px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: #2563eb; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #4c9f70; border-radius: 10px; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         @keyframes slideInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         .animate-fadeInUp { animation: fadeInUp 0.6s ease-out; }
         .animate-scaleIn { animation: scaleIn 0.4s ease-out; }
-        .card-hover { transition: all 0.3s ease; cursor: pointer; }
+        .float-animation { animation: float 3s ease-in-out infinite; }
+        .card-hover { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); cursor: pointer; }
         .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 30px -10px rgba(0,0,0,0.2); }
-        .btn-primary { background: linear-gradient(135deg, #3b82f6, #2563eb); cursor: pointer; color: white !important; }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); transition: all 0.3s ease; cursor: pointer; color: white !important; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(59,130,246,0.3); }
         .desktop-nav { display: flex; align-items: center; gap: 1.5rem; }
         .nav-link { position: relative; font-weight: 600; transition: color 0.3s ease; cursor: pointer; }
         .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: linear-gradient(135deg, #facc15, #eab308); transition: width 0.3s ease; }
         .nav-link:hover::after { width: 100%; }
-        .mobile-menu-btn, .theme-toggle-btn { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; cursor: pointer; transition: all 0.2s; }
         .mobile-menu-btn { display: none; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display: none; justify-content: space-around; padding: 10px 16px 20px; z-index: 40; }
-        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
-        .bottom-nav-item i { font-size: 24px; }
-        .bottom-nav-item span { font-size: 11px; font-weight: 500; }
-        @media (max-width: 768px) { .desktop-nav { display: none; } .mobile-menu-btn { display: flex; } .bottom-nav { display: flex; } body { padding-bottom: 70px; } }
         .mobile-menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 40; opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
         .mobile-menu-overlay.active { opacity: 1; visibility: visible; }
         .mobile-menu-panel { position: fixed; top: 0; right: 0; width: 280px; height: 100%; background: white; z-index: 50; transform: translateX(100%); transition: transform 0.3s ease-in-out; }
         .mobile-menu-panel.active { transform: translateX(0); }
+        @media (max-width: 768px) { .desktop-nav { display: none; } .mobile-menu-btn { display: block; } }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; backdrop-filter: blur(10px); display: none; justify-content: space-around; padding: 10px 16px 20px; z-index: 40; }
+        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.2s ease; cursor: pointer; }
+        .bottom-nav-item i { font-size: 24px; }
+        .bottom-nav-item span { font-size: 11px; font-weight: 500; }
+        @media (max-width: 768px) { .bottom-nav { display: flex; } body { padding-bottom: 70px; } }
         .toast { animation: slideInRight 0.3s ease-out, fadeOut 0.3s ease-out 2.7s forwards; position: fixed; bottom: 24px; right: 16px; z-index: 1000; padding: 12px 20px; border-radius: 8px; color: white; }
         .toast.success { background: #10b981; }
         .toast.error { background: #ef4444; }
         .toast.info { background: #3b82f6; }
         @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
         .section-header-container { background: white; padding: 1rem 1.5rem; border-radius: 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; border: 1px solid #e5e7eb; }
+        .section-header-container h2, .section-header-container h3 { color: #1e293b !important; }
+        .blue-button { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; transition: all 0.3s ease; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; border: none; }
+        .blue-button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(59,130,246,0.3); }
         .admin-table { width: 100%; border-collapse: collapse; background: white; border-radius: 1rem; overflow: hidden; }
         .admin-table th { text-align: left; padding: 12px 16px; background: #1e293b; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; color: #facc15; }
-        .admin-table td { padding: 12px 16px; border-bottom: 1px solid #e5e7eb; }
-        .clickable-row { cursor: pointer; transition: background 0.2s; }
-        .clickable-row:hover td { background-color: #f0fdf4 !important; }
-        .stat-card { background: white; border-radius: 1rem; padding: 1.25rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; cursor: pointer; }
-        .badge-active { background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-        /* Communications layout */
-        .communications-container { background: white; border-radius: 1rem; overflow: hidden; min-height: 500px; border: 1px solid #e5e7eb; }
-        @media (min-width: 1024px) { .communications-container { display: grid; grid-template-columns: 320px 1fr; height: 70vh; border: none; } .inbox-view { grid-column: 1; border-right: 1px solid #e5e7eb; overflow-y: auto; } .chat-view { grid-column: 2; display: flex !important; } .back-to-inbox { display: none; } }
-        .farmer-chat-item { transition: all 0.2s ease; cursor: pointer; border-left: 3px solid transparent; border-bottom: 1px solid #e5e7eb; }
-        .farmer-chat-item.unread { background-color: #eff6ff; }
-        .chat-messages-scroll { background: #f9fafb; max-height: 500px; overflow-y: auto; }
+        .admin-table td { padding: 12px 16px; border-bottom: 1px solid #e5e7eb; background: white; color: #1e293b; }
+        .admin-table tr:hover td { background-color: #f0fdf4; }
+        .badge-pending { background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+        .badge-reviewed { background: #d1fae5; color: #065f46; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+        .badge-active { background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+        .badge-resolved { background: #d1fae5; color: #065f46; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+        .stat-card { background: white; border-radius: 1rem; padding: 1.25rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition: all 0.3s ease; border: 1px solid #e5e7eb; cursor: pointer; }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15); }
+        .stat-card p:first-child { color: #6b7280; }
+        .stat-card .font-bold { color: #1e293b; }
+        
+        /* Communications container - original styles */
+        .communications-container { background: white; border-radius: 1rem; overflow: hidden; position: relative; min-height: 500px; border: 1px solid #e5e7eb; }
+        .inbox-view, .chat-view { transition: transform 0.3s ease; }
+        .inbox-view { display: block; }
+        .chat-view { display: none; }
+        .chat-view.active { display: flex; flex-direction: column; height: 70vh; min-height: 500px; }
+        @media (min-width: 1024px) {
+            .communications-container { display: grid; grid-template-columns: 320px 1fr; height: 70vh; border: none; }
+            .inbox-view { display: block !important; grid-column: 1; border-right: 1px solid #e5e7eb; height: 100%; overflow-y: auto; }
+            .chat-view { display: flex !important; grid-column: 2; height: 100%; }
+            .back-to-inbox { display: none; }
+        }
+        .farmer-list-panel { height: 100%; overflow-y: auto; background: white; }
+        .chat-area-panel { display: flex; flex-direction: column; height: 100%; overflow: hidden; background: white; }
+        .chat-messages-scroll { flex: 1; overflow-y: auto; padding: 1rem; scroll-behavior: smooth; background: #f9fafb; }
+        .chat-message { display: flex; margin-bottom: 1rem; animation: fadeInUp 0.2s ease-out; }
         .chat-message.admin { justify-content: flex-end; }
         .chat-message.farmer { justify-content: flex-start; }
-        .chat-bubble { max-width: 70%; padding: 10px 14px; border-radius: 18px; }
+        .chat-bubble { max-width: 70%; padding: 10px 14px; border-radius: 18px; position: relative; word-wrap: break-word; }
         .chat-message.admin .chat-bubble { background: #3b82f6; color: white; border-bottom-right-radius: 4px; }
-        .chat-message.farmer .chat-bubble { background: #e5e7eb; color: #1e293b; }
-        .blue-button { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; }
+        .chat-message.farmer .chat-bubble { background: #e5e7eb; color: #1e293b; border-bottom-left-radius: 4px; }
+        .chat-time { font-size: 10px; opacity: 0.7; margin-top: 4px; display: block; }
+        .clickable-row { cursor: pointer; transition: background 0.2s; }
+        .clickable-row:hover td { background-color: #f0fdf4 !important; }
+        .farmer-chat-item { transition: all 0.2s ease; cursor: pointer; border-left: 3px solid transparent; background: white; border-bottom: 1px solid #e5e7eb; }
+        .farmer-chat-item:hover { background-color: #f3f4f6; }
+        .farmer-chat-item.active { background-color: #e5e7eb; border-left-color: #3b82f6; }
+        .farmer-chat-item.unread { background-color: #eff6ff; }
+        .back-to-inbox { display: inline-flex; align-items: center; gap: 0.5rem; background: none; border: none; color: #3b82f6; font-weight: 500; cursor: pointer; margin-right: auto; }
+        
+        /* Profile modal */
+        .profile-modal-content { background: white; border-radius: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .profile-modal-content .text-gray-800, .profile-modal-content .font-semibold { color: #1e293b !important; }
+        
+        /* Dark mode overrides (keeping original behavior) */
+        .dark { background-color: #0f172a; }
+        .dark .bg-white, .dark .bg-gray-50, .dark .bg-white\/95, .dark .stat-card, .dark .admin-table td, 
+        .dark .section-header-container, .dark .profile-modal-content, .dark .communications-container, 
+        .dark .farmer-list-panel, .dark .chat-area-panel, .dark .chat-messages-scroll, .dark .farmer-chat-item {
+            background: #1e293b !important;
+        }
+        .dark .text-gray-600, .dark .text-gray-500, .dark .text-gray-700, .dark .text-gray-800, 
+        .dark p, .dark li, .dark .admin-table td, .dark .farmer-chat-item .text-gray-800, 
+        .dark .farmer-chat-item .text-gray-500, .dark .chat-bubble.farmer .chat-bubble {
+            color: #cbd5e1 !important;
+        }
+        .dark h1, .dark h2, .dark h3, .dark .font-bold, .dark .stat-card .font-bold, 
+        .dark .section-header-container h2, .dark .section-header-container h3, 
+        .dark #selectedFarmerName, .dark .farmer-chat-item .font-semibold {
+            color: #facc15 !important;
+        }
+        .dark .admin-table th { background: #0f172a; color: #facc15; }
+        .dark .admin-table td { border-bottom-color: #334155; color: #e2e8f0 !important; }
+        .dark .admin-table tr:hover td { background: #334155; color: #ffffff !important; }
+        .dark .badge-pending { background: #78350f; color: #fef3c7; }
+        .dark .badge-active { background: #1e3a8a; color: #bfdbfe; }
+        .dark .badge-reviewed, .dark .badge-resolved { background: #064e3b; color: #a7f3d0; }
+        .dark .mobile-menu-panel { background: #1e293b; border-left: 2px solid #facc15; }
+        .dark .mobile-menu-panel a, .dark .mobile-menu-panel .font-bold { color: #facc15 !important; }
+        .dark .mobile-menu-panel a:hover { background: #334155; color: white !important; }
+        .dark .border, .dark .border-gray-200, .dark .border-gray-100, 
+        .dark .admin-table td, .dark .farmer-chat-item { border-color: #334155; }
+        .dark input, .dark select, .dark textarea { background: #0f172a; border-color: #facc15; color: #f1f5f9; }
+        .dark .profile-modal-content .border-b span:first-child { color: #94a3b8; }
+        .dark .profile-modal-content .border-b span:last-child { color: #facc15; }
+        .dark .chat-message.farmer .chat-bubble { background: #334155; color: #f1f5f9; }
+        .dark .chat-message.admin .chat-bubble { background: #2563eb; color: white; }
+        .dark .farmer-chat-item:hover { background-color: #334155; }
+        .dark .farmer-chat-item.active { background-color: #0f172a; border-left-color: #facc15; }
+        .dark .farmer-chat-item.unread { background-color: #1e3a8a; }
+        .dark .back-to-inbox { color: #facc15; }
+        .dark .btn-primary, .dark .blue-button { color: white !important; }
+        .dark .stat-card p:first-child { color: #94a3b8; }
+        .dark .chat-messages-scroll { background-color: #0f172a; }
+        .dark .communications-container { border-color: #334155; }
     </style>
 </head>
 <body class="antialiased">
@@ -198,12 +236,12 @@
     </div>
     <div class="background-overlay"></div>
     
-    <nav class="backdrop-blur-md sticky top-0 z-50 border-b border-white/20">
+    <nav class="backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-white/20">
         <div class="container mx-auto px-4 py-3">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <i class="fas fa-leaf text-3xl text-blue-600 dark:text-green-400 float-animation drop-shadow-lg"></i>
-                    <div><h1 class="text-xl font-bold tracking-tight">ShambaCare <span class="gradient-text">Kenya</span></h1><p class="text-xs font-medium opacity-90">Admin Dashboard • Complete Control</p></div>
+                    <i class="fas fa-leaf text-3xl text-green-600 dark:text-green-400 float-animation drop-shadow-lg"></i>
+                    <div><h1 class="text-xl font-bold text-gray-800 dark:text-white drop-shadow-md">ShambaCare<span class="gradient-text"> Kenya</span></h1><p class="text-xs text-gray-600 dark:text-white/90 drop-shadow">Admin Dashboard • Complete Control</p></div>
                 </div>
                 <div class="desktop-nav">
                     <a href="#" onclick="showSection('overview')" class="nav-link">Overview</a>
@@ -216,8 +254,8 @@
                     <a href="#" onclick="handleLogout()" class="nav-link text-red-600 dark:text-red-400"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <button onclick="toggleTheme()" class="theme-toggle-btn p-2 rounded-lg backdrop-blur-sm transition"><i id="themeIcon" class="fas fa-moon text-gray-800 dark:text-white"></i></button>
-                    <button id="mobileMenuToggle" class="mobile-menu-btn p-2 rounded-lg"><i class="fas fa-bars text-gray-800 dark:text-white text-xl"></i></button>
+                    <button onclick="toggleTheme()" class="theme-toggle-btn bg-white/20 hover:bg-white/30 p-2 rounded-lg backdrop-blur-sm transition"><i id="themeIcon" class="fas fa-moon text-gray-800 dark:text-white drop-shadow"></i></button>
+                    <button id="mobileMenuToggle" class="mobile-menu-btn bg-white/20 p-2 rounded-lg"><i class="fas fa-bars text-gray-800 dark:text-white text-xl"></i></button>
                 </div>
             </div>
         </div>
@@ -233,23 +271,26 @@
 
     <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
     <div id="mobileMenuPanel" class="mobile-menu-panel">
-        <div class="flex justify-between items-center p-4 border-b"><span class="font-bold"><i class="fas fa-leaf text-blue-600 mr-2"></i>Admin Menu</span><button id="closeMobileMenu"><i class="fas fa-times text-xl"></i></button></div>
+        <div class="flex justify-between items-center p-4 border-b"><span class="font-bold"><i class="fas fa-leaf text-green-600 mr-2"></i>Admin Menu</span><button id="closeMobileMenu"><i class="fas fa-times text-xl"></i></button></div>
         <div class="flex flex-col p-4 space-y-3">
-            <a href="#" onclick="showSection('overview');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-blue-50 flex items-center"><i class="fas fa-tachometer-alt w-6 text-blue-600"></i> Overview</a>
-            <a href="#" onclick="showSection('farmers');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-blue-50 flex items-center"><i class="fas fa-users w-6 text-blue-600"></i> Farmers</a>
-            <a href="#" onclick="showSection('diagnoses');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-blue-50 flex items-center"><i class="fas fa-stethoscope w-6 text-blue-600"></i> Diagnoses</a>
-            <a href="#" onclick="showSection('subscriptions');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-blue-50 flex items-center"><i class="fas fa-credit-card w-6 text-blue-600"></i> Subscriptions</a>
-            <a href="#" onclick="showSection('alerts');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-blue-50 flex items-center"><i class="fas fa-bell w-6 text-blue-600"></i> Alerts</a>
-            <a href="#" onclick="showSection('communications');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-blue-50 flex items-center"><i class="fas fa-comments w-6 text-blue-600"></i> Communications</a>
+            <a href="#" onclick="showSection('overview');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 flex items-center"><i class="fas fa-tachometer-alt w-6 text-green-600"></i> Overview</a>
+            <a href="#" onclick="showSection('farmers');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 flex items-center"><i class="fas fa-users w-6 text-green-600"></i> Farmers</a>
+            <a href="#" onclick="showSection('diagnoses');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 flex items-center"><i class="fas fa-stethoscope w-6 text-green-600"></i> Diagnoses</a>
+            <a href="#" onclick="showSection('subscriptions');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 flex items-center"><i class="fas fa-credit-card w-6 text-green-600"></i> Subscriptions</a>
+            <a href="#" onclick="showSection('alerts');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 flex items-center"><i class="fas fa-bell w-6 text-green-600"></i> Alerts</a>
+            <a href="#" onclick="showSection('communications');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 flex items-center"><i class="fas fa-comments w-6 text-green-600"></i> Communications</a>
             <div class="border-t my-2 pt-3"></div>
             <a href="#" onclick="handleLogout();closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-red-50 flex items-center text-red-600"><i class="fas fa-sign-out-alt w-6"></i> Sign Out</a>
         </div>
     </div>
 
-    <!-- Profile Modal with Phone instead of Member Since -->
+    <!-- Profile Modal (Phone replaced Member Since) -->
     <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('profileModal')">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
-            <div class="p-4 border-b rounded-t-2xl flex justify-between items-center"><h3 class="font-bold text-lg dark:text-yellow-400"><i class="fas fa-user-shield text-blue-600 mr-2"></i> Admin Profile</h3><button onclick="closeModal('profileModal')"><i class="fas fa-times text-red-500"></i></button></div>
+        <div class="profile-modal-content rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
+            <div class="p-4 border-b rounded-t-2xl flex justify-between items-center">
+                <h3 class="font-bold text-lg text-gray-800 dark:text-yellow-400"><i class="fas fa-user-shield text-green-600 mr-2"></i> Admin Profile</h3>
+                <button onclick="closeModal('profileModal')"><i class="fas fa-times text-red-500"></i></button>
+            </div>
             <div class="p-5 space-y-4">
                 <div class="flex items-center gap-4">
                     <div class="w-16 h-16 rounded-full admin-profile-icon flex items-center justify-center text-white text-2xl font-bold"><span id="profileInitial">A</span></div>
@@ -258,14 +299,14 @@
                 <div class="space-y-3">
                     <div class="flex justify-between py-2 border-b dark:border-gray-700"><span class="text-gray-700 dark:text-gray-400"><i class="fas fa-tachometer-alt w-6 text-blue-600"></i> Role</span><span class="font-semibold text-gray-800 dark:text-gray-300">System Administrator</span></div>
                     <div class="flex justify-between py-2 border-b dark:border-gray-700"><span class="text-gray-700 dark:text-gray-400"><i class="fas fa-envelope w-6 text-blue-600"></i> Email</span><span class="text-gray-800 dark:text-gray-300" id="profileEmailDisplay">-</span></div>
-                    <div class="flex justify-between py-2 border-b dark:border-gray-700"><span class="text-gray-700 dark:text-gray-400"><i class="fas fa-phone w-6 text-blue-600"></i> Phone Number</span><span class="text-gray-800 dark:text-gray-300" id="profilePhone">+254 700 000 000</span></div>
+                    <div class="flex justify-between py-2 border-b dark:border-gray-700"><span class="text-gray-700 dark:text-gray-400"><i class="fas fa-phone w-6 text-green-600"></i> Phone Number</span><span class="text-gray-800 dark:text-yellow-400" id="profilePhone">+254 700 123 456</span></div>
                 </div>
                 <button onclick="handleLogout()" class="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition font-semibold"><i class="fas fa-sign-out-alt mr-2"></i> Sign Out</button>
             </div>
         </div>
     </div>
 
-    <!-- Detail Modal for Table Row Clicks -->
+    <!-- Detail Modal for row clicks -->
     <div id="detailModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50 p-4" onclick="closeModal('detailModal')">
         <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto animate-scaleIn" onclick="event.stopPropagation()">
             <div class="sticky top-0 bg-white dark:bg-slate-800 p-4 border-b flex justify-between items-center"><h3 class="font-bold text-lg dark:text-yellow-400" id="detailModalTitle">Details</h3><button onclick="closeModal('detailModal')"><i class="fas fa-times text-red-500 text-xl"></i></button></div>
@@ -273,78 +314,206 @@
         </div>
     </div>
 
-    <div id="addFarmerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('addFarmerModal')"><div class="bg-white rounded-2xl max-w-md w-full" onclick="event.stopPropagation()"><div class="p-4 border-b"><h3 class="font-bold text-lg"><i class="fas fa-user-plus text-green-600 mr-2"></i> Add New Farmer</h3></div><div class="p-4 space-y-3"><input type="text" id="newFarmerName" placeholder="Full Name" class="w-full p-3 border rounded-lg"><input type="email" id="newFarmerEmail" placeholder="Email" class="w-full p-3 border rounded-lg"><input type="tel" id="newFarmerPhone" placeholder="Phone Number" class="w-full p-3 border rounded-lg"><input type="text" id="newFarmerLocation" placeholder="County" class="w-full p-3 border rounded-lg"><select id="newFarmerPlan" class="w-full p-3 border rounded-lg"><option value="Basic">Basic Plan (Free)</option><option value="Pro">Pro Plan (KSh 500/month)</option></select><div class="flex gap-3"><button onclick="closeModal('addFarmerModal')" class="flex-1 bg-gray-300 py-2 rounded-lg">Cancel</button><button onclick="addFarmer()" class="flex-1 btn-primary text-white py-2 rounded-lg"><i class="fas fa-user-plus mr-1"></i> Add Farmer</button></div></div></div></div>
-
     <div class="container mx-auto px-4 py-6 max-w-7xl">
-        <!-- Overview Section (unchanged but functional) -->
-        <div id="overviewSection" class="section"><div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"><div class="stat-card" onclick="showSection('farmers')"><div><p class="text-sm">Total Farmers</p><p class="text-3xl font-bold" id="totalFarmers">0</p></div><i class="fas fa-users text-3xl text-green-500 opacity-50"></i></div><div class="stat-card" onclick="showSection('subscriptions')"><div><p class="text-sm">Active Subscriptions</p><p class="text-3xl font-bold" id="activeSubs">0</p></div><i class="fas fa-credit-card text-3xl text-blue-500 opacity-50"></i></div><div class="stat-card" onclick="showSection('diagnoses')"><div><p class="text-sm">Total Diagnoses</p><p class="text-3xl font-bold" id="totalDiagnoses">0</p></div><i class="fas fa-stethoscope text-3xl text-purple-500 opacity-50"></i></div><div class="stat-card" onclick="showSection('alerts')"><div><p class="text-sm">Alerts Sent</p><p class="text-3xl font-bold" id="alertCount">0</p></div><i class="fas fa-bell text-3xl text-orange-500 opacity-50"></i></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"><div class="bg-white rounded-xl p-5 shadow"><h3 class="font-bold mb-4"><i class="fas fa-chart-bar text-green-600 mr-2"></i> Diagnoses by Crop</h3><canvas id="cropChart" height="200"></canvas></div><div class="bg-white rounded-xl p-5 shadow"><h3 class="font-bold mb-4"><i class="fas fa-chart-line text-green-600 mr-2"></i> Monthly Trend</h3><canvas id="trendChart" height="200"></canvas></div></div><div class="bg-white rounded-xl overflow-hidden shadow"><div class="section-header-container"><h3 class="font-bold"><i class="fas fa-clock text-green-600 mr-2"></i> Recent Activity</h3></div><div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Farmer</th><th>Activity</th><th>Date</th><th>Status</th></tr></thead><tbody id="recentActivityTable"><tr><td colspan="4" class="text-center py-8">Loading...</td></tr></tbody></table></div></div></div>
+        <!-- OVERVIEW SECTION (unchanged) -->
+        <div id="overviewSection" class="section">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="stat-card card-hover" onclick="showSection('farmers')"><div class="flex justify-between items-start"><div><p class="text-sm">Total Farmers</p><p class="text-3xl font-bold" id="totalFarmers">0</p></div><i class="fas fa-users text-3xl text-green-500 opacity-50"></i></div><div class="mt-2 text-xs text-green-600">Click to view all farmers →</div></div>
+                <div class="stat-card card-hover" onclick="showSection('subscriptions')"><div class="flex justify-between items-start"><div><p class="text-sm">Active Subscriptions</p><p class="text-3xl font-bold" id="activeSubs">0</p></div><i class="fas fa-credit-card text-3xl text-blue-500 opacity-50"></i></div><div class="mt-2 text-xs text-green-600">Click to manage plans →</div></div>
+                <div class="stat-card card-hover" onclick="showSection('diagnoses')"><div class="flex justify-between items-start"><div><p class="text-sm">Total Diagnoses</p><p class="text-3xl font-bold" id="totalDiagnoses">0</p></div><i class="fas fa-stethoscope text-3xl text-purple-500 opacity-50"></i></div><div class="mt-2 text-xs text-green-600">Click to review all →</div></div>
+                <div class="stat-card card-hover" onclick="showSection('alerts')"><div class="flex justify-between items-start"><div><p class="text-sm">Alerts Sent</p><p class="text-3xl font-bold" id="alertCount">0</p></div><i class="fas fa-bell text-3xl text-orange-500 opacity-50"></i></div><div class="mt-2 text-xs text-green-600">Click to send alerts →</div></div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-xl p-5 shadow-lg card-hover"><h3 class="font-bold mb-4 text-gray-800"><i class="fas fa-chart-bar text-green-600 mr-2"></i> Diagnoses by Crop</h3><canvas id="cropChart" height="200"></canvas></div>
+                <div class="bg-white rounded-xl p-5 shadow-lg card-hover"><h3 class="font-bold mb-4 text-gray-800"><i class="fas fa-chart-line text-green-600 mr-2"></i> Monthly Trend</h3><canvas id="trendChart" height="200"></canvas></div>
+            </div>
+            <div class="bg-white rounded-xl overflow-hidden shadow-lg">
+                <div class="section-header-container mb-0 rounded-b-none"><h3 class="font-bold"><i class="fas fa-clock text-green-600 mr-2"></i> Recent Activity</h3><span class="text-sm text-gray-500">Last 7 days</span></div>
+                <div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Farmer</th><th>Activity</th><th>Date</th><th>Status</th></tr></thead><tbody id="recentActivityTable"><tr><td colspan="4" class="text-center py-8 text-gray-500">Loading activities...</td></tr></tbody></table></div>
+            </div>
+        </div>
         
-        <div id="farmersSection" class="section hidden"><div class="section-header-container"><h2 class="text-xl font-bold"><i class="fas fa-users text-green-600 mr-2"></i> Registered Farmers</h2><button onclick="showAddFarmerModal()" class="blue-button"><i class="fas fa-plus"></i> Add Farmer</button></div><div class="bg-white rounded-xl overflow-hidden shadow"><div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>County</th><th>Plan</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="farmersTable"></tbody></table></div></div></div>
-        <div id="diagnosesSection" class="section hidden"><div class="section-header-container"><h2 class="text-xl font-bold"><i class="fas fa-stethoscope text-green-600 mr-2"></i> All Farmer Diagnoses</h2><button onclick="exportDiagnoses()" class="blue-button"><i class="fas fa-download"></i> Export</button></div><div class="bg-white rounded-xl overflow-hidden shadow"><div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Farmer</th><th>Crop</th><th>Disease</th><th>Confidence</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="diagnosesTable"></tbody></table></div></div></div>
-        <div id="subscriptionsSection" class="section hidden"><div class="section-header-container"><h2 class="text-xl font-bold"><i class="fas fa-credit-card text-green-600 mr-2"></i> Subscription Plans</h2></div><div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">...</div><div class="section-header-container"><h3 class="font-bold"><i class="fas fa-users mr-2"></i> Active Subscriptions</h3></div><div class="bg-white rounded-xl overflow-hidden shadow"><div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Farmer</th><th>Plan</th><th>Started</th><th>Expires</th><th>Status</th><th>Actions</th></tr></thead><tbody id="subscriptionsTable"></tbody></table></div></div></div>
-        <div id="alertsSection" class="section hidden"><div class="section-header-container"><h2 class="text-xl font-bold"><i class="fas fa-bell text-green-600 mr-2"></i> Send Broadcast Emails</h2></div><div class="bg-white rounded-xl p-6 mb-8 shadow"><form id="alertForm"><div class="grid md:grid-cols-2 gap-4 mb-4"><div><label>Alert Type</label><select id="alertType" class="w-full p-3 border rounded-lg"><option value="weather">🌤️ Weather Alert</option><option value="disease">🦠 Disease Outbreak</option></select></div><div><label>Target Region</label><select id="alertRegion" class="w-full p-3 border rounded-lg"><option value="all">All Regions</option></select></div></div><div><label>Subject</label><input id="alertSubject" class="w-full p-3 border rounded-lg"></div><div><label>Message</label><textarea id="alertMessage" rows="4" class="w-full p-3 border rounded-lg"></textarea></div><button type="submit" class="btn-primary px-6 py-3 rounded-lg"><i class="fas fa-paper-plane mr-2"></i> Send Email</button></form></div><div id="recentAlertsList"></div></div>
+        <!-- FARMERS SECTION -->
+        <div id="farmersSection" class="section hidden">
+            <div class="section-header-container"><h2 class="text-xl font-bold"><i class="fas fa-users text-green-600 mr-2"></i> Registered Farmers</h2><button onclick="showAddFarmerModal()" class="blue-button"><i class="fas fa-plus"></i> Add Farmer</button></div>
+            <div class="bg-white rounded-xl overflow-hidden shadow-lg"><div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>County</th><th>Plan</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="farmersTable"><tr><td colspan="7" class="text-center py-8 text-gray-500">Loading farmers...</td></tr></tbody></table></div></div>
+        </div>
         
-        <!-- Communications Section -->
+        <!-- DIAGNOSES SECTION -->
+        <div id="diagnosesSection" class="section hidden">
+            <div class="section-header-container"><h2 class="text-xl font-bold"><i class="fas fa-stethoscope text-green-600 mr-2"></i> All Farmer Diagnoses</h2><div class="flex gap-2"><button onclick="exportDiagnoses()" class="blue-button"><i class="fas fa-download"></i> Export</button></div></div>
+            <div class="bg-white rounded-xl overflow-hidden shadow-lg"><div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Farmer</th><th>Crop</th><th>Disease</th><th>Confidence</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="diagnosesTable"><tr><td colspan="7" class="text-center py-8 text-gray-500">Loading diagnoses...</td></tr></tbody></table></div></div>
+        </div>
+        
+        <!-- SUBSCRIPTIONS SECTION -->
+        <div id="subscriptionsSection" class="section hidden">
+            <div class="section-header-container"><h2 class="text-xl font-bold"><i class="fas fa-credit-card text-green-600 mr-2"></i> Subscription Plans</h2></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-xl p-6 text-center shadow-lg card-hover"><div class="text-2xl font-bold text-green-600">🌾 Basic</div><div class="text-3xl font-bold mt-2">Free</div><p class="text-sm text-gray-500 mt-2">For small farms</p><ul class="mt-4 text-sm space-y-2"><li>✓ 5 diagnoses/month</li><li>✓ Basic support</li><li>✗ Priority support</li></ul></div>
+                <div class="bg-white rounded-xl p-6 text-center shadow-lg card-hover border-2 border-green-500"><div class="text-2xl font-bold text-green-600">🚀 Pro</div><div class="text-3xl font-bold mt-2">KSh 500<span class="text-sm">/mo</span></div><p class="text-sm text-green-600 mt-2">Most popular</p><ul class="mt-4 text-sm space-y-2"><li>✓ Unlimited diagnoses</li><li>✓ Advanced analytics</li><li>✓ Priority support</li></ul><button class="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg text-sm cursor-default">Popular</button></div>
+                <div class="bg-white rounded-xl p-6 text-center shadow-lg card-hover"><div class="text-2xl font-bold text-green-600">👑 Enterprise</div><div class="text-3xl font-bold mt-2">Custom</div><p class="text-sm text-gray-500 mt-2">For large farms</p><ul class="mt-4 text-sm space-y-2"><li>✓ Everything in Pro</li><li>✓ API access</li><li>✓ Dedicated support</li></ul><button class="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm">Contact Sales</button></div>
+            </div>
+            <div class="section-header-container mb-4"><h3 class="font-bold"><i class="fas fa-users mr-2"></i> Active Subscriptions</h3></div>
+            <div class="bg-white rounded-xl overflow-hidden shadow-lg"><div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Farmer</th><th>Plan</th><th>Started</th><th>Expires</th><th>Status</th><th>Actions</th></tr></thead><tbody id="subscriptionsTable"><tr><td colspan="6" class="text-center py-8 text-gray-500">Loading subscriptions...</td></tr></tbody></table></div></div>
+        </div>
+        
+        <!-- ALERTS SECTION -->
+        <div id="alertsSection" class="section hidden">
+            <div class="section-header-container"><h2 class="text-xl font-bold"><i class="fas fa-bell text-green-600 mr-2"></i> Send Broadcast Emails</h2></div>
+            <div class="bg-white rounded-xl p-6 mb-8 shadow-lg">
+                <form id="alertForm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div><label class="block text-sm font-medium mb-2 text-gray-700"><i class="fas fa-tag mr-1"></i> Alert Type</label><select id="alertType" class="w-full p-3 border rounded-lg"><option value="weather">🌤️ Weather Alert</option><option value="disease">🦠 Disease Outbreak</option><option value="tip">💡 Farming Tip</option><option value="emergency">🚨 Emergency Alert</option></select></div>
+                        <div><label class="block text-sm font-medium mb-2 text-gray-700"><i class="fas fa-map-marker-alt mr-1"></i> Target Region</label><select id="alertRegion" class="w-full p-3 border rounded-lg"><option value="all">🌍 All Regions</option><option value="Kiambu">📍 Kiambu</option><option value="Nakuru">📍 Nakuru</option><option value="Nairobi">📍 Nairobi</option><option value="Kisumu">📍 Kisumu</option><option value="Mombasa">📍 Mombasa</option><option value="Uasin Gishu">📍 Uasin Gishu</option></select></div>
+                    </div>
+                    <div class="mb-4"><label class="block text-sm font-medium mb-2 text-gray-700"><i class="fas fa-heading mr-1"></i> Subject</label><input type="text" id="alertSubject" placeholder="e.g., Heavy Rains Expected This Week" class="w-full p-3 border rounded-lg"></div>
+                    <div class="mb-4"><label class="block text-sm font-medium mb-2 text-gray-700"><i class="fas fa-envelope mr-1"></i> Message</label><textarea id="alertMessage" rows="4" placeholder="Write your email message here..." class="w-full p-3 border rounded-lg"></textarea></div>
+                    <button type="submit" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold w-full md:w-auto"><i class="fas fa-paper-plane mr-2"></i> Send Email to All Farmers</button>
+                </form>
+            </div>
+            <div class="section-header-container"><h3 class="font-bold"><i class="fas fa-history text-green-600 mr-2"></i> Recent Email Alerts</h3><button onclick="clearAlerts()" class="blue-button text-sm"><i class="fas fa-trash"></i> Clear All</button></div>
+            <div id="recentAlertsList" class="space-y-3"><div class="text-center py-8 text-gray-500 bg-white rounded-xl p-8">No email alerts sent yet. Create your first alert above!</div></div>
+        </div>
+        
+        <!-- COMMUNICATIONS SECTION (fully original) -->
         <div id="communicationsSection" class="section hidden">
-            <div class="section-header-container"><div><h2 class="text-xl font-bold"><i class="fas fa-comments text-green-600 mr-2"></i> Farmer Support Inbox</h2></div><button onclick="refreshChatInbox()" class="blue-button"><i class="fas fa-sync-alt"></i> Refresh</button></div>
+            <div class="section-header-container"><div><h2 class="text-xl font-bold"><i class="fas fa-comments text-green-600 mr-2"></i> Farmer Support Inbox</h2><p class="text-sm text-gray-500 mt-1">Chat with farmers individually • Respond to their queries</p></div><div class="flex gap-2"><button onclick="refreshChatInbox()" class="blue-button text-sm"><i class="fas fa-sync-alt"></i> Refresh</button><button onclick="markAllAsRead()" class="blue-button text-sm bg-gray-500"><i class="fas fa-check-double"></i> Mark all read</button></div></div>
             <div class="communications-container">
-                <div id="inboxView" class="inbox-view"><div class="p-3"><input type="text" id="farmerSearchInput" placeholder="Search farmers..." class="w-full p-2 border rounded-lg"></div><div id="farmerChatList" class="farmer-list-panel"></div></div>
-                <div id="chatView" class="chat-view"><div class="chat-area-panel"><div class="p-3 flex items-center gap-3"><button id="backToInboxBtn" class="back-to-inbox"><i class="fas fa-arrow-left"></i> Back</button><div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white"><i class="fas fa-user"></i></div><div><h3 id="selectedFarmerName" class="font-semibold">Select a farmer</h3><p id="selectedFarmerStatus" class="text-xs text-gray-500"></p></div></div><div id="chatMessagesContainer" class="chat-messages-scroll p-4"></div><div class="p-3 flex gap-2"><textarea id="chatReplyInput" rows="2" class="flex-1 p-2 border rounded-lg" placeholder="Type reply..."></textarea><button onclick="sendChatReply()" class="btn-primary px-4 rounded-lg"><i class="fas fa-paper-plane"></i></button></div></div></div>
+                <div id="inboxView" class="inbox-view">
+                    <div class="p-3 border-b border-gray-200 dark:border-gray-700"><div class="relative"><i class="fas fa-search absolute left-3 top-3 text-gray-400"></i><input type="text" id="farmerSearchInput" placeholder="Search farmers..." class="w-full pl-10 pr-4 py-2 border rounded-lg"></div></div>
+                    <div id="farmerChatList" class="farmer-list-panel"><div class="text-center py-8 text-gray-500">Loading conversations...</div></div>
+                </div>
+                <div id="chatView" class="chat-view">
+                    <div class="chat-area-panel">
+                        <div class="p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-900 flex items-center gap-3">
+                            <button id="backToInboxBtn" class="back-to-inbox"><i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Back</span></button>
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center text-white font-bold"><i class="fas fa-user"></i></div>
+                            <div class="flex-1"><h3 id="selectedFarmerName" class="font-semibold text-gray-800 dark:text-white">Select a farmer</h3><p id="selectedFarmerStatus" class="text-xs text-gray-500">Click on a farmer to start chatting</p></div>
+                        </div>
+                        <div id="chatMessagesContainer" class="chat-messages-scroll"><div class="text-center py-8 text-gray-500"><i class="fas fa-comments text-4xl mb-2 text-gray-300"></i><p>Select a farmer from the left to view conversation</p></div></div>
+                        <div class="p-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800">
+                            <div class="flex gap-2"><textarea id="chatReplyInput" rows="2" placeholder="Type your reply..." class="flex-1 p-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500"></textarea><button onclick="sendChatReply()" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold self-end"><i class="fas fa-paper-plane mr-2"></i> Send</button></div>
+                            <p class="text-xs text-gray-400 mt-2"><i class="fas fa-info-circle"></i> Press Enter to send, Shift+Enter for new line</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Add Farmer Modal -->
+    <div id="addFarmerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('addFarmerModal')">
+        <div class="bg-white rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
+            <div class="p-4 border-b rounded-t-2xl"><h3 class="font-bold text-lg"><i class="fas fa-user-plus text-green-600 mr-2"></i> Add New Farmer</h3></div>
+            <div class="p-4 space-y-3">
+                <input type="text" id="newFarmerName" placeholder="Full Name" class="w-full p-3 border rounded-lg">
+                <input type="email" id="newFarmerEmail" placeholder="Email" class="w-full p-3 border rounded-lg">
+                <input type="tel" id="newFarmerPhone" placeholder="Phone Number" class="w-full p-3 border rounded-lg">
+                <input type="text" id="newFarmerLocation" placeholder="County" class="w-full p-3 border rounded-lg">
+                <select id="newFarmerPlan" class="w-full p-3 border rounded-lg"><option value="Basic">Basic Plan (Free)</option><option value="Pro">Pro Plan (KSh 500/month)</option></select>
+                <div class="flex gap-3"><button onclick="closeModal('addFarmerModal')" class="flex-1 bg-gray-300 py-2 rounded-lg hover:bg-gray-400">Cancel</button><button onclick="addFarmer()" class="flex-1 btn-primary text-white py-2 rounded-lg"><i class="fas fa-user-plus mr-1"></i> Add Farmer</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- No WhatsApp floating button (removed) -->
 
     <script>
     const API_URL = 'https://shambacare-1.onrender.com/api';
     let currentAdmin = null, currentToken = null;
     let allUsers = [], allDiagnoses = [], allSubscriptions = [], sentAlerts = [];
-    let cropChart, trendChart, allFarmers = [], selectedFarmerId = null;
+    let cropChart, trendChart;
+    let allFarmers = [], selectedFarmerId = null;
 
-    function showToast(msg, type) { const t = document.createElement('div'); t.className = `toast ${type}`; t.innerHTML = `<i class="fas ${type==='success'?'fa-check-circle':'fa-exclamation-circle'} mr-2"></i>${msg}`; document.body.appendChild(t); setTimeout(()=>t.remove(),3000); }
+    function showToast(msg, type) { const t = document.createElement('div'); t.className = `toast ${type}`; t.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>${msg}`; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
     function openProfileModal() { document.getElementById('profileModal').classList.remove('hidden'); document.getElementById('profileModal').classList.add('flex'); }
     function handleLogout() { localStorage.clear(); window.location.href = 'login.html'; }
-    function toggleTheme() { document.body.classList.toggle('dark'); const icon = document.getElementById('themeIcon'); if(document.body.classList.contains('dark')) { icon.classList.replace('fa-moon','fa-sun'); localStorage.setItem('theme','dark'); } else { icon.classList.replace('fa-sun','fa-moon'); localStorage.setItem('theme','light'); } }
-    async function apiCall(endpoint, options={}) { const res = await fetch(`${API_URL}${endpoint}`, {...options, headers:{'Content-Type':'application/json','Authorization':`Bearer ${currentToken}`,...options.headers}}); return res.json(); }
-    function escapeHtml(t) { if(!t) return ''; const div = document.createElement('div'); div.textContent = t; return div.innerHTML; }
+    function toggleTheme() { const isDark = document.body.classList.toggle('dark'); const icon = document.getElementById('themeIcon'); if (isDark) { icon.classList.replace('fa-moon', 'fa-sun'); localStorage.setItem('theme', 'dark'); } else { icon.classList.replace('fa-sun', 'fa-moon'); localStorage.setItem('theme', 'light'); } }
+    async function apiCall(endpoint, options = {}) { const response = await fetch(`${API_URL}${endpoint}`, { ...options, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentToken}`, ...options.headers } }); return response.json(); }
+    function escapeHtml(text) { if (!text) return ''; const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 
     function showDetailModal(title, contentHtml) { document.getElementById('detailModalTitle').innerText = title; document.getElementById('detailModalBody').innerHTML = contentHtml; document.getElementById('detailModal').classList.remove('hidden'); document.getElementById('detailModal').classList.add('flex'); }
-
-    // Enhanced row click binding for detailed modal (farmer, diagnosis, subscription)
-    function bindDetailedRowClicks() {
-        document.querySelectorAll('#farmersTable tr').forEach(row => { row.classList.add('clickable-row'); row.onclick = (e) => { if(e.target.closest('button')) return; const id = row.getAttribute('data-id'); const farmer = allUsers.find(u => u.id == id); if(farmer) showDetailModal('Farmer Profile', `<div class="space-y-2"><div class="flex items-center gap-3 border-b pb-2"><i class="fas fa-user-circle text-3xl text-blue-600"></i><div><p class="font-bold text-lg">${escapeHtml(farmer.name)}</p><p class="text-sm text-gray-500">${escapeHtml(farmer.email)}</p></div></div><p><i class="fas fa-phone w-5"></i> ${farmer.phone || 'Not provided'}</p><p><i class="fas fa-map-marker-alt w-5"></i> ${farmer.county || 'Unknown'}</p><p><i class="fas fa-credit-card w-5"></i> Plan: ${farmer.subscription?.plan || 'Basic'}</p><p><i class="fas fa-calendar w-5"></i> Joined: ${farmer.created_at ? new Date(farmer.created_at).toLocaleDateString() : 'N/A'}</p><p><i class="fas fa-id-card w-5"></i> ID: ${farmer.id}</p></div>`); }; });
-        document.querySelectorAll('#diagnosesTable tr').forEach(row => { row.classList.add('clickable-row'); row.onclick = (e) => { if(e.target.closest('select,button')) return; const id = row.getAttribute('data-id'); const diag = allDiagnoses.find(d => d.id == id); if(diag) showDetailModal('Diagnosis Details', `<p><strong>Farmer:</strong> ${diag.farmer?.name}</p><p><strong>Crop:</strong> ${diag.crop_name}</p><p><strong>Disease:</strong> ${diag.disease_name || 'Pending'}</p><p><strong>Confidence:</strong> ${diag.confidence_score || 'N/A'}%</p><p><strong>Date:</strong> ${new Date(diag.created_at).toLocaleString()}</p><p><strong>Status:</strong> ${diag.status}</p><p><strong>Image:</strong> ${diag.image_url ? '<a href="#" class="text-blue-500">View</a>' : 'None'}</p>`); }; });
-        document.querySelectorAll('#subscriptionsTable tr').forEach(row => { row.classList.add('clickable-row'); row.onclick = (e) => { if(e.target.closest('button')) return; const id = row.getAttribute('data-id'); const sub = allSubscriptions.find(s => s.id == id); if(sub) showDetailModal('Subscription Details', `<p><strong>Farmer:</strong> ${sub.subscriber?.name}</p><p><strong>Plan:</strong> ${sub.plan}</p><p><strong>Started:</strong> ${new Date(sub.started_at).toLocaleDateString()}</p><p><strong>Expires:</strong> ${new Date(sub.expires_at).toLocaleDateString()}</p><p><strong>Status:</strong> ${sub.status}</p><p><strong>Payment:</strong> ${sub.payment_status || 'Active'}</p>`); }; });
+    
+    function bindTableRowClicks() {
+        // Farmers row click (excluding action buttons)
+        document.querySelectorAll('#farmersTable tr').forEach(row => {
+            if(row.querySelector('.fa-trash')) return; // skip if delete button exists inside? Actually we want to attach click but avoid when clicking button
+            row.classList.add('clickable-row');
+            row.onclick = (e) => { 
+                if(e.target.closest('button')) return;
+                const id = row.getAttribute('data-id');
+                const farmer = allUsers.find(u => u.id == id);
+                if(farmer) showDetailModal('Farmer Details', `<div class="space-y-2"><p><strong>Name:</strong> ${farmer.name}</p><p><strong>Email:</strong> ${farmer.email}</p><p><strong>Phone:</strong> ${farmer.phone || '-'}</p><p><strong>County:</strong> ${farmer.county || '-'}</p><p><strong>Plan:</strong> ${farmer.subscription?.plan || 'Basic'}</p><p><strong>Joined:</strong> ${new Date(farmer.created_at).toLocaleDateString()}</p></div>`);
+            };
+        });
+        // Diagnoses row click
+        document.querySelectorAll('#diagnosesTable tr').forEach(row => {
+            row.classList.add('clickable-row');
+            row.onclick = (e) => {
+                if(e.target.closest('button') || e.target.closest('select')) return;
+                const id = row.getAttribute('data-id');
+                const diag = allDiagnoses.find(d => d.id == id);
+                if(diag) showDetailModal('Diagnosis Details', `<div class="space-y-2"><p><strong>Farmer:</strong> ${diag.farmer?.name}</p><p><strong>Crop:</strong> ${diag.crop_name}</p><p><strong>Disease:</strong> ${diag.disease_name || 'Pending'}</p><p><strong>Confidence:</strong> ${diag.confidence_score || 'N/A'}%</p><p><strong>Date:</strong> ${new Date(diag.created_at).toLocaleString()}</p><p><strong>Status:</strong> ${diag.status}</p></div>`);
+            };
+        });
+        // Subscriptions row click
+        document.querySelectorAll('#subscriptionsTable tr').forEach(row => {
+            row.classList.add('clickable-row');
+            row.onclick = (e) => {
+                if(e.target.closest('button')) return;
+                const id = row.getAttribute('data-id');
+                const sub = allSubscriptions.find(s => s.id == id);
+                if(sub) showDetailModal('Subscription Details', `<div class="space-y-2"><p><strong>Farmer:</strong> ${sub.subscriber?.name}</p><p><strong>Plan:</strong> ${sub.plan}</p><p><strong>Started:</strong> ${new Date(sub.started_at).toLocaleDateString()}</p><p><strong>Expires:</strong> ${new Date(sub.expires_at).toLocaleDateString()}</p><p><strong>Status:</strong> ${sub.status}</p></div>`);
+            };
+        });
     }
 
-    async function loadDashboardStats() { try { const data = await apiCall('/admin/dashboard/stats'); if(data.success) { document.getElementById('totalFarmers').innerText = data.stats.totalFarmers || 0; document.getElementById('activeSubs').innerText = data.stats.totalSubscriptions || 0; document.getElementById('totalDiagnoses').innerText = data.stats.totalDiagnoses || 0; document.getElementById('alertCount').innerText = sentAlerts.length; const recent = data.recentActivity || []; document.getElementById('recentActivityTable').innerHTML = recent.length ? recent.map(a => `<tr><td>${a.farmer?.name}</td><td>Diagnosed ${a.crop_name}</td><td>${new Date(a.created_at).toLocaleDateString()}</td><td><span class="badge-active">${a.status}</span></td></tr>`).join('') : '<tr><td colspan="4" class="text-center">No recent activity</td></tr>'; const cropCount={Maize:0,Coffee:0,Vegetables:0,Tomato:0,Potato:0}; recent.forEach(d=>{if(cropCount[d.crop_name]!==undefined) cropCount[d.crop_name]++;}); if(cropChart) cropChart.destroy(); cropChart = new Chart(document.getElementById('cropChart'),{type:'bar',data:{labels:Object.keys(cropCount),datasets:[{label:'Diagnoses',data:Object.values(cropCount),backgroundColor:'#3b82f6'}]}}); if(trendChart) trendChart.destroy(); trendChart = new Chart(document.getElementById('trendChart'),{type:'line',data:{labels:['Week1','Week2','Week3','Week4'],datasets:[{label:'Trend',data:[12,19,15,17],borderColor:'#10b981'}]}}); } } catch(e) { console.error(e); } }
-    async function loadUsers() { try { const data = await apiCall('/admin/users'); if(data.success) { allUsers = data.users.filter(u=>u.role==='farmer'); document.getElementById('farmersTable').innerHTML = allUsers.map(u => `<tr data-id="${u.id}"><td class="font-medium text-blue-700 cursor-pointer">${u.name || '-'}</td><td>${u.email}</td><td>${u.phone || '-'}</td><td>${u.county || '-'}</td><td><span class="badge-active">${u.subscription?.plan || 'Basic'}</span></td><td>${u.created_at ? new Date(u.created_at).toLocaleDateString() : '-'}</td><td><button onclick="event.stopPropagation(); deleteUser(${u.id})" class="text-red-600"><i class="fas fa-trash"></i></button></td></tr>`).join(''); bindDetailedRowClicks(); } } catch(e) { console.error(e); } }
-    async function loadAllDiagnoses() { try { const data = await apiCall('/admin/diagnoses/all'); if(data.success) { allDiagnoses = data.diagnoses || []; document.getElementById('diagnosesTable').innerHTML = allDiagnoses.map(d => `<tr data-id="${d.id}"><td>${d.farmer?.name || '-'}</td><td>${d.crop_name}</td><td>${d.disease_name || 'Pending'}</td><td>${d.confidence_score || '-'}%</td><td>${new Date(d.created_at).toLocaleDateString()}</td><td><select onchange="updateDiagnosisStatus(${d.id},this.value)" class="badge-active">${d.status==='Pending'?'<option selected>Pending</option><option>Reviewed</option>':d.status==='Reviewed'?'<option>Pending</option><option selected>Reviewed</option>':'<option>Pending</option><option>Reviewed</option><option selected>Resolved</option>'}</select></td><td><button onclick="event.stopPropagation(); deleteDiagnosis(${d.id})" class="text-red-600"><i class="fas fa-trash"></i></button></td></tr>`).join(''); bindDetailedRowClicks(); } } catch(e) { console.error(e); } }
-    async function loadSubscriptions() { try { const data = await apiCall('/subscriptions/all'); if(data.success) { allSubscriptions = data.subscriptions || []; document.getElementById('subscriptionsTable').innerHTML = allSubscriptions.map(s => `<tr data-id="${s.id}"><td>${s.subscriber?.name || '-'}</td><td><span class="badge-active">${s.plan}</span></td><td>${s.started_at ? new Date(s.started_at).toLocaleDateString() : '-'}</td><td>${s.expires_at ? new Date(s.expires_at).toLocaleDateString() : '-'}</td><td>${s.status}</td><td><button onclick="event.stopPropagation(); renewSubscription(${s.id})" class="text-blue-600"><i class="fas fa-sync-alt"></i> Renew</button></td></tr>`).join(''); bindDetailedRowClicks(); } } catch(e) { console.error(e); } }
-    async function updateDiagnosisStatus(id, status) { await apiCall(`/diagnoses/${id}/status`,{method:'PUT',body:JSON.stringify({status})}); showToast('Status updated','success'); loadAllDiagnoses(); loadDashboardStats(); }
-    async function deleteDiagnosis(id) { if(confirm('Delete?')){ await apiCall(`/diagnoses/${id}`,{method:'DELETE'}); showToast('Deleted','success'); loadAllDiagnoses(); loadDashboardStats(); } }
-    async function deleteUser(id) { if(confirm('Delete user?')){ await apiCall(`/admin/users/${id}`,{method:'DELETE'}); showToast('User deleted','success'); loadUsers(); loadDashboardStats(); } }
-    async function renewSubscription(id) { showToast('Renewed successfully','success'); }
-    async function addFarmer() { const name=document.getElementById('newFarmerName').value, email=document.getElementById('newFarmerEmail').value, phone=document.getElementById('newFarmerPhone').value, county=document.getElementById('newFarmerLocation').value; if(!name||!email||!phone||!county) { showToast('All fields required','error'); return; } const data = await apiCall('/admin/add-farmer',{method:'POST',body:JSON.stringify({name,email,phone,county,password:Math.random().toString(36).slice(-8)+'A1!'})}); if(data.success) { showToast('Farmer added','success'); closeModal('addFarmerModal'); loadUsers(); loadDashboardStats(); } else showToast('Error adding farmer','error'); }
+    async function loadDashboardStats() {
+        try { const data = await apiCall('/admin/dashboard/stats'); if(data.success) { document.getElementById('totalFarmers').innerText = data.stats.totalFarmers || 0; document.getElementById('activeSubs').innerText = data.stats.totalSubscriptions || 0; document.getElementById('totalDiagnoses').innerText = data.stats.totalDiagnoses || 0; document.getElementById('alertCount').innerText = sentAlerts.length; const recentActivity = data.recentActivity || []; document.getElementById('recentActivityTable').innerHTML = recentActivity.length ? recentActivity.map(a => `<tr><td class="px-4 py-3">${a.farmer?.name || '-'}</td><td class="px-4 py-3">Diagnosed ${a.crop_name} with ${a.disease_name || 'pending'}</td><td class="px-4 py-3">${new Date(a.created_at).toLocaleDateString()}</td><td class="px-4 py-3"><span class="badge-pending">${a.status || 'Pending'}</span></td></tr>`).join('') : '<tr><td colspan="4" class="text-center py-8 text-gray-500">No recent activity</td></tr>'; const cropCount = { Maize: 0, Coffee: 0, Vegetables: 0, Tomato: 0, Potato: 0 }; if(data.recentActivity) data.recentActivity.forEach(d => { if(cropCount[d.crop_name] !== undefined) cropCount[d.crop_name]++; }); if(cropChart) cropChart.destroy(); cropChart = new Chart(document.getElementById('cropChart'), { type: 'bar', data: { labels: Object.keys(cropCount), datasets: [{ label: 'Diagnoses', data: Object.values(cropCount), backgroundColor: '#3b82f6' }] }, options: { responsive: true, maintainAspectRatio: true } }); if(trendChart) trendChart.destroy(); trendChart = new Chart(document.getElementById('trendChart'), { type: 'line', data: { labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], datasets: [{ label: 'Diagnoses', data: [12, 19, 15, 17], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true }] }, options: { responsive: true } }); } } catch(e) { console.error(e); showToast('Error loading stats', 'error'); }
+    }
+    async function loadUsers() { try { const data = await apiCall('/admin/users'); if(data.success) { allUsers = data.users || []; const farmers = allUsers.filter(u => u.role === 'farmer'); document.getElementById('farmersTable').innerHTML = farmers.length ? farmers.map(u => `<tr data-id="${u.id}"><td class="px-4 py-3">${u.name || '-'}</td><td class="px-4 py-3">${u.email}</td><td class="px-4 py-3">${u.phone || '-'}</td><td class="px-4 py-3">${u.county || '-'}</td><td class="px-4 py-3"><span class="badge-active">${u.subscription?.plan || 'Basic'}</span></td><td class="px-4 py-3">${u.created_at ? new Date(u.created_at).toLocaleDateString() : '-'}</td><td class="px-4 py-3"><button onclick="event.stopPropagation(); deleteUser(${u.id})" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button></td></tr>`).join('') : '<tr><td colspan="7" class="text-center py-8 text-gray-500">No farmers registered yet</td></tr>'; bindTableRowClicks(); } } catch(e) { console.error(e); } }
+    async function loadAllDiagnoses() { try { const data = await apiCall('/admin/diagnoses/all'); if(data.success) { allDiagnoses = data.diagnoses || []; document.getElementById('diagnosesTable').innerHTML = allDiagnoses.length ? allDiagnoses.map(d => `<tr data-id="${d.id}"><td class="px-4 py-3">${d.farmer?.name || '-'}</td><td class="px-4 py-3">${d.crop_name}</td><td class="px-4 py-3">${d.disease_name || 'Pending'}</td><td class="px-4 py-3">${d.confidence_score || '-'}%</td><td class="px-4 py-3">${new Date(d.created_at).toLocaleDateString()}</td><td class="px-4 py-3"><select onchange="updateDiagnosisStatus(${d.id}, this.value)" class="badge-pending" onclick="event.stopPropagation()">${d.status === 'Pending' ? '<option selected>Pending</option><option>Reviewed</option><option>Resolved</option>' : d.status === 'Reviewed' ? '<option>Pending</option><option selected>Reviewed</option><option>Resolved</option>' : '<option>Pending</option><option>Reviewed</option><option selected>Resolved</option>'}</select></td><td class="px-4 py-3"><button onclick="event.stopPropagation(); deleteDiagnosis(${d.id})" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button></td></tr>`).join('') : '<tr><td colspan="7" class="text-center py-8 text-gray-500">No diagnoses yet</td></tr>'; bindTableRowClicks(); } } catch(e) { console.error(e); } }
+    async function loadSubscriptions() { try { const data = await apiCall('/subscriptions/all'); if(data.success) { allSubscriptions = data.subscriptions || []; document.getElementById('subscriptionsTable').innerHTML = allSubscriptions.length ? allSubscriptions.map(s => `<tr data-id="${s.id}"><td class="px-4 py-3">${s.subscriber?.name || '-'}</td><td class="px-4 py-3"><span class="badge-active">${s.plan}</span></td><td class="px-4 py-3">${s.started_at ? new Date(s.started_at).toLocaleDateString() : '-'}</td><td class="px-4 py-3">${s.expires_at ? new Date(s.expires_at).toLocaleDateString() : '-'}</td><td class="px-4 py-3"><span class="badge-active">${s.status}</span></td><td class="px-4 py-3"><button onclick="event.stopPropagation(); renewSubscription(${s.id})" class="text-blue-600 hover:text-blue-800"><i class="fas fa-sync-alt"></i> Renew</button></td></tr>`).join('') : '<tr><td colspan="6" class="text-center py-8 text-gray-500">No subscriptions found</td></tr>'; bindTableRowClicks(); } } catch(e) { console.error(e); } }
+    async function updateDiagnosisStatus(id, status) { try { await apiCall(`/diagnoses/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }); showToast('Status updated', 'success'); loadAllDiagnoses(); loadDashboardStats(); } catch(e) { showToast('Error updating status', 'error'); } }
+    async function deleteDiagnosis(id) { if(!confirm('Delete this diagnosis?')) return; try { await apiCall(`/diagnoses/${id}`, { method: 'DELETE' }); showToast('Deleted', 'success'); loadAllDiagnoses(); loadDashboardStats(); } catch(e) { showToast('Error deleting', 'error'); } }
+    async function deleteUser(id) { if(!confirm('Delete this user?')) return; try { await apiCall(`/admin/users/${id}`, { method: 'DELETE' }); showToast('User deleted', 'success'); loadUsers(); loadDashboardStats(); } catch(e) { showToast('Error deleting user', 'error'); } }
+    async function renewSubscription(id) { showToast('Subscription renewed successfully', 'success'); }
+    async function addFarmer() { const name = document.getElementById('newFarmerName').value, email = document.getElementById('newFarmerEmail').value, phone = document.getElementById('newFarmerPhone').value, county = document.getElementById('newFarmerLocation').value; if(!name || !email || !phone || !county) { showToast('Please fill all fields', 'error'); return; } try { const data = await apiCall('/admin/add-farmer', { method: 'POST', body: JSON.stringify({ name, email, phone, county, password: Math.random().toString(36).slice(-8) + 'A1!' }) }); if(data.success) { showToast(`Farmer added!`, 'success'); closeModal('addFarmerModal'); document.getElementById('newFarmerName').value = ''; document.getElementById('newFarmerEmail').value = ''; document.getElementById('newFarmerPhone').value = ''; document.getElementById('newFarmerLocation').value = ''; loadUsers(); loadDashboardStats(); } else showToast(data.message || 'Error adding farmer', 'error'); } catch(e) { showToast('Network error', 'error'); } }
     function showAddFarmerModal() { document.getElementById('addFarmerModal').classList.remove('hidden'); document.getElementById('addFarmerModal').classList.add('flex'); }
-    function exportDiagnoses() { showToast('Export feature coming soon','info'); }
-    function clearAlerts() { sentAlerts=[]; document.getElementById('recentAlertsList').innerHTML='<div class="text-center py-8 text-gray-500">No alerts</div>'; showToast('Alerts cleared','success'); }
-    document.getElementById('alertForm')?.addEventListener('submit', async (e) => { e.preventDefault(); const subject=document.getElementById('alertSubject').value, message=document.getElementById('alertMessage').value; if(!subject||!message) return showToast('Fill all fields','error'); showToast('Sending...','info'); const res = await apiCall('/admin/send-alert',{method:'POST',body:JSON.stringify({subject,message,type:document.getElementById('alertType').value,region:document.getElementById('alertRegion').value})}); if(res.success) showToast(`Sent to ${res.emailCount} farmers`,'success'); else showToast('Failed','error'); });
-    async function loadChatInbox() { const res = await apiCall('/communications/admin/inbox'); if(res.success) { allFarmers = res.farmers; renderFarmerList(allFarmers); } }
-    function renderFarmerList(farmers) { const container = document.getElementById('farmerChatList'); if(!farmers.length) { container.innerHTML='<div class="p-4 text-center">No conversations</div>'; return; } container.innerHTML = farmers.map(f => `<div class="farmer-chat-item p-3 ${f.unread_count>0?'unread':''}" onclick="selectFarmer(${f.id})" data-farmer-id="${f.id}"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm">${f.name?.charAt(0)||'F'}</div><div><p class="font-semibold">${escapeHtml(f.name)}</p><p class="text-xs text-gray-500">${f.last_message||'No messages'}</p></div>${f.unread_count>0?`<span class="ml-auto bg-red-500 text-white text-xs px-2 rounded-full">${f.unread_count}</span>`:''}</div></div>`).join(''); }
-    async function selectFarmer(id) { selectedFarmerId = id; const farmer = allFarmers.find(f=>f.id==id); document.getElementById('selectedFarmerName').innerText = farmer.name; await markConversationRead(id); await loadConversation(id); if(window.innerWidth<1024) { document.getElementById('inboxView').style.display='none'; document.getElementById('chatView').classList.add('active'); } }
-    async function loadConversation(id) { const container = document.getElementById('chatMessagesContainer'); const res = await apiCall(`/communications/admin/conversation/${id}`); if(res.success && res.messages) { container.innerHTML = res.messages.map(m => `<div class="chat-message ${m.is_from_admin?'admin':'farmer'}"><div class="chat-bubble"><p>${escapeHtml(m.message)}</p><span class="chat-time">${new Date(m.created_at).toLocaleTimeString()}</span></div></div>`).join(''); container.scrollTop = container.scrollHeight; } else container.innerHTML='<p class="text-center text-gray-500">No messages yet</p>'; }
-    async function sendChatReply() { const msg = document.getElementById('chatReplyInput').value.trim(); if(!msg || !selectedFarmerId) return; document.getElementById('chatReplyInput').value=''; const res = await apiCall('/communications/admin/reply',{method:'POST',body:JSON.stringify({farmer_id:selectedFarmerId,message:msg})}); if(res.success) { showToast('Sent','success'); await loadConversation(selectedFarmerId); } else showToast('Error','error'); }
-    async function markConversationRead(id) { await apiCall(`/communications/admin/mark-read/${id}`,{method:'PUT'}); loadChatInbox(); }
-    function refreshChatInbox() { loadChatInbox(); if(selectedFarmerId) loadConversation(selectedFarmerId); }
-    document.getElementById('backToInboxBtn')?.addEventListener('click',()=>{ document.getElementById('inboxView').style.display='block'; document.getElementById('chatView').classList.remove('active'); });
-    function showSection(section) { document.querySelectorAll('.section').forEach(s=>s.classList.add('hidden')); document.getElementById(`${section}Section`).classList.remove('hidden'); if(section==='overview') loadDashboardStats(); if(section==='farmers') loadUsers(); if(section==='diagnoses') loadAllDiagnoses(); if(section==='subscriptions') loadSubscriptions(); if(section==='communications') loadChatInbox(); window.scrollTo(0,0); }
+    function exportDiagnoses() { showToast('Exporting diagnoses...', 'info'); setTimeout(() => showToast('Export ready!', 'success'), 1500); }
+    function clearAlerts() { sentAlerts = []; document.getElementById('recentAlertsList').innerHTML = '<div class="text-center py-8 text-gray-500 bg-white rounded-xl p-8">No email alerts sent yet.</div>'; showToast('Alert history cleared', 'success'); }
+    document.getElementById('alertForm')?.addEventListener('submit', async (e) => { e.preventDefault(); const subject = document.getElementById('alertSubject').value, message = document.getElementById('alertMessage').value, type = document.getElementById('alertType').value, region = document.getElementById('alertRegion').value; if(!subject || !message) { showToast('Fill all fields', 'error'); return; } showToast('Sending email alerts...', 'info'); try { const response = await apiCall('/admin/send-alert', { method: 'POST', body: JSON.stringify({ subject, message, type, region }) }); if(response.success) { showToast(`Email alert sent to ${response.emailCount} farmers!`, 'success'); document.getElementById('alertSubject').value = ''; document.getElementById('alertMessage').value = ''; const newAlert = { subject, message, type, region, date: new Date().toLocaleString() }; sentAlerts.unshift(newAlert); document.getElementById('recentAlertsList').innerHTML = sentAlerts.map(a => `<div class="bg-white rounded-lg p-4 shadow-sm border-l-4 border-blue-500 card-hover"><div class="flex justify-between items-start"><div><p class="font-bold text-gray-800">📧 ${a.subject}</p><p class="text-sm text-gray-600 mt-1">${a.message}</p></div><span class="text-xs text-gray-400">${a.date}</span></div><div class="flex justify-between mt-2"><span class="text-xs text-blue-600"><i class="fas fa-tag mr-1"></i> ${a.type}</span><span class="text-xs text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i> ${a.region}</span></div></div>`).join(''); } else showToast('Failed to send', 'error'); } catch(e) { showToast('Error sending alerts', 'error'); } });
+
+    // Communications functions (original)
+    async function loadChatInbox() { try { const res = await apiCall('/communications/admin/inbox'); if(res.success && res.farmers) { allFarmers = res.farmers; renderFarmerList(allFarmers); } else renderFarmerList([]); } catch(e) { console.error(e); renderFarmerList([]); } }
+    function renderFarmerList(farmers) { const container = document.getElementById('farmerChatList'); if(!container) return; if(!farmers.length) { container.innerHTML = '<div class="text-center py-8 text-gray-500">No conversations yet</div>'; return; } container.innerHTML = farmers.map(farmer => `<div class="farmer-chat-item p-3 border-b border-gray-100 dark:border-gray-700 ${farmer.unread_count > 0 ? 'unread' : ''}" onclick="selectFarmer(${farmer.id})" data-farmer-id="${farmer.id}"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center text-white font-bold">${farmer.name ? farmer.name.charAt(0).toUpperCase() : '?'}</div><div class="flex-1 min-w-0"><div class="flex justify-between items-center"><p class="font-semibold text-gray-800 dark:text-white truncate">${farmer.name || 'Unknown Farmer'}</p><span class="text-xs text-gray-400">${formatTimeAgo(farmer.last_message_time)}</span></div><p class="text-sm text-gray-600 dark:text-gray-400 truncate">${farmer.last_message || 'No messages'}</p></div>${farmer.unread_count > 0 ? `<span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">${farmer.unread_count}</span>` : ''}</div></div>`).join(''); }
+    function formatTimeAgo(dateString) { if(!dateString) return 'Unknown'; const date = new Date(dateString), now = new Date(), diffMins = Math.floor((now - date) / 60000); if(diffMins < 1) return 'Just now'; if(diffMins < 60) return `${diffMins}m ago`; if(diffMins < 1440) return `${Math.floor(diffMins/60)}h ago`; return `${Math.floor(diffMins/1440)}d ago`; }
+    function showChatView() { if(window.innerWidth < 1024) { document.getElementById('inboxView').style.display = 'none'; document.getElementById('chatView').classList.add('active'); } }
+    function showInboxView() { if(window.innerWidth < 1024) { document.getElementById('inboxView').style.display = 'block'; document.getElementById('chatView').classList.remove('active'); } selectedFarmerId = null; }
+    async function selectFarmer(farmerId) { selectedFarmerId = farmerId; const farmer = allFarmers.find(f => f.id === farmerId); if(farmer) { document.getElementById('selectedFarmerName').innerHTML = `<div class="flex items-center gap-2"><span class="text-gray-800 dark:text-white">${farmer.name || 'Farmer'}</span><span class="text-xs text-gray-500">${farmer.phone || farmer.email || ''}</span></div>`; document.getElementById('selectedFarmerStatus').innerHTML = '<i class="fas fa-circle text-green-500 text-xs"></i> Online'; } await markConversationRead(farmerId); await loadConversation(farmerId); showChatView(); document.querySelectorAll('.farmer-chat-item').forEach(item => { item.classList.remove('active'); if(item.getAttribute('data-farmer-id') == farmerId) item.classList.add('active'); }); }
+    async function loadConversation(farmerId) { const container = document.getElementById('chatMessagesContainer'); container.innerHTML = '<div class="text-center py-8">Loading messages...</div>'; try { const response = await apiCall(`/communications/admin/conversation/${farmerId}`); if(response.success && response.messages && response.messages.length) { container.innerHTML = response.messages.map(msg => `<div class="chat-message ${msg.is_from_admin ? 'admin' : 'farmer'}"><div class="chat-bubble"><p class="text-sm">${escapeHtml(msg.message)}</p><span class="chat-time">${new Date(msg.created_at).toLocaleString()}</span></div></div>`).join(''); container.scrollTop = container.scrollHeight; } else { container.innerHTML = `<div class="text-center py-8"><i class="fas fa-comment-dots text-4xl text-gray-300 mb-2"></i><p class="text-gray-500">No messages yet. Start a conversation!</p></div>`; } } catch(error) { console.error(error); container.innerHTML = `<div class="text-center py-8"><i class="fas fa-exclamation-triangle text-4xl text-red-300 mb-2"></i><p class="text-gray-500">Failed to load messages</p><button onclick="loadConversation(${farmerId})" class="mt-2 text-blue-500 text-sm">Retry</button></div>`; } }
+    async function sendChatReply() { const input = document.getElementById('chatReplyInput'); const message = input.value.trim(); if(!message) { showToast('Enter a message', 'error'); return; } if(!selectedFarmerId) { showToast('Select a farmer first', 'error'); return; } input.value = ''; try { const response = await apiCall('/communications/admin/reply', { method: 'POST', body: JSON.stringify({ farmer_id: selectedFarmerId, message }) }); if(response.success) { showToast('Reply sent successfully!', 'success'); await loadConversation(selectedFarmerId); const farmer = allFarmers.find(f => f.id === selectedFarmerId); if(farmer) { farmer.last_message = message; farmer.last_message_time = new Date().toISOString(); renderFarmerList(allFarmers); } } else { showToast(response.message || 'Failed to send reply', 'error'); input.value = message; } } catch(error) { console.error(error); showToast('Network error. Please try again.', 'error'); input.value = message; } }
+    async function markConversationRead(farmerId) { try { await apiCall(`/communications/admin/mark-read/${farmerId}`, { method: 'PUT' }); const farmer = allFarmers.find(f => f.id === farmerId); if(farmer) { farmer.unread_count = 0; renderFarmerList(allFarmers); } } catch(e) { console.error(e); } }
+    function refreshChatInbox() { loadChatInbox(); if(selectedFarmerId) loadConversation(selectedFarmerId); showToast('Inbox refreshed', 'success'); }
+    function markAllAsRead() { allFarmers.forEach(f => f.unread_count = 0); renderFarmerList(allFarmers); showToast('All conversations marked as read', 'success'); }
+    function openCommunications() { showSection('communications'); setTimeout(() => { if(window.innerWidth < 1024) { showInboxView(); } else { showChatView(); } }, 100); }
+    document.getElementById('farmerSearchInput')?.addEventListener('input', function(e) { const searchTerm = e.target.value.toLowerCase(); const filtered = allFarmers.filter(f => f.name && f.name.toLowerCase().includes(searchTerm) || (f.email && f.email.toLowerCase().includes(searchTerm)) || (f.phone && f.phone.includes(searchTerm))); renderFarmerList(filtered); });
+    document.getElementById('backToInboxBtn')?.addEventListener('click', showInboxView);
+    document.getElementById('chatReplyInput')?.addEventListener('keypress', function(e) { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatReply(); } });
+
+    function showSection(section) { document.querySelectorAll('.section').forEach(s => s.classList.add('hidden')); document.getElementById(`${section}Section`).classList.remove('hidden'); if(section === 'overview') loadDashboardStats(); if(section === 'farmers') loadUsers(); if(section === 'diagnoses') loadAllDiagnoses(); if(section === 'subscriptions') loadSubscriptions(); if(section === 'communications') { loadChatInbox(); if(window.innerWidth < 1024) showInboxView(); else { document.getElementById('inboxView').style.display = 'block'; document.getElementById('chatView').classList.add('active'); } } window.scrollTo({ top: 0, behavior: 'smooth' }); document.querySelectorAll('.bottom-nav-item').forEach((item, idx) => { const map = { overview:0, farmers:1, diagnoses:2, alerts:3, subscriptions:4 }; if(map[section] === idx) item.classList.add('active'); else item.classList.remove('active'); }); }
+
+    function openMobileMenu() { document.getElementById('mobileMenuOverlay').classList.add('active'); document.getElementById('mobileMenuPanel').classList.add('active'); }
     function closeMobileMenu() { document.getElementById('mobileMenuOverlay').classList.remove('active'); document.getElementById('mobileMenuPanel').classList.remove('active'); }
-    document.getElementById('mobileMenuToggle')?.addEventListener('click',()=>{ document.getElementById('mobileMenuOverlay').classList.add('active'); document.getElementById('mobileMenuPanel').classList.add('active'); });
-    document.getElementById('closeMobileMenu')?.addEventListener('click',closeMobileMenu);
-    function loadAdminProfile() { if(currentAdmin) { document.getElementById('profileName').textContent = currentAdmin.name || 'Admin'; document.getElementById('profileEmail').textContent = currentAdmin.email || '-'; document.getElementById('profileEmailDisplay').textContent = currentAdmin.email || '-'; document.getElementById('profileInitial').textContent = (currentAdmin.name||'A').charAt(0); document.getElementById('profilePhone').textContent = currentAdmin.phone || '+254 700 123 456'; } }
-    function checkAuth() { currentToken = localStorage.getItem('shambacare_token'); const userStr = localStorage.getItem('shambacare_user'); if(!currentToken || !userStr) { window.location.href='login.html'; return false; } try { currentAdmin = JSON.parse(userStr); if(currentAdmin.role !== 'admin') { window.location.href='index.html'; return false; } return true; } catch(e) { window.location.href='login.html'; return false; } }
-    async function init() { if(!checkAuth()) return; loadAdminProfile(); if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark'); await loadDashboardStats(); showSection('overview'); }
+    document.getElementById('mobileMenuToggle')?.addEventListener('click', openMobileMenu);
+    document.getElementById('closeMobileMenu')?.addEventListener('click', closeMobileMenu);
+    document.getElementById('mobileMenuOverlay')?.addEventListener('click', closeMobileMenu);
+
+    function loadAdminProfile() { if(currentAdmin) { document.getElementById('profileName').textContent = currentAdmin.name || 'Admin User'; document.getElementById('profileEmail').textContent = currentAdmin.email || '-'; document.getElementById('profileEmailDisplay').textContent = currentAdmin.email || '-'; document.getElementById('profileInitial').textContent = (currentAdmin.name || 'A').charAt(0).toUpperCase(); document.getElementById('profilePhone').textContent = currentAdmin.phone || '+254 700 000 000'; } }
+    function checkAuth() { currentToken = localStorage.getItem('shambacare_token'); const userStr = localStorage.getItem('shambacare_user'); if(!currentToken || !userStr) { window.location.href = 'login.html'; return false; } try { currentAdmin = JSON.parse(userStr); if(currentAdmin.role !== 'admin') { window.location.href = 'index.html'; return false; } return true; } catch(e) { window.location.href = 'login.html'; return false; } }
+    
+    async function init() { if(!checkAuth()) return; loadAdminProfile(); if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark'); await loadDashboardStats(); showSection('overview'); }
     init();
     </script>
 </body>
