@@ -715,8 +715,7 @@
                 showToast('Network error. Please try again.', 'error');
             }
         }
-
-      // ==================== AUTHENTICATION ====================
+// ==================== AUTHENTICATION ====================
 function checkAuth() {
     currentToken = localStorage.getItem('shambacare_token');
     const userStr = localStorage.getItem('shambacare_user');
@@ -726,13 +725,11 @@ function checkAuth() {
     }
     try {
         currentUser = JSON.parse(userStr);
-        // If user is admin but is allowed to access farmer portal (allowFarmerPortal === true), let them stay.
+        // ✅ Allow admin to stay on farmer portal if backend sends allowFarmerPortal === true
         if (currentUser.role === 'admin' && !currentUser.allowFarmerPortal) { 
             window.location.href = 'admin.html'; 
             return false; 
         }
-        // If role is farmer, continue normally.
-        // If role is admin and allowFarmerPortal is true, we do NOT redirect.
         return true;
     } catch(e) { 
         window.location.href = 'login.html'; 
@@ -746,85 +743,84 @@ function handleLogout() {
 }
 
 function loadUserProfile() {
-            if (currentUser) {
-                document.getElementById('farmerName').textContent = currentUser.name || 'Farmer';
-                document.getElementById('profileName').textContent = currentUser.name || 'Farmer';
-                document.getElementById('profileEmail').textContent = currentUser.email || '-';
-                document.getElementById('profilePhone').textContent = currentUser.phone || '-';
-                document.getElementById('profileCounty').textContent = currentUser.county || 'Kenya';
-                document.getElementById('userCounty').textContent = (currentUser.county || 'Kenya') + ' County';
-                document.getElementById('profileInitial').textContent = (currentUser.name || 'F').charAt(0).toUpperCase();
-            }
-        }
-        
-        function showToast(msg, type) { 
-            const toast = document.createElement('div'); 
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>${msg}`; 
-            document.body.appendChild(toast); 
-            setTimeout(() => toast.remove(), 3000); 
-        }
-        
-        function scrollToSection(id) { 
-            const element = document.getElementById(id);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
-                if (id === 'support') {
-                    loadChatMessages();
-                }
-            }
-        }
-        
-        function openProfileModal() { 
-            document.getElementById('profileModal').classList.remove('hidden'); 
-            document.getElementById('profileModal').classList.add('flex'); 
-        }
-        
-        function closeModal(id) { 
-            const modal = document.getElementById(id);
-            if (modal) {
-                modal.classList.add('hidden'); 
-                modal.classList.remove('flex');
-            }
-        }
-        
-        function openChatModal() { 
-            document.getElementById('chatModal').classList.remove('hidden'); 
-            document.getElementById('chatModal').classList.add('flex'); 
-        }
-        
-        function closeChatModal() { 
-            document.getElementById('chatModal').classList.add('hidden'); 
-            document.getElementById('chatModal').classList.remove('flex'); 
-        }
-        
-        function sendChatMessage() { 
-            const input = document.getElementById('chatMessage'); 
-            if (input.value.trim()) { 
-                showToast('Message sent! Support will respond shortly.', 'success'); 
-                input.value = ''; 
-                closeChatModal();
-            } 
-        }
-        
-        function showGlobalTasks() { 
-            loadAllTasks();
-        }
-        
-        function subscribeNewsletter() { 
-            const email = document.getElementById('newsletterEmail').value; 
-            if (email && email.includes('@')) { 
-                showToast('Subscribed successfully!', 'success'); 
-                document.getElementById('newsletterEmail').value = ''; 
-            } else showToast('Please enter a valid email', 'error'); 
-        }
-        
-        function toggleLanguage() { 
-            currentLang = currentLang === 'en' ? 'sw' : 'en'; 
-            document.getElementById('langBtnText').innerHTML = currentLang === 'en' ? 'English' : 'Kiswahili'; 
-            showToast(`Language changed to ${currentLang === 'en' ? 'English' : 'Kiswahili'}`, 'info'); 
-        }
+    if (currentUser) {
+        document.getElementById('farmerName').textContent = currentUser.name || 'Farmer';
+        document.getElementById('profileName').textContent = currentUser.name || 'Farmer';
+        document.getElementById('profileEmail').textContent = currentUser.email || '-';
+        document.getElementById('profilePhone').textContent = currentUser.phone || '-';
+        document.getElementById('profileCounty').textContent = currentUser.county || 'Kenya';
+        document.getElementById('userCounty').textContent = (currentUser.county || 'Kenya') + ' County';
+        document.getElementById('profileInitial').textContent = (currentUser.name || 'F').charAt(0).toUpperCase();
+    }
+}
 
+function showToast(msg, type) { 
+    const toast = document.createElement('div'); 
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>${msg}`; 
+    document.body.appendChild(toast); 
+    setTimeout(() => toast.remove(), 3000); 
+}
+
+function scrollToSection(id) { 
+    const element = document.getElementById(id);
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+        if (id === 'support') {
+            loadChatMessages();
+        }
+    }
+}
+
+function openProfileModal() { 
+    document.getElementById('profileModal').classList.remove('hidden'); 
+    document.getElementById('profileModal').classList.add('flex'); 
+}
+
+function closeModal(id) { 
+    const modal = document.getElementById(id);
+    if (modal) {
+        modal.classList.add('hidden'); 
+        modal.classList.remove('flex');
+    }
+}
+
+function openChatModal() { 
+    document.getElementById('chatModal').classList.remove('hidden'); 
+    document.getElementById('chatModal').classList.add('flex'); 
+}
+
+function closeChatModal() { 
+    document.getElementById('chatModal').classList.add('hidden'); 
+    document.getElementById('chatModal').classList.remove('flex'); 
+}
+
+function sendChatMessage() { 
+    const input = document.getElementById('chatMessage'); 
+    if (input.value.trim()) { 
+        showToast('Message sent! Support will respond shortly.', 'success'); 
+        input.value = ''; 
+        closeChatModal();
+    } 
+}
+
+function showGlobalTasks() { 
+    loadAllTasks();
+}
+
+function subscribeNewsletter() { 
+    const email = document.getElementById('newsletterEmail').value; 
+    if (email && email.includes('@')) { 
+        showToast('Subscribed successfully!', 'success'); 
+        document.getElementById('newsletterEmail').value = ''; 
+    } else showToast('Please enter a valid email', 'error'); 
+}
+
+function toggleLanguage() { 
+    currentLang = currentLang === 'en' ? 'sw' : 'en'; 
+    document.getElementById('langBtnText').innerHTML = currentLang === 'en' ? 'English' : 'Kiswahili'; 
+    showToast(`Language changed to ${currentLang === 'en' ? 'English' : 'Kiswahili'}`, 'info'); 
+}
         // ==================== FARM MANAGEMENT ====================
         async function generateFarmTasks(farmId, cropName, plantingDate) {
             try {
