@@ -58,7 +58,8 @@ router.post('/signup', async (req, res) => {
                 email: user.email, 
                 phone: user.phone, 
                 county: user.county, 
-                role: user.role 
+                role: user.role,
+                allowFarmerPortal: user.role === 'admin' ? true : false  // admin can access farmer portal
             } 
         });
     } catch (error) {
@@ -68,7 +69,6 @@ router.post('/signup', async (req, res) => {
 });
 
 // ==================== LOGIN ====================
-// Removed role parameter - system automatically determines user role
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -85,7 +85,9 @@ router.post('/login', async (req, res) => {
         const token = generateToken(user.id);
         await user.update({ last_login: new Date() });
         
-        // Return user with role - frontend will redirect based on this
+        // Admin users are allowed to access both admin and farmer portals
+        const allowFarmerPortal = (user.role === 'admin') ? true : false;
+        
         res.json({ 
             success: true, 
             message: 'Login successful', 
@@ -96,7 +98,8 @@ router.post('/login', async (req, res) => {
                 email: user.email, 
                 phone: user.phone, 
                 county: user.county, 
-                role: user.role 
+                role: user.role,
+                allowFarmerPortal: allowFarmerPortal
             } 
         });
     } catch (error) {
@@ -298,6 +301,8 @@ router.post('/google', async (req, res) => {
         const token = generateToken(user.id);
         await user.update({ last_login: new Date() });
         
+        const allowFarmerPortal = (user.role === 'admin') ? true : false;
+        
         console.log('🎉 Google login successful for:', email);
         
         res.json({
@@ -311,7 +316,8 @@ router.post('/google', async (req, res) => {
                 phone: user.phone,
                 county: user.county,
                 role: user.role,
-                profile_image: user.profile_image
+                profile_image: user.profile_image,
+                allowFarmerPortal: allowFarmerPortal
             }
         });
         
@@ -335,6 +341,25 @@ router.post('/google', async (req, res) => {
             res.status(401).json({ success: false, message: 'Invalid Google token: ' + error.message });
         }
     }
+});
+
+// ==================== CHECK ACCESS FOR FARMER PORTAL ====================
+// This endpoint can be called by the frontend to determine if the current user
+// is allowed to view farmer pages (always true for admin, true for farmers)
+router.get('/access-info', async (req, res) => {
+    // Note: This route would normally be protected by an auth middleware.
+    // The actual implementation depends on your auth middleware.
+    // For now, we assume a middleware that sets req.user.
+    if (!req.user) {
+        return res.status(401).json({ success: false, message: 'Not authenticated' });
+    }
+    const canAccessFarmerPortal = (req.user.role === 'admin' || req.user.role === 'farmer');
+    res.json({
+        success: true,
+        role: req.user.role,
+        canAccessFarmerPortal: canAccessFarmerPortal,
+        message: canAccessFarmerPortal ? 'You can access the farmer portal' : 'Access denied'
+    });
 });
 
 // ==================== TEST ROUTE ====================
