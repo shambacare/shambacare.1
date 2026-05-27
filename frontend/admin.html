@@ -19,7 +19,7 @@
         @keyframes kenBurns { 0% { transform: scale(1) translateX(0); } 100% { transform: scale(1.1) translateX(-2%); } }
         .background-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.85) 100%); z-index: -1; }
         
-        /* ===== KENYA BLUE GRADIENT (Light mode) ===== */
+        /* ===== KENYA BLUE GRADIENT ===== */
         .gradient-text {
             background: linear-gradient(135deg, #1e40af, #3b82f6);
             -webkit-background-clip: text;
@@ -150,7 +150,7 @@
         .stat-card p:first-child { color: #6b7280; }
         .stat-card .font-bold { color: #1e293b; }
         
-        /* Communications container - original styles */
+        /* Communications container - original styles + light mode fix for names */
         .communications-container { background: white; border-radius: 1rem; overflow: hidden; position: relative; min-height: 500px; border: 1px solid #e5e7eb; }
         .inbox-view, .chat-view { transition: transform 0.3s ease; }
         .inbox-view { display: block; }
@@ -178,6 +178,14 @@
         .farmer-chat-item:hover { background-color: #f3f4f6; }
         .farmer-chat-item.active { background-color: #e5e7eb; border-left-color: #3b82f6; }
         .farmer-chat-item.unread { background-color: #eff6ff; }
+        /* Light mode fix: ensure farmer names are visible */
+        body:not(.dark) .farmer-chat-item .font-semibold,
+        body:not(.dark) .farmer-chat-item .text-gray-800 {
+            color: #0f172a !important;
+        }
+        body:not(.dark) .farmer-chat-item .text-gray-600 {
+            color: #334155 !important;
+        }
         .back-to-inbox { display: inline-flex; align-items: center; gap: 0.5rem; background: none; border: none; color: #3b82f6; font-weight: 500; cursor: pointer; margin-right: auto; }
         
         /* Profile modal */
@@ -225,6 +233,24 @@
         .dark .stat-card p:first-child { color: #94a3b8; }
         .dark .chat-messages-scroll { background-color: #0f172a; }
         .dark .communications-container { border-color: #334155; }
+        
+        /* Floating message icon (restored) */
+        .float-message-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+        .float-message-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 20px 30px -10px rgba(0,0,0,0.25);
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -284,7 +310,7 @@
         </div>
     </div>
 
-    <!-- Profile Modal (Phone replaced Member Since) -->
+    <!-- Profile Modal (duplicate email line removed) -->
     <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('profileModal')">
         <div class="profile-modal-content rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
             <div class="p-4 border-b rounded-t-2xl flex justify-between items-center">
@@ -294,11 +320,10 @@
             <div class="p-5 space-y-4">
                 <div class="flex items-center gap-4">
                     <div class="w-16 h-16 rounded-full admin-profile-icon flex items-center justify-center text-white text-2xl font-bold"><span id="profileInitial">A</span></div>
-                    <div><h4 class="font-bold text-gray-800 dark:text-yellow-400" id="profileName">Admin User</h4><p class="text-sm text-gray-500 dark:text-gray-400" id="profileEmail">-</p></div>
+                    <div><h4 class="font-bold text-gray-800 dark:text-yellow-400" id="profileName">Admin User</h4><p class="text-sm text-gray-500 dark:text-gray-400" id="profileEmailDisplay">-</p></div>
                 </div>
                 <div class="space-y-3">
                     <div class="flex justify-between py-2 border-b dark:border-gray-700"><span class="text-gray-700 dark:text-gray-400"><i class="fas fa-tachometer-alt w-6 text-blue-600"></i> Role</span><span class="font-semibold text-gray-800 dark:text-gray-300">System Administrator</span></div>
-                    <div class="flex justify-between py-2 border-b dark:border-gray-700"><span class="text-gray-700 dark:text-gray-400"><i class="fas fa-envelope w-6 text-blue-600"></i> Email</span><span class="text-gray-800 dark:text-gray-300" id="profileEmailDisplay">-</span></div>
                     <div class="flex justify-between py-2 border-b dark:border-gray-700"><span class="text-gray-700 dark:text-gray-400"><i class="fas fa-phone w-6 text-green-600"></i> Phone Number</span><span class="text-gray-800 dark:text-yellow-400" id="profilePhone">+254 700 123 456</span></div>
                 </div>
                 <button onclick="handleLogout()" class="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition font-semibold"><i class="fas fa-sign-out-alt mr-2"></i> Sign Out</button>
@@ -315,7 +340,7 @@
     </div>
 
     <div class="container mx-auto px-4 py-6 max-w-7xl">
-        <!-- OVERVIEW SECTION (unchanged) -->
+        <!-- OVERVIEW SECTION -->
         <div id="overviewSection" class="section">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <div class="stat-card card-hover" onclick="showSection('farmers')"><div class="flex justify-between items-start"><div><p class="text-sm">Total Farmers</p><p class="text-3xl font-bold" id="totalFarmers">0</p></div><i class="fas fa-users text-3xl text-green-500 opacity-50"></i></div><div class="mt-2 text-xs text-green-600">Click to view all farmers →</div></div>
@@ -375,7 +400,7 @@
             <div id="recentAlertsList" class="space-y-3"><div class="text-center py-8 text-gray-500 bg-white rounded-xl p-8">No email alerts sent yet. Create your first alert above!</div></div>
         </div>
         
-        <!-- COMMUNICATIONS SECTION (fully original) -->
+        <!-- COMMUNICATIONS SECTION (fully original, with light mode name fix) -->
         <div id="communicationsSection" class="section hidden">
             <div class="section-header-container"><div><h2 class="text-xl font-bold"><i class="fas fa-comments text-green-600 mr-2"></i> Farmer Support Inbox</h2><p class="text-sm text-gray-500 mt-1">Chat with farmers individually • Respond to their queries</p></div><div class="flex gap-2"><button onclick="refreshChatInbox()" class="blue-button text-sm"><i class="fas fa-sync-alt"></i> Refresh</button><button onclick="markAllAsRead()" class="blue-button text-sm bg-gray-500"><i class="fas fa-check-double"></i> Mark all read</button></div></div>
             <div class="communications-container">
@@ -416,7 +441,12 @@
         </div>
     </div>
 
-    <!-- No WhatsApp floating button (removed) -->
+    <!-- Floating Message Icon (restored, opens communications) -->
+    <div class="fixed bottom-24 right-4 z-50">
+        <div class="float-message-btn" onclick="openCommunications()">
+            <i class="fas fa-comment-dots text-white text-2xl"></i>
+        </div>
+    </div>
 
     <script>
     const API_URL = 'https://shambacare-1.onrender.com/api';
@@ -436,9 +466,8 @@
     function showDetailModal(title, contentHtml) { document.getElementById('detailModalTitle').innerText = title; document.getElementById('detailModalBody').innerHTML = contentHtml; document.getElementById('detailModal').classList.remove('hidden'); document.getElementById('detailModal').classList.add('flex'); }
     
     function bindTableRowClicks() {
-        // Farmers row click (excluding action buttons)
         document.querySelectorAll('#farmersTable tr').forEach(row => {
-            if(row.querySelector('.fa-trash')) return; // skip if delete button exists inside? Actually we want to attach click but avoid when clicking button
+            if(row.querySelector('.fa-trash')) return;
             row.classList.add('clickable-row');
             row.onclick = (e) => { 
                 if(e.target.closest('button')) return;
@@ -447,7 +476,6 @@
                 if(farmer) showDetailModal('Farmer Details', `<div class="space-y-2"><p><strong>Name:</strong> ${farmer.name}</p><p><strong>Email:</strong> ${farmer.email}</p><p><strong>Phone:</strong> ${farmer.phone || '-'}</p><p><strong>County:</strong> ${farmer.county || '-'}</p><p><strong>Plan:</strong> ${farmer.subscription?.plan || 'Basic'}</p><p><strong>Joined:</strong> ${new Date(farmer.created_at).toLocaleDateString()}</p></div>`);
             };
         });
-        // Diagnoses row click
         document.querySelectorAll('#diagnosesTable tr').forEach(row => {
             row.classList.add('clickable-row');
             row.onclick = (e) => {
@@ -457,7 +485,6 @@
                 if(diag) showDetailModal('Diagnosis Details', `<div class="space-y-2"><p><strong>Farmer:</strong> ${diag.farmer?.name}</p><p><strong>Crop:</strong> ${diag.crop_name}</p><p><strong>Disease:</strong> ${diag.disease_name || 'Pending'}</p><p><strong>Confidence:</strong> ${diag.confidence_score || 'N/A'}%</p><p><strong>Date:</strong> ${new Date(diag.created_at).toLocaleString()}</p><p><strong>Status:</strong> ${diag.status}</p></div>`);
             };
         });
-        // Subscriptions row click
         document.querySelectorAll('#subscriptionsTable tr').forEach(row => {
             row.classList.add('clickable-row');
             row.onclick = (e) => {
@@ -510,7 +537,7 @@
     document.getElementById('closeMobileMenu')?.addEventListener('click', closeMobileMenu);
     document.getElementById('mobileMenuOverlay')?.addEventListener('click', closeMobileMenu);
 
-    function loadAdminProfile() { if(currentAdmin) { document.getElementById('profileName').textContent = currentAdmin.name || 'Admin User'; document.getElementById('profileEmail').textContent = currentAdmin.email || '-'; document.getElementById('profileEmailDisplay').textContent = currentAdmin.email || '-'; document.getElementById('profileInitial').textContent = (currentAdmin.name || 'A').charAt(0).toUpperCase(); document.getElementById('profilePhone').textContent = currentAdmin.phone || '+254 700 000 000'; } }
+    function loadAdminProfile() { if(currentAdmin) { document.getElementById('profileName').textContent = currentAdmin.name || 'Admin User'; document.getElementById('profileEmailDisplay').textContent = currentAdmin.email || '-'; document.getElementById('profileInitial').textContent = (currentAdmin.name || 'A').charAt(0).toUpperCase(); document.getElementById('profilePhone').textContent = currentAdmin.phone || '+254 700 000 000'; } }
     function checkAuth() { currentToken = localStorage.getItem('shambacare_token'); const userStr = localStorage.getItem('shambacare_user'); if(!currentToken || !userStr) { window.location.href = 'login.html'; return false; } try { currentAdmin = JSON.parse(userStr); if(currentAdmin.role !== 'admin') { window.location.href = 'index.html'; return false; } return true; } catch(e) { window.location.href = 'login.html'; return false; } }
     
     async function init() { if(!checkAuth()) return; loadAdminProfile(); if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark'); await loadDashboardStats(); showSection('overview'); }
