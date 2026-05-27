@@ -72,14 +72,14 @@
         .stat-card p:first-child { color: #6b7280; }
         .stat-card .font-bold { color: #1e293b; }
         
-        /* Communications container - light mode defaults */
-        .communications-container { background: white; border-radius: 1rem; overflow: hidden; position: relative; min-height: 500px; }
+        /* Communications container - light mode explicit */
+        .communications-container { background: white; border-radius: 1rem; overflow: hidden; position: relative; min-height: 500px; border: 1px solid #e5e7eb; }
         .inbox-view, .chat-view { transition: transform 0.3s ease; }
         .inbox-view { display: block; }
         .chat-view { display: none; }
         .chat-view.active { display: flex; flex-direction: column; height: 70vh; min-height: 500px; }
         @media (min-width: 1024px) {
-            .communications-container { display: grid; grid-template-columns: 320px 1fr; height: 70vh; }
+            .communications-container { display: grid; grid-template-columns: 320px 1fr; height: 70vh; border: none; }
             .inbox-view { display: block !important; grid-column: 1; border-right: 1px solid #e5e7eb; height: 100%; overflow-y: auto; }
             .chat-view { display: flex !important; grid-column: 2; height: 100%; }
             .back-to-inbox { display: none; }
@@ -96,14 +96,17 @@
         .chat-time { font-size: 10px; opacity: 0.7; margin-top: 4px; display: block; }
         .clickable-row { cursor: pointer; transition: background 0.2s; }
         .clickable-row:hover td { background-color: #f0fdf4 !important; }
-        .farmer-chat-item { transition: all 0.2s ease; cursor: pointer; border-left: 3px solid transparent; background: white; }
+        .farmer-chat-item { transition: all 0.2s ease; cursor: pointer; border-left: 3px solid transparent; background: white; border-bottom: 1px solid #e5e7eb; }
         .farmer-chat-item:hover { background-color: #f3f4f6; }
         .farmer-chat-item.active { background-color: #e5e7eb; border-left-color: #3b82f6; }
         .farmer-chat-item.unread { background-color: #eff6ff; }
         .back-to-inbox { display: inline-flex; align-items: center; gap: 0.5rem; background: none; border: none; color: #3b82f6; font-weight: 500; cursor: pointer; margin-right: auto; }
         .whatsapp-float { background: #25D366 !important; color: white !important; }
         
-        /* DARK MODE - complete, consistent override */
+        /* Profile modal - solid background */
+        .profile-modal-content { background: white; border-radius: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        
+        /* DARK MODE - complete consistent */
         .dark { background-color: #0f172a; }
         .dark .bg-white, .dark .bg-gray-50, .dark .bg-white\/95, .dark .stat-card, .dark .admin-table td, 
         .dark .section-header-container, .dark .profile-modal-content, .dark .communications-container, 
@@ -144,6 +147,7 @@
         .dark .stat-card p:first-child { color: #94a3b8; }
         .dark .chat-messages-scroll { background-color: #0f172a; }
         .dark #chatMessagesContainer { background-color: #0f172a; }
+        .dark .communications-container { border-color: #334155; }
     </style>
 </head>
 <body class="antialiased">
@@ -203,7 +207,7 @@
         </div>
     </div>
 
-    <!-- Profile Modal -->
+    <!-- Profile Modal - solid background fix -->
     <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('profileModal')">
         <div class="profile-modal-content rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
             <div class="p-4 border-b rounded-t-2xl flex justify-between items-center">
@@ -264,9 +268,7 @@
         <div id="diagnosesSection" class="section hidden">
             <div class="section-header-container"><h2 class="text-xl font-bold"><i class="fas fa-stethoscope text-green-600 mr-2"></i> All Farmer Diagnoses</h2><div class="flex gap-2"><button onclick="exportDiagnoses()" class="blue-button"><i class="fas fa-download"></i> Export</button></div></div>
             <div class="bg-white rounded-xl overflow-hidden shadow-lg">
-                <div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Farmer</th><th>Crop</th><th>Disease</th><th>Confidence</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="diagnosesTable"><tr><td colspan="7" class="text-center py-8 text-gray-500">Loading diagnoses...</td></tr></tbody></table></div>
-            </div>
-        </div>
+                <div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Farmer</th><th>Crop</th><th>Disease</th><th>Confidence</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="diagnosesTable"><tr><td colspan="7" class="text-center py-8 text-gray-500">Loading diagnoses...</td></tr></tbody></table></div></div></div>
         
         <!-- SUBSCRIPTIONS SECTION -->
         <div id="subscriptionsSection" class="section hidden">
@@ -277,9 +279,7 @@
                 <div class="bg-white rounded-xl p-6 text-center shadow-lg card-hover"><div class="text-2xl font-bold text-green-600">👑 Enterprise</div><div class="text-3xl font-bold mt-2">Custom</div><p class="text-sm text-gray-500 mt-2">For large farms</p><ul class="mt-4 text-sm space-y-2"><li>✓ Everything in Pro</li><li>✓ API access</li><li>✓ Dedicated support</li></ul><button class="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm">Contact Sales</button></div>
             </div>
             <div class="section-header-container mb-4"><h3 class="font-bold"><i class="fas fa-users mr-2"></i> Active Subscriptions</h3></div>
-            <div class="bg-white rounded-xl overflow-hidden shadow-lg">
-                <div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Farmer</th><th>Plan</th><th>Started</th><th>Expires</th><th>Status</th><th>Actions</th></tr></thead><tbody id="subscriptionsTable"><tr><td colspan="6" class="text-center py-8 text-gray-500">Loading subscriptions...</td></tr></tbody></table></div>
-            </div>
+            <div class="bg-white rounded-xl overflow-hidden shadow-lg"><div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Farmer</th><th>Plan</th><th>Started</th><th>Expires</th><th>Status</th><th>Actions</th></tr></thead><tbody id="subscriptionsTable"><tr><td colspan="6" class="text-center py-8 text-gray-500">Loading subscriptions...</td></tr></tbody></table></div></div>
         </div>
         
         <!-- ALERTS SECTION -->
@@ -300,7 +300,7 @@
             <div id="recentAlertsList" class="space-y-3"><div class="text-center py-8 text-gray-500 bg-white rounded-xl p-8">No email alerts sent yet. Create your first alert above!</div></div>
         </div>
         
-        <!-- COMMUNICATIONS SECTION -->
+        <!-- COMMUNICATIONS SECTION - light mode fixed -->
         <div id="communicationsSection" class="section hidden">
             <div class="section-header-container"><div><h2 class="text-xl font-bold"><i class="fas fa-comments text-green-600 mr-2"></i> Farmer Support Inbox</h2><p class="text-sm text-gray-500 mt-1">Chat with farmers individually • Respond to their queries</p></div><div class="flex gap-2"><button onclick="refreshChatInbox()" class="blue-button text-sm"><i class="fas fa-sync-alt"></i> Refresh</button><button onclick="markAllAsRead()" class="blue-button text-sm bg-gray-500"><i class="fas fa-check-double"></i> Mark all read</button></div></div>
             <div class="communications-container">
@@ -364,7 +364,6 @@
     async function apiCall(endpoint, options = {}) { const response = await fetch(`${API_URL}${endpoint}`, { ...options, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentToken}`, ...options.headers } }); return response.json(); }
     function escapeHtml(text) { if (!text) return ''; const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 
-    // Detail modal for row clicks
     function showDetailModal(title, contentHtml) { document.getElementById('detailModalTitle').innerText = title; document.getElementById('detailModalBody').innerHTML = contentHtml; document.getElementById('detailModal').classList.remove('hidden'); document.getElementById('detailModal').classList.add('flex'); }
     
     function bindTableRowClicks() {
@@ -391,7 +390,7 @@
     function clearAlerts() { sentAlerts = []; document.getElementById('recentAlertsList').innerHTML = '<div class="text-center py-8 text-gray-500 bg-white rounded-xl p-8">No email alerts sent yet.</div>'; showToast('Alert history cleared', 'success'); }
     document.getElementById('alertForm')?.addEventListener('submit', async (e) => { e.preventDefault(); const subject = document.getElementById('alertSubject').value, message = document.getElementById('alertMessage').value, type = document.getElementById('alertType').value, region = document.getElementById('alertRegion').value; if(!subject || !message) { showToast('Fill all fields', 'error'); return; } showToast('Sending email alerts...', 'info'); try { const response = await apiCall('/admin/send-alert', { method: 'POST', body: JSON.stringify({ subject, message, type, region }) }); if(response.success) { showToast(`Email alert sent to ${response.emailCount} farmers!`, 'success'); document.getElementById('alertSubject').value = ''; document.getElementById('alertMessage').value = ''; const newAlert = { subject, message, type, region, date: new Date().toLocaleString() }; sentAlerts.unshift(newAlert); document.getElementById('recentAlertsList').innerHTML = sentAlerts.map(a => `<div class="bg-white rounded-lg p-4 shadow-sm border-l-4 border-blue-500 card-hover"><div class="flex justify-between items-start"><div><p class="font-bold text-gray-800">📧 ${a.subject}</p><p class="text-sm text-gray-600 mt-1">${a.message}</p></div><span class="text-xs text-gray-400">${a.date}</span></div><div class="flex justify-between mt-2"><span class="text-xs text-blue-600"><i class="fas fa-tag mr-1"></i> ${a.type}</span><span class="text-xs text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i> ${a.region}</span></div></div>`).join(''); } else showToast('Failed to send', 'error'); } catch(e) { showToast('Error sending alerts', 'error'); } });
 
-    // Communications functions with mobile toggle
+    // Communications functions
     async function loadChatInbox() { try { const res = await apiCall('/communications/admin/inbox'); if(res.success && res.farmers) { allFarmers = res.farmers; renderFarmerList(allFarmers); } else renderFarmerList([]); } catch(e) { console.error(e); renderFarmerList([]); } }
     function renderFarmerList(farmers) { const container = document.getElementById('farmerChatList'); if(!container) return; if(!farmers.length) { container.innerHTML = '<div class="text-center py-8 text-gray-500">No conversations yet</div>'; return; } container.innerHTML = farmers.map(farmer => `<div class="farmer-chat-item p-3 border-b border-gray-100 dark:border-gray-700 ${farmer.unread_count > 0 ? 'unread' : ''}" onclick="selectFarmer(${farmer.id})" data-farmer-id="${farmer.id}"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center text-white font-bold">${farmer.name ? farmer.name.charAt(0).toUpperCase() : '?'}</div><div class="flex-1 min-w-0"><div class="flex justify-between items-center"><p class="font-semibold text-gray-800 dark:text-white truncate">${farmer.name || 'Unknown Farmer'}</p><span class="text-xs text-gray-400">${formatTimeAgo(farmer.last_message_time)}</span></div><p class="text-sm text-gray-500 dark:text-gray-400 truncate">${farmer.last_message || 'No messages'}</p></div>${farmer.unread_count > 0 ? `<span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">${farmer.unread_count}</span>` : ''}</div></div>`).join(''); }
     function formatTimeAgo(dateString) { if(!dateString) return 'Unknown'; const date = new Date(dateString), now = new Date(), diffMins = Math.floor((now - date) / 60000); if(diffMins < 1) return 'Just now'; if(diffMins < 60) return `${diffMins}m ago`; if(diffMins < 1440) return `${Math.floor(diffMins/60)}h ago`; return `${Math.floor(diffMins/1440)}d ago`; }
