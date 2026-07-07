@@ -123,7 +123,7 @@ router.post('/create-admin', async (req, res) => {
 router.use(verifyToken);
 router.use(isAdmin);
 
-// Get dashboard statistics
+// ==================== DASHBOARD STATISTICS (FIXED with detailed error logging) ====================
 router.get('/dashboard/stats', async (req, res) => {
     try {
         const totalFarmers = await User.count({ where: { role: 'farmer' } });
@@ -135,15 +135,30 @@ router.get('/dashboard/stats', async (req, res) => {
         const reviewedDiagnoses = await Diagnosis.count({ where: { status: 'Reviewed' } });
         const resolvedDiagnoses = await Diagnosis.count({ where: { status: 'Resolved' } });
         
-        const recentActivity = await Diagnosis.findAll({
-            limit: 10,
-            order: [['created_at', 'DESC']],
-            include: [{ 
-                model: User, 
-                as: 'farmer',
-                attributes: ['name', 'email']
-            }]
-        });
+        // Fetch recent activity with proper error handling for associations
+        let recentActivity = [];
+        try {
+            recentActivity = await Diagnosis.findAll({
+                limit: 10,
+                order: [['created_at', 'DESC']],
+                include: [{ 
+                    model: User, 
+                    as: 'farmer',
+                    attributes: ['id', 'name', 'email']
+                }]
+            });
+        } catch (assocError) {
+            // If association fails, fallback to raw query
+            console.warn('⚠️ Association fetch failed, using raw query:', assocError.message);
+            const [results] = await sequelize.query(`
+                SELECT d.*, u.name, u.email 
+                FROM diagnoses d
+                LEFT JOIN users u ON d.user_id = u.id
+                ORDER BY d.created_at DESC
+                LIMIT 10
+            `);
+            recentActivity = results;
+        }
         
         res.json({
             success: true,
@@ -160,8 +175,8 @@ router.get('/dashboard/stats', async (req, res) => {
             recentActivity
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: 'Server error' });
+        console.error('❌ Dashboard stats error:', error.stack);
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
