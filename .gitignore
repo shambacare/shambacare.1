@@ -1,0 +1,54 @@
+# ==================== Dependencies ====================
+node_modules/
+venv/
+__pycache__/
+*.pyc
+
+# ==================== Environment files ====================
+.env
+.env.local
+.env.production
+
+# ==================== IDE and OS files ====================
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ==================== Logs ====================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==================== Build outputs ====================
+dist/
+build/
+out/
+
+# ==================== Uploads (local only) ====================
+uploads/
+
+# ==================== Temporary files ====================
+*.tmp
+*.temp
+
+# ==================== Large datasets (not needed for deployment) ====================
+plantvillage/
+plant-disease-model/
+
+# ==================== Render / Vercel specific ====================
+.vercel/
+.render/
+
+# ==================== Python AI service (if separate) ====================
+*.pkl
+*.h5
+*.pb
+*.onnx
+
+# ==================== Misc ====================
+*.bak
+*.orig
+*.rej
