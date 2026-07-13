@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
+from tensorflow.keras.applications.efficientnet_v2 import preprocess_input
 import numpy as np
 import io
 import json
@@ -12,8 +13,7 @@ app = Flask(__name__)
 CORS(app)
 
 # ----------------------------------------------------------------------
-# Paths to model and class names (now using relative paths)
-# Assume both files are in the same directory as this script
+# Paths to model and class names
 # ----------------------------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "best_model.h5")
@@ -48,19 +48,27 @@ print(f"✅ Loaded {len(CLASS_NAMES)} disease classes.")
 print(f"First few classes: {CLASS_NAMES[:3]}")
 
 # ----------------------------------------------------------------------
-# Image preprocessing
+# Image preprocessing – FIXED for EfficientNetV2
 # ----------------------------------------------------------------------
 def preprocess_image(image_bytes):
+    """
+    Preprocess image for EfficientNetV2:
+    1. Load image at 224x224
+    2. Convert to array
+    3. Apply EfficientNetV2 preprocessing (scaling + mean subtraction)
+    """
     img = image.load_img(io.BytesIO(image_bytes), target_size=(224, 224))
     img_array = image.img_to_array(img)
     img_array = np.expand_dims(img_array, axis=0)
-    img_array = img_array / 255.0   # EfficientNetV2 expects [0,1]
+    # EfficientNetV2 preprocessing (scales to [-1, 1] and applies mean/std)
+    img_array = preprocess_input(img_array)
     return img_array
 
 # ----------------------------------------------------------------------
-# Treatment database (expand as needed)
+# Treatment database – expanded a bit, but frontend will override
 # ----------------------------------------------------------------------
 def get_treatment(disease_name):
+    # This is a fallback – the frontend has a richer library.
     treatments = {
         "Corn (maize) - Common rust": {
             "organic": "Apply neem oil or sulfur spray. Remove infected leaves.",
@@ -75,6 +83,13 @@ def get_treatment(disease_name):
             "symptoms": "Water-soaked lesions on leaves.",
             "cost": 650,
             "prevention": "Resistant varieties, avoid overhead watering."
+        },
+        "Apple - Apple scab": {
+            "organic": "Apply sulfur spray, remove infected leaves.",
+            "chemical": "Fungicides like captan or myclobutanil.",
+            "symptoms": "Olive-green to black spots on leaves and fruit.",
+            "cost": 450,
+            "prevention": "Prune for air circulation, clean up fallen leaves."
         }
     }
     return treatments.get(disease_name, {
@@ -105,6 +120,9 @@ def predict():
         confidence = float(probabilities[idx]) * 100
         disease_raw = CLASS_NAMES[idx]
         disease_display = disease_raw.replace('___', ' - ').replace('_', ' ')
+
+        # Log the predicted class for debugging
+        print(f"🔍 Predicted: {disease_display} with confidence {confidence:.1f}%")
 
         treatment = get_treatment(disease_display)
 
