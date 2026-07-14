@@ -1621,51 +1621,95 @@
             window.open(`https://wa.me/?text=${message}`, '_blank');
         }
 
-        // ==================== WEATHER & RECOMMENDATIONS (Updated to use backend) ====================
-        // We now call the backend endpoint /api/weather/{county} to get weather securely.
+        // ==================== WEATHER & RECOMMENDATIONS (Updated to use real 7‑day forecast) ====================
         async function fetchRealTimeWeather() {
             const county = currentUser?.county || 'Nairobi';
             try {
-                // Use backend proxy
-                const response = await fetch(`${API_URL}/weather/${encodeURIComponent(county)}`);
-                if (!response.ok) {
-                    throw new Error(`Weather API error: ${response.status}`);
-                }
-                const data = await response.json();
-                if (data.main) {
-                    displayRealWeather(data, county);
-                    // also fetch forecast from backend if you add a forecast endpoint, but we can still use the current forecast method with mock or direct.
-                    // We'll keep the existing forecast fallback (mock) or you can add a forecast endpoint later.
-                    // For now, we'll use the mock forecast (which is fine).
-                    useMockForecast(county);
+                // 1. Current weather from backend
+                const weatherResp = await fetch(`${API_URL}/weather/${encodeURIComponent(county)}`);
+                if (!weatherResp.ok) throw new Error(`Weather API error: ${weatherResp.status}`);
+                const weatherData = await weatherResp.json();
+                if (weatherData.main) {
+                    displayRealWeather(weatherData, county);
                 } else {
-                    useMockWeather(county);
+                    throw new Error('Invalid weather data');
                 }
+
+                // 2. 7‑day forecast from Open‑Meteo (direct, no API key)
+                await fetchForecastFromOpenMeteo(county);
             } catch (error) {
-                console.warn('Weather API failed, using mock data:', error);
-                useMockWeather(county);
+                console.warn('Weather fetch failed, using fallback:', error);
+                // Fallback to simple display
+                document.getElementById('realTimeWeather').innerHTML = `
+                    <div class="weather-temp text-2xl font-bold">--°C</div>
+                    <div class="weather-location">${county}, Kenya</div>
+                    <div class="weather-condition">⚠️ Weather unavailable</div>
+                `;
+                document.getElementById('weatherForecast').innerHTML = '<p class="text-center text-gray-500">Forecast not available</p>';
             }
         }
 
-        // Mock forecast (same as before, but separated)
-        function useMockForecast(county) {
-            const forecastData = [
-                { day: "Mon", temp: 24, icon: "fa-sun", desc: "Sunny" },
-                { day: "Tue", temp: 23, icon: "fa-cloud-rain", desc: "Light rain" },
-                { day: "Wed", temp: 25, icon: "fa-cloud", desc: "Cloudy" },
-                { day: "Thu", temp: 26, icon: "fa-sun", desc: "Sunny" },
-                { day: "Fri", temp: 24, icon: "fa-cloud", desc: "Partly cloudy" }
-            ];
-            document.getElementById('weatherForecast').innerHTML = forecastData.map(d => `
-                <div class="flex justify-between items-center p-2 hover:bg-green-50 rounded-lg transition">
-                    <span class="w-12 font-medium">${d.day}</span>
-                    <i class="fas ${d.icon} text-yellow-500"></i>
-                    <span class="font-semibold">${d.temp}°C</span>
-                    <span class="text-xs text-gray-500">${d.desc}</span>
-                </div>
-            `).join('');
+        // ---- Fetch 7‑day forecast from Open‑Meteo ----
+        async function fetchForecastFromOpenMeteo(county) {
+            try {
+                // Step 1: Geocode county name to coordinates
+                const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(county)}&count=1&language=en&format=json`;
+                const geoResp = await fetch(geoUrl);
+                const geoData = await geoResp.json();
+                if (!geoData.results || geoData.results.length === 0) {
+                    throw new Error(`County "${county}" not found`);
+                }
+                const { latitude, longitude } = geoData.results[0];
+
+                // Step 2: Get 7‑day forecast
+                const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=7`;
+                const forecastResp = await fetch(forecastUrl);
+                const forecastData = await forecastResp.json();
+                if (!forecastData.daily) throw new Error('No forecast data');
+
+                // Step 3: Display
+                displayForecast(forecastData.daily);
+            } catch (error) {
+                console.error('Forecast fetch error:', error);
+                document.getElementById('weatherForecast').innerHTML = `<p class="text-center text-red-500 text-sm">⚠️ Could not load forecast</p>`;
+            }
         }
 
+        // ---- Display 7‑day forecast ----
+        function displayForecast(daily) {
+            const container = document.getElementById('weatherForecast');
+            const days = daily.time.length;
+            let html = '';
+            for (let i = 0; i < days; i++) {
+                const date = new Date(daily.time[i]);
+                const dayName = date.toLocaleDateString('en', { weekday: 'short' });
+                const tempMax = Math.round(daily.temperature_2m_max[i]);
+                const tempMin = Math.round(daily.temperature_2m_min[i]);
+                const weatherCode = daily.weathercode[i];
+                // Map weather codes to icons (simplified)
+                const iconMap = {
+                    0: 'fa-sun', 1: 'fa-cloud-sun', 2: 'fa-cloud-sun', 3: 'fa-cloud',
+                    45: 'fa-smog', 48: 'fa-smog',
+                    51: 'fa-cloud-rain', 53: 'fa-cloud-rain', 55: 'fa-cloud-rain',
+                    61: 'fa-cloud-rain', 63: 'fa-cloud-rain', 65: 'fa-cloud-rain',
+                    71: 'fa-snowflake', 73: 'fa-snowflake', 75: 'fa-snowflake',
+                    80: 'fa-cloud-rain', 81: 'fa-cloud-rain', 82: 'fa-cloud-rain',
+                    95: 'fa-bolt', 96: 'fa-bolt', 99: 'fa-bolt'
+                };
+                const icon = iconMap[weatherCode] || 'fa-cloud';
+                const color = weatherCode === 0 ? 'text-yellow-500' : 'text-gray-500';
+                html += `
+                    <div class="flex justify-between items-center p-2 hover:bg-green-50 rounded-lg transition">
+                        <span class="w-12 font-medium">${dayName}</span>
+                        <i class="fas ${icon} ${color}"></i>
+                        <span class="font-semibold">${tempMax}°/${tempMin}°</span>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        // ---- Display current weather (unchanged) ----
         function displayRealWeather(data, county) {
             const temp = Math.round(data.main.temp);
             const condition = data.weather[0].description;
@@ -1681,25 +1725,20 @@
             getWeatherRecommendations('Maize', conditionType);
         }
 
-        // Fallback mock weather (if backend fails)
+        // ---- Fallback if weather fails ----
         function useMockWeather(county) {
-            const mockData = [
-                { temp: 24, condition: 'Partly Cloudy', icon: 'fa-cloud-sun' }
-            ];
-            const weather = mockData[0];
+            const mockData = { temp: 24, condition: 'Partly Cloudy', icon: 'fa-cloud-sun' };
             document.getElementById('realTimeWeather').innerHTML = `
-                <div class="weather-temp text-2xl font-bold">${weather.temp}°C</div>
+                <div class="weather-temp text-2xl font-bold">${mockData.temp}°C</div>
                 <div class="weather-location">${county}, Kenya</div>
-                <div class="weather-condition"><i class="fas ${weather.icon}"></i> ${weather.condition}</div>
+                <div class="weather-condition"><i class="fas ${mockData.icon}"></i> ${mockData.condition}</div>
             `;
-            document.getElementById('weatherTemp').textContent = `${weather.temp}°C`;
-            document.getElementById('weatherDesc').textContent = weather.condition;
-            useMockForecast(county);
-            updateYieldPrediction(weather.temp, weather.condition);
-            getWeatherRecommendations('Maize', getWeatherCondition(weather.temp, weather.condition));
+            document.getElementById('weatherTemp').textContent = `${mockData.temp}°C`;
+            document.getElementById('weatherDesc').textContent = mockData.condition;
+            document.getElementById('weatherForecast').innerHTML = '<p class="text-center text-gray-500">Forecast unavailable</p>';
         }
 
-        // ---- Other weather helper functions remain the same ----
+        // ---- Other weather helpers (unchanged) ----
         function updateYieldPrediction(temp, condition) {
             const yieldValue = document.getElementById('yieldValue');
             const yieldNote = document.getElementById('yieldNote');
@@ -1828,7 +1867,6 @@
         }
 
         function renderDiseaseLibrary(diseases) {
-            // same as before, omitted for brevity but keep full code
             const container = document.getElementById('diseaseLibraryContainer');
             const wrapper = document.getElementById('diseaseViewAllWrapper');
             if (!diseases || !diseases.length) {
@@ -1938,7 +1976,6 @@
 
         // ==================== LOAD CROPS (global) ====================
         async function loadCrops() {
-            // same as before
             const container = document.getElementById('cropsContainer');
             container.innerHTML = `
                 <div class="skeleton skeleton-card"></div>
@@ -2031,7 +2068,7 @@
             loadUserProfile();
             await loadFarms();
             await loadCrops();
-            // Weather is now fetched via backend
+            // Weather is now fetched via backend + Open‑Meteo
             fetchRealTimeWeather();
             await loadDiseaseLibrary();
             await loadChatMessages();
