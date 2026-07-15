@@ -395,7 +395,7 @@
                 <button onclick="toggleAllReviews()" class="view-all-toggle"><i class="fas fa-chevron-down mr-2"></i> View All Reviews</button>
             </div>
         </div>
-        <!-- Disease Library -->
+        <!-- Disease Library (UPDATED: Only Tomatoes, Potatoes, Beans, Maize, Coffee) -->
         <div id="library" class="mb-8">
             <div class="section-header-container">
                 <div>
@@ -1798,20 +1798,42 @@
             return 'sunny';
         }
 
-        // ==================== DISEASE LIBRARY (FULL LIST RESTORED) ====================
+        // ==================== DISEASE LIBRARY (UPDATED: Only Tomatoes, Potatoes, Beans, Maize, Coffee) ====================
+        // Full disease list for the five crops with organic, chemical solutions, cost, symptoms, prevention.
         const fallbackDiseases = [
-            { name: "Fall Armyworm", crop: "Maize", severity: "High", solution: "Apply neem oil or Bacillus thuringiensis. Handpick larvae.", icon: "🐛", symptoms: "Holes in leaves, ragged edges, visible caterpillars", organic_solution: "Neem oil spray (5ml/L) every 5 days", chemical_solution: "Emamectin benzoate (1ml/L water)", cost: 500 },
-            { name: "Coffee Leaf Rust", crop: "Coffee", severity: "High", solution: "Copper-based fungicide. Prune affected branches.", icon: "🍂", symptoms: "Orange-yellow powdery spots on leaves", organic_solution: "Prune and burn infected leaves, sulfur spray", chemical_solution: "Copper oxychloride (2g/L)", cost: 800 },
-            { name: "Northern Leaf Blight", crop: "Maize", severity: "High", solution: "Use resistant hybrids. Apply fungicide.", icon: "🌽", symptoms: "Long gray-green lesions on leaves", organic_solution: "Remove crop residues, rotate crops", chemical_solution: "Azoxystrobin or mancozeb", cost: 650 },
-            { name: "Late Blight", crop: "Potatoes/Tomatoes", severity: "High", solution: "Mancozeb or copper fungicide. Destroy infected plants.", icon: "🥔", symptoms: "Dark water-soaked lesions, white mold", organic_solution: "Remove infected leaves, improve drainage", chemical_solution: "Chlorothalonil or metalaxyl", cost: 600 },
-            { name: "Aphids", crop: "Vegetables", severity: "Medium", solution: "Neem oil or insecticidal soap. Introduce ladybugs.", icon: "🦟", symptoms: "Curled leaves, sticky honeydew, visible insects", organic_solution: "Neem oil spray, soap solution", chemical_solution: "Imidacloprid (follow label)", cost: 300 },
-            { name: "Early Blight", crop: "Tomatoes/Potatoes", severity: "Medium", solution: "Chlorothalonil. Remove lower leaves.", icon: "🍅", symptoms: "Dark concentric rings on older leaves", organic_solution: "Mulch, apply compost tea", chemical_solution: "Chlorothalonil or mancozeb", cost: 550 },
-            { name: "Bean Rust", crop: "Beans", severity: "Medium", solution: "Copper fungicide. Improve air circulation.", icon: "🫘", symptoms: "Reddish-brown pustules on leaves", organic_solution: "Prune affected leaves, neem oil", chemical_solution: "Copper-based fungicide", cost: 450 },
-            { name: "Powdery Mildew", crop: "Various", severity: "Medium", solution: "Sulfur or neem oil. Increase air flow.", icon: "🌿", symptoms: "White powdery spots on leaves", organic_solution: "Baking soda solution (1 tbsp/L)", chemical_solution: "Myclobutanil or trifloxystrobin", cost: 400 },
-            { name: "Tomato Yellow Leaf Curl Virus", crop: "Tomatoes", severity: "High", solution: "Control whiteflies. Remove infected plants.", icon: "🍅", symptoms: "Yellow, curled leaves, stunted growth", organic_solution: "Neem oil for whiteflies, yellow sticky traps", chemical_solution: "Imidacloprid (for vectors)", cost: 500 },
-            { name: "Citrus Greening", crop: "Oranges/Citrus", severity: "Critical", solution: "Remove infected trees. Control psyllids.", icon: "🍊", symptoms: "Blotchy mottling, misshapen fruit", organic_solution: "Neem oil, sticky traps", chemical_solution: "Imidacloprid (suppressive)", cost: 0 },
-            { name: "Banana Xanthomonas Wilt", crop: "Bananas", severity: "Critical", solution: "Remove infected plants. Disinfect tools.", icon: "🍌", symptoms: "Yellow leaves, wilting, ooze", organic_solution: "Remove male buds, use clean planting material", chemical_solution: "Copper-based bactericides", cost: 700 },
-            { name: "Cercospora Leaf Spot", crop: "Maize", severity: "Medium", solution: "Azoxystrobin. Crop rotation.", icon: "🌽", symptoms: "Small rectangular grayish lesions", organic_solution: "Remove crop residues, compost tea", chemical_solution: "Azoxystrobin or pyraclostrobin", cost: 600 }
+            // Maize
+            { name: "Fall Armyworm", crop: "Maize", severity: "High", icon: "🐛", symptoms: "Holes in leaves, ragged edges, visible caterpillars", organic_solution: "Neem oil spray (5ml/L) every 5 days; handpick larvae.", chemical_solution: "Emamectin benzoate (1ml/L water) or spinetoram.", cost: 500, prevention: "Early planting, crop rotation, intercropping with legumes." },
+            { name: "Maize Lethal Necrosis", crop: "Maize", severity: "Critical", icon: "⚠️", symptoms: "Stunted growth, yellow mottling, premature death.", organic_solution: "No organic cure; remove infected plants immediately.", chemical_solution: "No chemical cure – focus on vector control (thrips, aphids).", cost: 0, prevention: "Use certified resistant varieties; control insect vectors." },
+            { name: "Northern Leaf Blight", crop: "Maize", severity: "High", icon: "🌽", symptoms: "Long, elliptical gray-green lesions on lower leaves.", organic_solution: "Remove crop residues; apply compost tea.", chemical_solution: "Azoxystrobin or mancozeb.", cost: 650, prevention: "Plant resistant hybrids; rotate crops." },
+            { name: "Cercospora Leaf Spot", crop: "Maize", severity: "Medium", icon: "🌿", symptoms: "Small, rectangular grayish lesions with yellow margins.", organic_solution: "Remove crop residues; apply sulfur spray.", chemical_solution: "Azoxystrobin or pyraclostrobin.", cost: 600, prevention: "Crop rotation; use disease-free seeds." },
+            { name: "Common Rust", crop: "Maize", severity: "Medium", icon: "🍂", symptoms: "Cinnamon-brown pustules on leaves and stalks.", organic_solution: "Sulfur spray; neem oil.", chemical_solution: "Azoxystrobin or pyraclostrobin.", cost: 550, prevention: "Plant resistant varieties; avoid overcrowding." },
+
+            // Tomato
+            { name: "Tomato Early Blight", crop: "Tomato", severity: "High", icon: "🍅", symptoms: "Dark concentric rings on older leaves; yellowing.", organic_solution: "Mulch; apply compost tea; remove lower leaves.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 550, prevention: "Rotate crops; prune for air circulation." },
+            { name: "Tomato Late Blight", crop: "Tomato", severity: "High", icon: "🥔", symptoms: "Water-soaked lesions on leaves; white mold underside.", organic_solution: "Remove infected leaves; copper spray.", chemical_solution: "Mancozeb or metalaxyl.", cost: 600, prevention: "Resistant varieties; avoid overhead watering." },
+            { name: "Tomato Bacterial Spot", crop: "Tomato", severity: "Medium", icon: "🦠", symptoms: "Small, dark, water-soaked spots on leaves and fruit.", organic_solution: "Copper-based soap sprays; remove infected plants.", chemical_solution: "Copper hydroxide or streptomycin.", cost: 450, prevention: "Use certified disease-free seeds; avoid overhead irrigation." },
+            { name: "Tomato Leaf Mold", crop: "Tomato", severity: "Medium", icon: "🍃", symptoms: "Yellow-green spots on upper leaf surface; gray mold underside.", organic_solution: "Improve air circulation; remove infected leaves.", chemical_solution: "Chlorothalonil or copper fungicide.", cost: 500, prevention: "Space plants properly; water at base." },
+            { name: "Tomato Septoria Leaf Spot", crop: "Tomato", severity: "High", icon: "🌿", symptoms: "Small circular spots with dark borders; yellow halo.", organic_solution: "Remove lower leaves; apply compost tea.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 550, prevention: "Rotate crops; avoid overhead watering." },
+            { name: "Tomato Yellow Leaf Curl Virus", crop: "Tomato", severity: "High", icon: "🍅", symptoms: "Yellowing, curling leaves; stunted growth.", organic_solution: "Control whiteflies with neem oil; yellow sticky traps.", chemical_solution: "Imidacloprid (for vectors).", cost: 500, prevention: "Use resistant varieties; row covers." },
+            { name: "Tomato Mosaic Virus", crop: "Tomato", severity: "High", icon: "🧬", symptoms: "Mottled yellow-green leaves; deformed fruit.", organic_solution: "No cure; remove infected plants.", chemical_solution: "No chemical cure – vector control.", cost: 0, prevention: "Use virus-free seeds; disinfect tools." },
+            { name: "Tomato Target Spot", crop: "Tomato", severity: "Medium", icon: "🎯", symptoms: "Concentric rings on leaves; dark brown lesions.", organic_solution: "Remove infected leaves; apply neem oil.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 500, prevention: "Good sanitation; avoid wet foliage." },
+            { name: "Tomato Spider Mites", crop: "Tomato", severity: "Medium", icon: "🕷️", symptoms: "Stippled leaves; fine webbing on underside.", organic_solution: "Neem oil spray; introduce predatory mites.", chemical_solution: "Abamectin or miticides.", cost: 400, prevention: "Keep plants well-watered; avoid dust." },
+
+            // Potato
+            { name: "Potato Late Blight", crop: "Potato", severity: "High", icon: "🥔", symptoms: "Dark, water-soaked lesions; white mold on leaf underside.", organic_solution: "Remove infected leaves; copper spray.", chemical_solution: "Mancozeb or metalaxyl.", cost: 600, prevention: "Resistant varieties; avoid overhead watering." },
+            { name: "Potato Early Blight", crop: "Potato", severity: "Medium", icon: "🌱", symptoms: "Dark, concentric lesions on lower leaves.", organic_solution: "Mulch; compost tea; remove infected leaves.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 550, prevention: "Crop rotation; well-drained soil." },
+
+            // Beans
+            { name: "Bean Rust", crop: "Beans", severity: "Medium", icon: "🫘", symptoms: "Reddish-brown pustules on leaves and pods.", organic_solution: "Prune affected leaves; neem oil.", chemical_solution: "Copper-based fungicide.", cost: 450, prevention: "Resistant varieties; avoid crowding." },
+            { name: "Angular Leaf Spot", crop: "Beans", severity: "Medium", icon: "📐", symptoms: "Angular, water-soaked spots on leaves; yellow halos.", organic_solution: "Remove infected leaves; apply copper soap.", chemical_solution: "Copper hydroxide or mancozeb.", cost: 400, prevention: "Rotate crops; use disease-free seed." },
+            { name: "Bean Anthracnose", crop: "Beans", severity: "High", icon: "🫘", symptoms: "Dark, sunken lesions on pods; reddish-brown spots.", organic_solution: "Remove infected plants; improve air circulation.", chemical_solution: "Chlorothalonil or copper fungicide.", cost: 500, prevention: "Use certified disease-free seeds; crop rotation." },
+            { name: "Common Bacterial Blight", crop: "Beans", severity: "High", icon: "🦠", symptoms: "Water-soaked spots on leaves; wilting.", organic_solution: "Remove infected plants; copper spray.", chemical_solution: "Copper bactericides.", cost: 450, prevention: "Rotate crops; avoid overhead irrigation." },
+
+            // Coffee
+            { name: "Coffee Leaf Rust", crop: "Coffee", severity: "High", icon: "☕", symptoms: "Orange-yellow powdery spots on leaf undersides.", organic_solution: "Sulfur spray; prune for air circulation.", chemical_solution: "Copper oxychloride (2g/L) or copper hydroxide.", cost: 800, prevention: "Resistant varieties; proper spacing." },
+            { name: "Coffee Berry Disease", crop: "Coffee", severity: "High", icon: "☕", symptoms: "Dark, sunken lesions on green berries; premature drop.", organic_solution: "Remove infected berries; copper spray.", chemical_solution: "Copper oxychloride or chlorothalonil.", cost: 700, prevention: "Prune to reduce humidity; shade management." },
+            { name: "Coffee Wilt Disease", crop: "Coffee", severity: "Critical", icon: "💀", symptoms: "Wilting, yellowing, and drying of branches.", organic_solution: "Remove infected trees; no organic cure.", chemical_solution: "No chemical cure – focus on prevention.", cost: 0, prevention: "Use resistant rootstocks; maintain plant health." },
+            { name: "Coffee Berry Borer", crop: "Coffee", severity: "High", icon: "🐞", symptoms: "Small holes in berries; internal damage.", organic_solution: "Traps and natural predators; remove infested berries.", chemical_solution: "Endosulfan or chlorpyrifos (restricted).", cost: 900, prevention: "Sanitation; harvest promptly." }
         ];
 
         async function loadDiseaseLibrary() {
@@ -1819,7 +1841,9 @@
             try {
                 const response = await apiCall('/diseases');
                 if (response.success && response.diseases && response.diseases.length > 0) {
-                    allDiseases = response.diseases.map(d => ({
+                    // Filter to only the five crops we want
+                    const allowedCrops = ['tomato', 'potato', 'beans', 'maize', 'coffee', 'corn'];
+                    let fetched = response.diseases.map(d => ({
                         name: d.name,
                         crop: d.crop_type || d.crop_affected || 'Various',
                         severity: d.severity || 'Medium',
@@ -1831,6 +1855,15 @@
                         cost: d.estimated_cost_kes || d.cost || 0,
                         prevention: d.prevention || 'Practice good farming practices.'
                     }));
+                    // Keep only those whose crop matches allowed
+                    allDiseases = fetched.filter(d => {
+                        const cropLower = (d.crop || '').toLowerCase();
+                        return allowedCrops.some(ac => cropLower.includes(ac) || d.name.toLowerCase().includes(ac));
+                    });
+                    // If filtered list is empty, fallback to our local list
+                    if (allDiseases.length === 0) {
+                        allDiseases = fallbackDiseases;
+                    }
                 } else {
                     allDiseases = fallbackDiseases;
                 }
