@@ -1621,11 +1621,11 @@
             window.open(`https://wa.me/?text=${message}`, '_blank');
         }
 
-        // ==================== WEATHER & RECOMMENDATIONS (Updated to use real 7‑day forecast) ====================
+        // ==================== WEATHER & RECOMMENDATIONS (Real 7‑day forecast) ====================
         async function fetchRealTimeWeather() {
             const county = currentUser?.county || 'Nairobi';
             try {
-                // 1. Current weather from backend
+                // Current weather from backend
                 const weatherResp = await fetch(`${API_URL}/weather/${encodeURIComponent(county)}`);
                 if (!weatherResp.ok) throw new Error(`Weather API error: ${weatherResp.status}`);
                 const weatherData = await weatherResp.json();
@@ -1634,12 +1634,10 @@
                 } else {
                     throw new Error('Invalid weather data');
                 }
-
-                // 2. 7‑day forecast from Open‑Meteo (direct, no API key)
+                // 7‑day forecast from Open‑Meteo
                 await fetchForecastFromOpenMeteo(county);
             } catch (error) {
                 console.warn('Weather fetch failed, using fallback:', error);
-                // Fallback to simple display
                 document.getElementById('realTimeWeather').innerHTML = `
                     <div class="weather-temp text-2xl font-bold">--°C</div>
                     <div class="weather-location">${county}, Kenya</div>
@@ -1649,10 +1647,8 @@
             }
         }
 
-        // ---- Fetch 7‑day forecast from Open‑Meteo ----
         async function fetchForecastFromOpenMeteo(county) {
             try {
-                // Step 1: Geocode county name to coordinates
                 const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(county)}&count=1&language=en&format=json`;
                 const geoResp = await fetch(geoUrl);
                 const geoData = await geoResp.json();
@@ -1660,14 +1656,10 @@
                     throw new Error(`County "${county}" not found`);
                 }
                 const { latitude, longitude } = geoData.results[0];
-
-                // Step 2: Get 7‑day forecast
                 const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=7`;
                 const forecastResp = await fetch(forecastUrl);
                 const forecastData = await forecastResp.json();
                 if (!forecastData.daily) throw new Error('No forecast data');
-
-                // Step 3: Display
                 displayForecast(forecastData.daily);
             } catch (error) {
                 console.error('Forecast fetch error:', error);
@@ -1675,7 +1667,6 @@
             }
         }
 
-        // ---- Display 7‑day forecast ----
         function displayForecast(daily) {
             const container = document.getElementById('weatherForecast');
             const days = daily.time.length;
@@ -1686,7 +1677,6 @@
                 const tempMax = Math.round(daily.temperature_2m_max[i]);
                 const tempMin = Math.round(daily.temperature_2m_min[i]);
                 const weatherCode = daily.weathercode[i];
-                // Map weather codes to icons (simplified)
                 const iconMap = {
                     0: 'fa-sun', 1: 'fa-cloud-sun', 2: 'fa-cloud-sun', 3: 'fa-cloud',
                     45: 'fa-smog', 48: 'fa-smog',
@@ -1709,7 +1699,6 @@
             container.innerHTML = html;
         }
 
-        // ---- Display current weather (unchanged) ----
         function displayRealWeather(data, county) {
             const temp = Math.round(data.main.temp);
             const condition = data.weather[0].description;
@@ -1725,20 +1714,7 @@
             getWeatherRecommendations('Maize', conditionType);
         }
 
-        // ---- Fallback if weather fails ----
-        function useMockWeather(county) {
-            const mockData = { temp: 24, condition: 'Partly Cloudy', icon: 'fa-cloud-sun' };
-            document.getElementById('realTimeWeather').innerHTML = `
-                <div class="weather-temp text-2xl font-bold">${mockData.temp}°C</div>
-                <div class="weather-location">${county}, Kenya</div>
-                <div class="weather-condition"><i class="fas ${mockData.icon}"></i> ${mockData.condition}</div>
-            `;
-            document.getElementById('weatherTemp').textContent = `${mockData.temp}°C`;
-            document.getElementById('weatherDesc').textContent = mockData.condition;
-            document.getElementById('weatherForecast').innerHTML = '<p class="text-center text-gray-500">Forecast unavailable</p>';
-        }
-
-        // ---- Other weather helpers (unchanged) ----
+        // ---- Weather helpers (unchanged) ----
         function updateYieldPrediction(temp, condition) {
             const yieldValue = document.getElementById('yieldValue');
             const yieldNote = document.getElementById('yieldNote');
@@ -1822,11 +1798,20 @@
             return 'sunny';
         }
 
-        // ==================== DISEASE LIBRARY ====================
+        // ==================== DISEASE LIBRARY (FULL LIST RESTORED) ====================
         const fallbackDiseases = [
             { name: "Fall Armyworm", crop: "Maize", severity: "High", solution: "Apply neem oil or Bacillus thuringiensis. Handpick larvae.", icon: "🐛", symptoms: "Holes in leaves, ragged edges, visible caterpillars", organic_solution: "Neem oil spray (5ml/L) every 5 days", chemical_solution: "Emamectin benzoate (1ml/L water)", cost: 500 },
             { name: "Coffee Leaf Rust", crop: "Coffee", severity: "High", solution: "Copper-based fungicide. Prune affected branches.", icon: "🍂", symptoms: "Orange-yellow powdery spots on leaves", organic_solution: "Prune and burn infected leaves, sulfur spray", chemical_solution: "Copper oxychloride (2g/L)", cost: 800 },
-            // ... other diseases remain same
+            { name: "Northern Leaf Blight", crop: "Maize", severity: "High", solution: "Use resistant hybrids. Apply fungicide.", icon: "🌽", symptoms: "Long gray-green lesions on leaves", organic_solution: "Remove crop residues, rotate crops", chemical_solution: "Azoxystrobin or mancozeb", cost: 650 },
+            { name: "Late Blight", crop: "Potatoes/Tomatoes", severity: "High", solution: "Mancozeb or copper fungicide. Destroy infected plants.", icon: "🥔", symptoms: "Dark water-soaked lesions, white mold", organic_solution: "Remove infected leaves, improve drainage", chemical_solution: "Chlorothalonil or metalaxyl", cost: 600 },
+            { name: "Aphids", crop: "Vegetables", severity: "Medium", solution: "Neem oil or insecticidal soap. Introduce ladybugs.", icon: "🦟", symptoms: "Curled leaves, sticky honeydew, visible insects", organic_solution: "Neem oil spray, soap solution", chemical_solution: "Imidacloprid (follow label)", cost: 300 },
+            { name: "Early Blight", crop: "Tomatoes/Potatoes", severity: "Medium", solution: "Chlorothalonil. Remove lower leaves.", icon: "🍅", symptoms: "Dark concentric rings on older leaves", organic_solution: "Mulch, apply compost tea", chemical_solution: "Chlorothalonil or mancozeb", cost: 550 },
+            { name: "Bean Rust", crop: "Beans", severity: "Medium", solution: "Copper fungicide. Improve air circulation.", icon: "🫘", symptoms: "Reddish-brown pustules on leaves", organic_solution: "Prune affected leaves, neem oil", chemical_solution: "Copper-based fungicide", cost: 450 },
+            { name: "Powdery Mildew", crop: "Various", severity: "Medium", solution: "Sulfur or neem oil. Increase air flow.", icon: "🌿", symptoms: "White powdery spots on leaves", organic_solution: "Baking soda solution (1 tbsp/L)", chemical_solution: "Myclobutanil or trifloxystrobin", cost: 400 },
+            { name: "Tomato Yellow Leaf Curl Virus", crop: "Tomatoes", severity: "High", solution: "Control whiteflies. Remove infected plants.", icon: "🍅", symptoms: "Yellow, curled leaves, stunted growth", organic_solution: "Neem oil for whiteflies, yellow sticky traps", chemical_solution: "Imidacloprid (for vectors)", cost: 500 },
+            { name: "Citrus Greening", crop: "Oranges/Citrus", severity: "Critical", solution: "Remove infected trees. Control psyllids.", icon: "🍊", symptoms: "Blotchy mottling, misshapen fruit", organic_solution: "Neem oil, sticky traps", chemical_solution: "Imidacloprid (suppressive)", cost: 0 },
+            { name: "Banana Xanthomonas Wilt", crop: "Bananas", severity: "Critical", solution: "Remove infected plants. Disinfect tools.", icon: "🍌", symptoms: "Yellow leaves, wilting, ooze", organic_solution: "Remove male buds, use clean planting material", chemical_solution: "Copper-based bactericides", cost: 700 },
+            { name: "Cercospora Leaf Spot", crop: "Maize", severity: "Medium", solution: "Azoxystrobin. Crop rotation.", icon: "🌽", symptoms: "Small rectangular grayish lesions", organic_solution: "Remove crop residues, compost tea", chemical_solution: "Azoxystrobin or pyraclostrobin", cost: 600 }
         ];
 
         async function loadDiseaseLibrary() {
@@ -2068,7 +2053,6 @@
             loadUserProfile();
             await loadFarms();
             await loadCrops();
-            // Weather is now fetched via backend + Open‑Meteo
             fetchRealTimeWeather();
             await loadDiseaseLibrary();
             await loadChatMessages();
