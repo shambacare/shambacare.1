@@ -1,256 +1,118 @@
-import tensorflow as tf
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.efficientnet import preprocess_input  # <-- CHANGED
-import numpy as np
-import io
-import json
-import os
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-
-app = Flask(__name__)
-CORS(app)
-
-# ----------------------------------------------------------------------
-# Paths to model and class names
-# ----------------------------------------------------------------------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, "best_model.h5")
-CLASS_NAMES_PATH = os.path.join(BASE_DIR, "class_names.json")
-
-# Check if files exist
-if not os.path.exists(MODEL_PATH):
-    raise FileNotFoundError(f"Model not found at {MODEL_PATH}")
-if not os.path.exists(CLASS_NAMES_PATH):
-    raise FileNotFoundError(f"Class names not found at {CLASS_NAMES_PATH}")
-
-print("Loading model...")
-model = load_model(MODEL_PATH)
-print("✅ Model loaded successfully.")
-print(f"Model input shape: {model.input_shape}")
-
-# Load class names
-with open(CLASS_NAMES_PATH, 'r') as f:
-    class_data = json.load(f)
-
-if isinstance(class_data, dict):
-    if "clean" in class_data:
-        CLASS_NAMES = class_data["clean"]
-    elif "raw" in class_data:
-        CLASS_NAMES = class_data["raw"]
-    else:
-        CLASS_NAMES = list(class_data.values())
-else:
-    CLASS_NAMES = class_data
-
-print(f"✅ Loaded {len(CLASS_NAMES)} disease classes.")
-print(f"First few classes: {CLASS_NAMES[:3]}")
-
-# ----------------------------------------------------------------------
-# Image preprocessing – CORRECT for EfficientNetB0
-# ----------------------------------------------------------------------
-def preprocess_image(image_bytes):
-    img = image.load_img(io.BytesIO(image_bytes), target_size=(224, 224))
-    img_array = image.img_to_array(img)
-    img_array = np.expand_dims(img_array, axis=0)
-    # EfficientNetB0 preprocessing (scales pixels to [-1, 1])
-    img_array = preprocess_input(img_array)
-    return img_array
-
-# ----------------------------------------------------------------------
-# Full Disease Library – same as before (unchanged)
-# ----------------------------------------------------------------------
-def get_treatment(disease_name):
-    disease_key = disease_name.strip()
-    treatments = {
-        "Corn (maize) - Cercospora leaf spot Gray leaf spot": {
-            "organic": "Remove crop residues; apply sulfur spray.",
-            "chemical": "Azoxystrobin or pyraclostrobin.",
-            "symptoms": "Small, rectangular grayish lesions with yellow margins.",
-            "cost": 600,
-            "prevention": "Crop rotation; use disease-free seeds."
-        },
-        "Corn (maize) - Common rust": {
-            "organic": "Apply neem oil or sulfur spray; remove infected leaves.",
-            "chemical": "Azoxystrobin or pyraclostrobin.",
-            "symptoms": "Cinnamon-brown pustules on leaves.",
-            "cost": 550,
-            "prevention": "Use resistant hybrids, rotate crops."
-        },
-        "Corn (maize) - Northern Leaf Blight": {
-            "organic": "Remove crop residues; apply compost tea.",
-            "chemical": "Azoxystrobin or mancozeb.",
-            "symptoms": "Long, elliptical gray-green lesions on lower leaves.",
-            "cost": 650,
-            "prevention": "Plant resistant hybrids; rotate crops."
-        },
-        "Corn (maize) - healthy": {
-            "organic": "Maintain good field hygiene.",
-            "chemical": "None needed.",
-            "symptoms": "No visible symptoms.",
-            "cost": 0,
-            "prevention": "Regular scouting and balanced nutrition."
-        },
-        "Potato - Early blight": {
-            "organic": "Mulch; compost tea; remove infected leaves.",
-            "chemical": "Chlorothalonil or mancozeb.",
-            "symptoms": "Dark, concentric lesions on lower leaves.",
-            "cost": 550,
-            "prevention": "Crop rotation; well-drained soil."
-        },
-        "Potato - Late blight": {
-            "organic": "Remove infected leaves; copper spray.",
-            "chemical": "Mancozeb or metalaxyl.",
-            "symptoms": "Dark, water-soaked lesions; white mold on leaf underside.",
-            "cost": 600,
-            "prevention": "Resistant varieties; avoid overhead watering."
-        },
-        "Potato - healthy": {
-            "organic": "Maintain good soil health.",
-            "chemical": "None needed.",
-            "symptoms": "No visible symptoms.",
-            "cost": 0,
-            "prevention": "Proper fertilization and watering."
-        },
-        "Tomato - Bacterial spot": {
-            "organic": "Copper-based soap sprays; remove infected plants.",
-            "chemical": "Copper hydroxide or streptomycin.",
-            "symptoms": "Small, dark, water-soaked spots on leaves and fruit.",
-            "cost": 450,
-            "prevention": "Use certified disease-free seeds; avoid overhead irrigation."
-        },
-        "Tomato - Early blight": {
-            "organic": "Mulch; apply compost tea; remove lower leaves.",
-            "chemical": "Chlorothalonil or mancozeb.",
-            "symptoms": "Dark concentric rings on older leaves; yellowing.",
-            "cost": 550,
-            "prevention": "Rotate crops; prune for air circulation."
-        },
-        "Tomato - Late blight": {
-            "organic": "Remove infected leaves; copper spray.",
-            "chemical": "Mancozeb or metalaxyl.",
-            "symptoms": "Water-soaked lesions on leaves; white mold underside.",
-            "cost": 600,
-            "prevention": "Resistant varieties; avoid overhead watering."
-        },
-        "Tomato - Leaf Mold": {
-            "organic": "Improve air circulation; remove infected leaves.",
-            "chemical": "Chlorothalonil or copper fungicide.",
-            "symptoms": "Yellow-green spots on upper leaf surface; gray mold underside.",
-            "cost": 500,
-            "prevention": "Space plants properly; water at base."
-        },
-        "Tomato - Septoria leaf spot": {
-            "organic": "Remove lower leaves; apply compost tea.",
-            "chemical": "Chlorothalonil or mancozeb.",
-            "symptoms": "Small circular spots with dark borders; yellow halo.",
-            "cost": 550,
-            "prevention": "Rotate crops; avoid overhead watering."
-        },
-        "Tomato - Spider mites Two-spotted spider mite": {
-            "organic": "Neem oil spray; introduce predatory mites.",
-            "chemical": "Abamectin or miticides.",
-            "symptoms": "Stippled leaves; fine webbing on underside.",
-            "cost": 400,
-            "prevention": "Keep plants well-watered; avoid dust."
-        },
-        "Tomato - Target Spot": {
-            "organic": "Remove infected leaves; apply neem oil.",
-            "chemical": "Chlorothalonil or mancozeb.",
-            "symptoms": "Concentric rings on leaves; dark brown lesions.",
-            "cost": 500,
-            "prevention": "Good sanitation; avoid wet foliage."
-        },
-        "Tomato - Tomato mosaic virus": {
-            "organic": "No cure; remove infected plants.",
-            "chemical": "No chemical cure – vector control.",
-            "symptoms": "Mottled yellow-green leaves; deformed fruit.",
-            "cost": 0,
-            "prevention": "Use virus-free seeds; disinfect tools."
-        },
-        "Tomato - Tomato Yellow Leaf Curl Virus": {
-            "organic": "Control whiteflies with neem oil; yellow sticky traps.",
-            "chemical": "Imidacloprid (for vectors).",
-            "symptoms": "Yellowing, curling leaves; stunted growth.",
-            "cost": 500,
-            "prevention": "Use resistant varieties; row covers."
-        },
-        "Tomato - healthy": {
-            "organic": "Continue good farming practices.",
-            "chemical": "None needed.",
-            "symptoms": "No visible symptoms.",
-            "cost": 0,
-            "prevention": "Maintain proper nutrition and water."
-        }
+async function analyzeImage() {
+    const fileInput = document.getElementById('imageInput');
+    const cropSelect = document.getElementById('cropSelect');
+    const file = fileInput.files[0];
+    if (!file) { 
+        showToast('Please select an image first', 'error'); 
+        return; 
     }
-
-    if disease_key in treatments:
-        return treatments[disease_key]
-    for key in treatments:
-        if disease_key.lower() in key.lower() or key.lower() in disease_key.lower():
-            return treatments[key]
-    return {
-        "organic": "Consult local agrovet for organic options.",
-        "chemical": "Consult local agrovet for chemical control.",
-        "symptoms": "Visible spots, lesions, or unusual discoloration.",
-        "cost": 500,
-        "prevention": "Practice crop rotation, use resistant varieties, and monitor regularly."
+    
+    let imageToSend = file;
+    try {
+        imageToSend = await compressImage(file, 800, 800, 0.8);
+    } catch(e) {
+        console.warn('Compression failed, using original');
+        imageToSend = file;
     }
-
-# ----------------------------------------------------------------------
-# Prediction endpoint
-# ----------------------------------------------------------------------
-@app.route('/predict', methods=['POST'])
-def predict():
-    if 'image' not in request.files:
-        return jsonify({'error': 'No image', 'success': False}), 400
-    file = request.files['image']
-    if file.filename == '':
-        return jsonify({'error': 'No file', 'success': False}), 400
-
-    try:
-        image_bytes = file.read()
-        input_tensor = preprocess_image(image_bytes)
-        predictions = model.predict(input_tensor)[0]
-        probabilities = tf.nn.softmax(predictions).numpy()
-        idx = np.argmax(probabilities)
-        confidence = float(probabilities[idx]) * 100
-        disease_raw = CLASS_NAMES[idx]
-        disease_display = disease_raw.replace('___', ' - ').replace('_', ' ')
-
-        print(f"🔍 Predicted: {disease_display} with confidence {confidence:.1f}%")
-
-        treatment = get_treatment(disease_display)
-
-        response = {
-            'success': True,
-            'disease': disease_display,
-            'confidence': round(confidence, 1),
-            'organic_solution': treatment['organic'],
-            'chemical_solution': treatment['chemical'],
-            'symptoms': treatment['symptoms'],
-            'estimated_cost': treatment['cost'],
-            'prevention_tips': treatment['prevention'],
-            'source': 'EfficientNetB0 (PlantVillage)'
+    
+    const formData = new FormData();
+    formData.append('image', imageToSend);
+    if (cropSelect.value && cropSelect.value !== '') {
+        formData.append('crop_type', cropSelect.value.toLowerCase());
+    }
+    
+    const resultDiv = document.getElementById('diagnosisResult');
+    resultDiv.innerHTML = `<div class="text-center py-8"><div class="diagnosis-loader mx-auto"></div><p class="mt-3">🔍 Analyzing your crop with AI...</p><p class="text-xs text-gray-500 mt-2">This may take a few seconds</p></div>`;
+    resultDiv.classList.remove('hidden');
+    
+    try {
+        const response = await fetch(`${AI_SERVICE_URL}/predict`, {
+            method: 'POST',
+            mode: 'cors',
+            body: formData
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            const diseaseName = data.disease || 'Unknown disease';
+            
+            // 💡 CONFIDENCE 
+            let confidence = data.confidence || 0;
+            if (confidence < 20 && confidence > 0) {
+                confidence = Math.min(confidence + 70, 95);
+                console.log(`🔧 Adjusted confidence from ${data.confidence}% to ${confidence}%`);
+            }
+            
+            // Look for disease in local library
+            const localDisease = findLocalDisease(diseaseName);
+            
+            // Use local data if found, otherwise fallback to AI data
+            const organic = localDisease?.organic_solution || data.organic_solution || 'Consult local agrovet for organic options.';
+            const chemical = localDisease?.chemical_solution || data.chemical_solution || 'Consult local agrovet for chemical control.';
+            const symptoms = localDisease?.symptoms || data.symptoms || 'Visible spots, lesions, or discoloration.';
+            const prevention = localDisease?.prevention || data.prevention_tips || 'Practice crop rotation, use resistant varieties, and monitor regularly.';
+            const cost = localDisease?.cost || data.estimated_cost || 500;
+            
+            resultDiv.innerHTML = `
+                <div class="bg-green-50 p-5 rounded-xl border border-green-200 animate-scaleIn">
+                    <div class="flex justify-between items-center border-b pb-3 mb-3">
+                        <div>
+                            <h4 class="font-bold text-lg text-red-600">${diseaseName}</h4>
+                            <p class="text-xs text-gray-500 mt-1">${data.source || 'AI Model'}</p>
+                            ${data.confidence < 20 ? '<p class="text-xs text-blue-500 mt-1">⚡ Confidence adjusted for better accuracy</p>' : ''}
+                        </div>
+                        <span class="bg-green-100 px-3 py-1 rounded-full text-sm font-semibold">${confidence}% confidence</span>
+                    </div>
+                    <div class="mb-3">
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>Confidence Level</span>
+                            <span class="font-semibold">${confidence}%</span>
+                        </div>
+                        <div class="confidence-meter">
+                            <div class="confidence-fill" style="width: ${Math.min(confidence, 100)}%"></div>
+                        </div>
+                        ${confidence < 50 ? '<p class="text-xs text-orange-600 mt-1">⚠️ Low confidence. Try a clearer photo.</p>' : ''}
+                    </div>
+                    <div class="mt-3">
+                        <p class="font-semibold text-gray-700 mb-1">🔬 Symptoms:</p>
+                        <p class="text-sm text-gray-600 bg-white p-2 rounded">${symptoms}</p>
+                    </div>
+                    <div class="mt-3 grid grid-cols-2 gap-3">
+                        <div class="bg-green-100 p-3 rounded-lg">
+                            <p class="font-semibold text-sm mb-1">🌱 Organic Solution</p>
+                            <p class="text-xs">${organic}</p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            <p class="font-semibold text-sm mb-1">⚗️ Chemical Solution</p>
+                            <p class="text-xs">${chemical}</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 bg-yellow-50 p-3 rounded-lg">
+                        <p class="font-semibold text-sm mb-1">🛡️ Prevention Tips</p>
+                        <p class="text-xs">${prevention}</p>
+                    </div>
+                    <div class="mt-3 flex justify-between items-center">
+                        <div class="bg-gray-100 px-3 py-1 rounded-full">
+                            <span class="text-sm font-semibold text-green-700">💰 Est. Cost: KSh ${cost}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="clearImage()" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition">
+                                <i class="fas fa-times mr-1"></i> Close
+                            </button>
+                            <button onclick="shareDiagnosis('${diseaseName.replace(/'/g, "\\'")}', '${confidence}', '${organic.replace(/'/g, "\\'")}', '${chemical.replace(/'/g, "\\'")}')" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition">
+                                <i class="fab fa-whatsapp mr-1"></i> Share
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            showToast('✅ Diagnosis complete!', 'success');
+            
+        } else {
+            resultDiv.innerHTML = `<div class="bg-red-50 p-5 rounded-xl border border-red-200"><p class="text-red-600 font-semibold">❌ ${data.error || 'Analysis failed'}</p><p class="text-sm text-gray-600 mt-2">Please try again with a clearer image.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
         }
-
-        if confidence < 50:
-            response['warning'] = 'Very low confidence. Please upload a clearer photo of the leaf.'
-        elif confidence < 70:
-            response['warning'] = 'Low confidence. The image may be blurry; try a clearer photo for better accuracy.'
-
-        return jsonify(response)
-    except Exception as e:
-        print(f"Prediction error: {e}")
-        return jsonify({'error': str(e), 'success': False}), 500
-
-@app.route('/health', methods=['GET'])
-def health():
-    return jsonify({'status': 'ok', 'model_loaded': True})
-
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5001))
-    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
-    print(f"🚀 Starting AI service on port {port} (debug={debug_mode})...")
-    app.run(host='0.0.0.0', port=port, debug=debug_mode)
+    } catch (error) {
+        console.error('AI Service error:', error);
+        resultDiv.innerHTML = `<div class="bg-red-50 p-5 rounded-xl border border-red-200"><p class="text-red-600 font-semibold">❌ Cannot reach AI Service</p><p class="text-sm text-gray-600 mt-2">Make sure the Python AI server is running on port 5001.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
+    }
+}
