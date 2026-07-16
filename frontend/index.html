@@ -127,6 +127,10 @@
         .crop-item { background: #f9fafb; }
         .chat-panel { background: #f9fafb; }
         .card-hover { background: #ffffff; }
+        /* Force all modals to white in light mode */
+        .modal-content { background: #ffffff; }
+        /* Ensure weather recommendations container is white in light mode */
+        #weatherRecommendations > div { background: #ffffff; }
 
         /* ===== DARK MODE OVERRIDES ===== */
         .dark body { background-color: #0f172a; color: #f1f5f9; }
@@ -146,6 +150,8 @@
         .dark .crop-item { background: #1e293b; }
         .dark .chat-panel { background: #1e293b; }
         .dark .card-hover { background: #1e293b; }
+        .dark .modal-content { background: #1e293b; }
+        .dark #weatherRecommendations > div { background: #1e293b; }
 
         /* Dark mode text colours – labels in disease modal and tasks get light green */
         .dark .label-text { color: #4ade80; } /* light green */
@@ -194,10 +200,19 @@
             border-color: #3b82f6;
         }
         .dark .card-hover:hover { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
-        /* Ensure modal content in dark mode */
-        .dark .modal-content { background: #1e293b; }
-        /* Light mode default modal content */
-        .modal-content { background: #ffffff; }
+
+        /* Weather recommendations heading colors in dark mode */
+        .dark .weather-rec-heading-blue { color: #60a5fa !important; }
+        .dark .weather-rec-heading-yellow { color: #fbbf24 !important; }
+        .dark .weather-rec-heading-green { color: #4ade80 !important; }
+        /* In light mode, keep them default dark colors (or we can set specific) */
+        .weather-rec-heading-blue { color: #2563eb; }  /* blue */
+        .weather-rec-heading-yellow { color: #d97706; } /* amber */
+        .weather-rec-heading-green { color: #16a34a; }  /* green */
+        /* But user wants the rest of the text to be white in dark mode – we already set text-gray-* classes to white, but we need to ensure list items are white. */
+        .dark #weatherRecommendations li { color: #f1f5f9; }
+        /* In light mode, list items should be dark */
+        #weatherRecommendations li { color: #1e293b; }
 
         /* Additional fixes for light mode text */
         .text-gray-800 { color: #1e293b; }
@@ -1895,10 +1910,14 @@
             const rec = recommendations[condition] || recommendations['sunny'];
             container.innerHTML = `
                 <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg mb-2">
-                    <p class="font-semibold text-blue-800 dark:text-blue-300"><i class="fas fa-tasks"></i> Recommended Actions:</p>
+                    <p class="font-semibold text-blue-800 dark:text-blue-300"><i class="fas fa-tasks"></i> <span class="weather-rec-heading-blue">Recommended Actions:</span></p>
                     <ul class="list-disc list-inside text-sm text-blue-700 dark:text-blue-200">${rec.actions.map(a => `<li>${a}</li>`).join('')}</ul>
                 </div>
-                ${rec.warnings.length ? `<div class="bg-yellow-50 dark:bg-yellow-900/30 p-3 rounded-lg"><p class="font-semibold text-yellow-800 dark:text-yellow-300"><i class="fas fa-exclamation-triangle"></i> Warnings:</p><ul class="list-disc list-inside text-sm text-yellow-700 dark:text-yellow-200">${rec.warnings.map(w => `<li>${w}</li>`).join('')}</ul></div>` : ''}
+                ${rec.warnings.length ? `
+                <div class="bg-yellow-50 dark:bg-yellow-900/30 p-3 rounded-lg">
+                    <p class="font-semibold text-yellow-800 dark:text-yellow-300"><i class="fas fa-exclamation-triangle"></i> <span class="weather-rec-heading-yellow">Warnings:</span></p>
+                    <ul class="list-disc list-inside text-sm text-yellow-700 dark:text-yellow-200">${rec.warnings.map(w => `<li>${w}</li>`).join('')}</ul>
+                </div>` : ''}
             `;
         }
 
@@ -1907,15 +1926,15 @@
             if (container) {
                 container.innerHTML = `
                     <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg mb-2">
-                        <p class="font-semibold text-blue-800 dark:text-blue-300"><i class="fas fa-tasks"></i> Recommended Actions:</p>
+                        <p class="font-semibold text-blue-800 dark:text-blue-300"><i class="fas fa-tasks"></i> <span class="weather-rec-heading-blue">Recommended Actions:</span></p>
                         <ul class="list-disc list-inside text-sm text-blue-700 dark:text-blue-200">${recommendations.actions.map(a => `<li>${a}</li>`).join('')}</ul>
                     </div>
                     <div class="bg-yellow-50 dark:bg-yellow-900/30 p-3 rounded-lg mb-2">
-                        <p class="font-semibold text-yellow-800 dark:text-yellow-300"><i class="fas fa-exclamation-triangle"></i> Warnings:</p>
+                        <p class="font-semibold text-yellow-800 dark:text-yellow-300"><i class="fas fa-exclamation-triangle"></i> <span class="weather-rec-heading-yellow">Warnings:</span></p>
                         <ul class="list-disc list-inside text-sm text-yellow-700 dark:text-yellow-200">${recommendations.warnings.map(w => `<li>${w}</li>`).join('')}</ul>
                     </div>
                     <div class="bg-green-50 dark:bg-green-900/30 p-3 rounded-lg">
-                        <p class="font-semibold text-green-800 dark:text-green-300"><i class="fas fa-check-circle"></i> Suggested Tasks:</p>
+                        <p class="font-semibold text-green-800 dark:text-green-300"><i class="fas fa-check-circle"></i> <span class="weather-rec-heading-green">Suggested Tasks:</span></p>
                         <ul class="list-disc list-inside text-sm text-green-700 dark:text-green-200">${recommendations.tasks.map(t => `<li>${t}</li>`).join('')}</ul>
                     </div>
                 `;
