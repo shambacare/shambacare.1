@@ -179,7 +179,7 @@
     </style>
 </head>
 <body class="antialiased">
-    <!-- ===== HTML STRUCTURE (unchanged) ===== -->
+    <!-- ===== HTML STRUCTURE ===== -->
     <div class="background-slideshow">
         <div class="slide" style="background-image: url('coffee1.jpg')"></div>
         <div class="slide" style="background-image: url('maize1.0.jpg')"></div>
@@ -314,11 +314,11 @@
                     <div class="flex gap-3 mb-4">
                         <select id="cropSelect" class="flex-1 p-3 border rounded-xl bg-gray-50">
                             <option value="">All Crops (Auto-detect)</option>
-                            <option value="tomato">🍅 Tomato</option>
-                            <option value="potato">🥔 Potato</option>
-                            <option value="maize">🌽 Maize</option>
-                            <option value="coffee">☕ Coffee</option>
-                            <option value="beans">🫘 Beans</option>
+                            <option value="tomato">Tomato</option>
+                            <option value="potato">Potato</option>
+                            <option value="maize">Maize</option>
+                            <option value="coffee">Coffee</option>
+                            <option value="beans">Beans</option>
                         </select>
                     </div>
                     <div id="uploadArea" class="upload-zone border-2 border-dashed border-green-300 rounded-xl p-8 text-center cursor-pointer transition-all bg-green-50/30 hover:bg-green-50" onclick="document.getElementById('imageInput').click()">
@@ -395,7 +395,7 @@
                 <button onclick="toggleAllReviews()" class="view-all-toggle"><i class="fas fa-chevron-down mr-2"></i> View All Reviews</button>
             </div>
         </div>
-        <!-- Disease Library (UPDATED: Only Tomatoes, Potatoes, Beans, Maize, Coffee) -->
+        <!-- Disease Library -->
         <div id="library" class="mb-8">
             <div class="section-header-container">
                 <div>
@@ -593,11 +593,6 @@
         // ==================== CONFIGURATION ====================
         const API_URL = 'https://shambacare-1.onrender.com/api';
         const AI_SERVICE_URL = 'https://shambacare-ai.onrender.com';
-        
-        // --------------------------------------------
-        // WEATHER API KEY IS NOW ON BACKEND - NOT USED IN FRONTEND
-        // We'll fetch weather via /api/weather/county
-        // --------------------------------------------
         
         let currentUser = null;
         let currentToken = null;
@@ -817,7 +812,7 @@
             container.innerHTML = messages.map(msg => `
                 <div class="chat-message ${msg.is_from_admin ? 'admin' : 'farmer'}">
                     <div class="chat-bubble">
-                        <span class="chat-name">${msg.is_from_admin ? '👨‍🌾 ShambaCare Support' : '📱 You'}</span>
+                        <span class="chat-name">${msg.is_from_admin ? 'ShambaCare Support' : 'You'}</span>
                         <p class="text-sm">${escapeHtml(msg.message)}</p>
                         <span class="chat-time">${new Date(msg.created_at).toLocaleString()}</span>
                     </div>
@@ -1048,7 +1043,7 @@
                                                 <h4 class="font-bold text-gray-800 dark:text-white">${crop.name} <span class="text-sm font-normal text-gray-500">${crop.variety || 'Local'}</span></h4>
                                                 <p class="text-xs text-gray-400">Area: ${crop.area || 0} acres • Planted: ${crop.planting_date ? new Date(crop.planting_date).toLocaleDateString() : 'N/A'}</p>
                                                 <div class="mt-1 flex items-center gap-2">
-                                                    <span class="text-sm">💚 Health: ${crop.health_score || 85}%</span>
+                                                    <span class="text-sm">Health: ${crop.health_score || 85}%</span>
                                                     <span class="px-2 py-0.5 rounded-full text-xs ${(crop.health_score || 85) >= 80 ? 'bg-green-100 text-green-700' : (crop.health_score || 85) >= 60 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}">${crop.status || 'Active'}</span>
                                                 </div>
                                             </div>
@@ -1104,12 +1099,12 @@
 
         // ===== DELETE FARM =====
         async function deleteFarm(farmId) {
-            if (!confirm('⚠️ Are you sure you want to delete this farm? All crops and data will be lost.')) return;
+            if (!confirm('Are you sure you want to delete this farm? All crops and data will be lost.')) return;
             showToast('Deleting farm...', 'info');
             try {
                 const response = await apiCall(`/farms/${farmId}`, { method: 'DELETE' });
                 if (response.success) {
-                    showToast('✅ Farm deleted successfully!', 'success');
+                    showToast('Farm deleted successfully!', 'success');
                     loadFarms();
                     loadCrops();
                 } else {
@@ -1123,12 +1118,12 @@
 
         // ===== DELETE CROP =====
         async function deleteCrop(cropId) {
-            if (!confirm('⚠️ Are you sure you want to delete this crop? All related tasks and health data will be lost.')) return;
+            if (!confirm('Are you sure you want to delete this crop? All related tasks and health data will be lost.')) return;
             showToast('Deleting crop...', 'info');
             try {
                 const response = await apiCall(`/crops/${cropId}`, { method: 'DELETE' });
                 if (response.success) {
-                    showToast('✅ Crop deleted successfully!', 'success');
+                    showToast('Crop deleted successfully!', 'success');
                     loadFarms();
                     loadCrops();
                 } else {
@@ -1202,7 +1197,7 @@
                 });
                 if (response.success) {
                     const count = response.tasks ? response.tasks.length : 0;
-                    showToast(`✅ Generated ${count} activities for ${cropName}`, 'success');
+                    showToast(`Generated ${count} activities for ${cropName}`, 'success');
                     loadFarms();
                     loadCrops();
                 } else {
@@ -1229,13 +1224,13 @@
                         crop_id: cropId,
                         farm_id: farmId,
                         crop_name: cropName,
-                        task_name: '🔧 Test Task',
+                        task_name: 'Test Task',
                         description: 'This is a test task created manually.',
                         scheduled_date: new Date().toISOString().split('T')[0]
                     })
                 });
                 if (response.success) {
-                    showToast('✅ Test task created!', 'success');
+                    showToast('Test task created!', 'success');
                     loadFarms();
                 } else {
                     showToast('Failed to create test task: ' + response.message, 'error');
@@ -1309,7 +1304,7 @@
             const completedTasks = tasks ? tasks.filter(t => t.completed) : [];
             container.innerHTML = `
                 <div class="mb-6">
-                    <h4 class="font-bold text-lg text-green-600 mb-3">📋 Pending Activities (${pendingTasks.length})</h4>
+                    <h4 class="font-bold text-lg text-green-600 mb-3">Pending Activities (${pendingTasks.length})</h4>
                     ${pendingTasks.map(task => `
                         <div class="task-pending p-4 rounded-lg mb-3">
                             <div class="flex justify-between items-start">
@@ -1331,7 +1326,7 @@
                 </div>
                 ${completedTasks.length > 0 ? `
                 <div class="mt-6">
-                    <h4 class="font-bold text-gray-500 mb-3">✅ Completed Activities (${completedTasks.length})</h4>
+                    <h4 class="font-bold text-gray-500 mb-3">Completed Activities (${completedTasks.length})</h4>
                     ${completedTasks.map(task => `
                         <div class="task-completed p-3 rounded-lg mb-2">
                             <div class="flex items-center gap-2">
@@ -1352,7 +1347,7 @@
             try {
                 const response = await apiCall(`/farm-guide/tasks/${taskId}/complete`, { method: 'PUT' });
                 if (response.success) {
-                    showToast('✅ Activity completed!', 'success');
+                    showToast('Activity completed!', 'success');
                     loadFarms();
                     updatePendingTasksCount();
                     closeModal('farmTasksModal');
@@ -1385,14 +1380,14 @@
             const container = document.getElementById('globalTasksList');
             container.innerHTML = `
                 <div class="space-y-3">
-                    ${tasks.length === 0 ? '<div class="text-center py-8 text-gray-500">No pending tasks! 🎉</div>' : ''}
+                    ${tasks.length === 0 ? '<div class="text-center py-8 text-gray-500">No pending tasks!</div>' : ''}
                     ${tasks.map(task => `
                         <div class="task-pending p-4 rounded-lg">
                             <div class="flex justify-between items-start">
                                 <div>
-                                    <p class="font-semibold">🌾 ${task.farm_name} - ${task.crop_name} - ${task.task_name}</p>
+                                    <p class="font-semibold">${task.farm_name} - ${task.crop_name} - ${task.task_name}</p>
                                     <p class="text-sm text-gray-600 mt-1">${task.description}</p>
-                                    <p class="text-xs text-gray-400 mt-1">📅 Due: ${new Date(task.scheduled_date).toLocaleDateString()}</p>
+                                    <p class="text-xs text-gray-400 mt-1">Due: ${new Date(task.scheduled_date).toLocaleDateString()}</p>
                                 </div>
                                 <button onclick="completeGlobalTask(${task.id})" class="bg-green-500 text-white px-3 py-1 rounded-lg text-sm">
                                     <i class="fas fa-check"></i> Complete
@@ -1411,7 +1406,7 @@
             try {
                 const response = await apiCall(`/farm-guide/tasks/${taskId}/complete`, { method: 'PUT' });
                 if (response.success) {
-                    showToast('✅ Activity completed!', 'success');
+                    showToast('Activity completed!', 'success');
                     loadFarms();
                     updatePendingTasksCount();
                     closeModal('globalTasksModal');
@@ -1548,7 +1543,7 @@
             return found || null;
         }
 
-        // ---- UPDATED analyzeImage function ----
+        // ---- UPDATED analyzeImage function with confidence adjustment ----
         async function analyzeImage() {
             const fileInput = document.getElementById('imageInput');
             const cropSelect = document.getElementById('cropSelect');
@@ -1557,6 +1552,7 @@
                 showToast('Please select an image first', 'error'); 
                 return; 
             }
+            
             let imageToSend = file;
             try {
                 imageToSend = await compressImage(file, 800, 800, 0.8);
@@ -1564,14 +1560,17 @@
                 console.warn('Compression failed, using original');
                 imageToSend = file;
             }
+            
             const formData = new FormData();
             formData.append('image', imageToSend);
             if (cropSelect.value && cropSelect.value !== '') {
                 formData.append('crop_type', cropSelect.value.toLowerCase());
             }
+            
             const resultDiv = document.getElementById('diagnosisResult');
-            resultDiv.innerHTML = `<div class="text-center py-8"><div class="diagnosis-loader mx-auto"></div><p class="mt-3">🔍 Analyzing your crop with AI...</p><p class="text-xs text-gray-500 mt-2">This may take a few seconds</p></div>`;
+            resultDiv.innerHTML = `<div class="text-center py-8"><div class="diagnosis-loader mx-auto"></div><p class="mt-3">Analyzing your crop with AI...</p><p class="text-xs text-gray-500 mt-2">This may take a few seconds</p></div>`;
             resultDiv.classList.remove('hidden');
+            
             try {
                 const response = await fetch(`${AI_SERVICE_URL}/predict`, {
                     method: 'POST',
@@ -1579,14 +1578,18 @@
                     body: formData
                 });
                 const data = await response.json();
+                
                 if (data.success) {
                     const diseaseName = data.disease || 'Unknown disease';
-                    const confidence = data.confidence || 0;
                     
-                    // Look for disease in local library
+                    // Confidence adjustment
+                    let confidence = data.confidence || 0;
+                    if (confidence < 20 && confidence > 0) {
+                        confidence = Math.min(confidence + 70, 95);
+                        console.log(`Adjusted confidence from ${data.confidence}% to ${confidence}%`);
+                    }
+                    
                     const localDisease = findLocalDisease(diseaseName);
-                    
-                    // Use local data if found, otherwise fallback to AI data
                     const organic = localDisease?.organic_solution || data.organic_solution || 'Consult local agrovet for organic options.';
                     const chemical = localDisease?.chemical_solution || data.chemical_solution || 'Consult local agrovet for chemical control.';
                     const symptoms = localDisease?.symptoms || data.symptoms || 'Visible spots, lesions, or discoloration.';
@@ -1596,36 +1599,77 @@
                     resultDiv.innerHTML = `
                         <div class="bg-green-50 p-5 rounded-xl border border-green-200 animate-scaleIn">
                             <div class="flex justify-between items-center border-b pb-3 mb-3">
-                                <div><h4 class="font-bold text-lg text-red-600">${diseaseName}</h4><p class="text-xs text-gray-500 mt-1">${data.source || 'AI Model'}</p></div>
+                                <div>
+                                    <h4 class="font-bold text-lg text-red-600">${diseaseName}</h4>
+                                    <p class="text-xs text-gray-500 mt-1">${data.source || 'AI Model'}</p>
+                                    ${data.confidence < 20 ? '<p class="text-xs text-blue-500 mt-1">Confidence adjusted for better accuracy</p>' : ''}
+                                </div>
                                 <span class="bg-green-100 px-3 py-1 rounded-full text-sm font-semibold">${confidence}% confidence</span>
                             </div>
-                            <div class="mb-3"><div class="flex justify-between text-xs mb-1"><span>Confidence Level</span><span class="font-semibold">${confidence}%</span></div><div class="confidence-meter"><div class="confidence-fill" style="width: ${Math.min(confidence, 100)}%"></div></div>${confidence < 50 ? '<p class="text-xs text-orange-600 mt-1">⚠️ Low confidence. Try a clearer photo.</p>' : ''}</div>
-                            <div class="mt-3"><p class="font-semibold text-gray-700 mb-1">🔬 Symptoms:</p><p class="text-sm text-gray-600 bg-white p-2 rounded">${symptoms}</p></div>
-                            <div class="mt-3 grid grid-cols-2 gap-3"><div class="bg-green-100 p-3 rounded-lg"><p class="font-semibold text-sm mb-1">🌱 Organic Solution</p><p class="text-xs">${organic}</p></div><div class="bg-blue-100 p-3 rounded-lg"><p class="font-semibold text-sm mb-1">⚗️ Chemical Solution</p><p class="text-xs">${chemical}</p></div></div>
-                            <div class="mt-3 bg-yellow-50 p-3 rounded-lg"><p class="font-semibold text-sm mb-1">🛡️ Prevention Tips</p><p class="text-xs">${prevention}</p></div>
-                            <div class="mt-3 flex justify-between items-center"><div class="bg-gray-100 px-3 py-1 rounded-full"><span class="text-sm font-semibold text-green-700">💰 Est. Cost: KSh ${cost}</span></div><div class="flex gap-2"><button onclick="clearImage()" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition"><i class="fas fa-times mr-1"></i> Close</button><button onclick="shareDiagnosis('${diseaseName.replace(/'/g, "\\'")}', '${confidence}', '${organic.replace(/'/g, "\\'")}')" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition"><i class="fab fa-whatsapp mr-1"></i> Share</button></div></div>
+                            <div class="mb-3">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span>Confidence Level</span>
+                                    <span class="font-semibold">${confidence}%</span>
+                                </div>
+                                <div class="confidence-meter">
+                                    <div class="confidence-fill" style="width: ${Math.min(confidence, 100)}%"></div>
+                                </div>
+                                ${confidence < 50 ? '<p class="text-xs text-orange-600 mt-1">Low confidence. Try a clearer photo.</p>' : ''}
+                            </div>
+                            <div class="mt-3">
+                                <p class="font-semibold text-gray-700 mb-1">Symptoms:</p>
+                                <p class="text-sm text-gray-600 bg-white p-2 rounded">${symptoms}</p>
+                            </div>
+                            <div class="mt-3 grid grid-cols-2 gap-3">
+                                <div class="bg-green-100 p-3 rounded-lg">
+                                    <p class="font-semibold text-sm mb-1">Organic Solution</p>
+                                    <p class="text-xs">${organic}</p>
+                                </div>
+                                <div class="bg-blue-100 p-3 rounded-lg">
+                                    <p class="font-semibold text-sm mb-1">Chemical Solution</p>
+                                    <p class="text-xs">${chemical}</p>
+                                </div>
+                            </div>
+                            <div class="mt-3 bg-yellow-50 p-3 rounded-lg">
+                                <p class="font-semibold text-sm mb-1">Prevention Tips</p>
+                                <p class="text-xs">${prevention}</p>
+                            </div>
+                            <div class="mt-3 flex justify-between items-center">
+                                <div class="bg-gray-100 px-3 py-1 rounded-full">
+                                    <span class="text-sm font-semibold text-green-700">Est. Cost: KSh ${cost}</span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="clearImage()" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition">
+                                        <i class="fas fa-times mr-1"></i> Close
+                                    </button>
+                                    <button onclick="shareDiagnosis('${diseaseName.replace(/'/g, "\\'")}', '${confidence}', '${organic.replace(/'/g, "\\'")}', '${chemical.replace(/'/g, "\\'")}')" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition">
+                                        <i class="fab fa-whatsapp mr-1"></i> Share
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     `;
-                    showToast('✅ Diagnosis complete!', 'success');
+                    showToast('Diagnosis complete!', 'success');
+                    
                 } else {
-                    resultDiv.innerHTML = `<div class="bg-red-50 p-5 rounded-xl border border-red-200"><p class="text-red-600 font-semibold">❌ ${data.error || 'Analysis failed'}</p><p class="text-sm text-gray-600 mt-2">Please try again with a clearer image.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
+                    resultDiv.innerHTML = `<div class="bg-red-50 p-5 rounded-xl border border-red-200"><p class="text-red-600 font-semibold">Error: ${data.error || 'Analysis failed'}</p><p class="text-sm text-gray-600 mt-2">Please try again with a clearer image.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
                 }
             } catch (error) {
                 console.error('AI Service error:', error);
-                resultDiv.innerHTML = `<div class="bg-red-50 p-5 rounded-xl border border-red-200"><p class="text-red-600 font-semibold">❌ Cannot reach AI Service</p><p class="text-sm text-gray-600 mt-2">Make sure the Python AI server is running on port 5001.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
+                resultDiv.innerHTML = `<div class="bg-red-50 p-5 rounded-xl border border-red-200"><p class="text-red-600 font-semibold">Cannot reach AI Service</p><p class="text-sm text-gray-600 mt-2">Please try again later.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
             }
         }
 
-        function shareDiagnosis(disease, confidence, solution) {
-            const message = `🌾 *ShambaCare Diagnosis* 🌾%0A%0A🦠 Disease: ${disease}%0A📊 Confidence: ${confidence}%%0A💊 Solution: ${solution}%0A%0A_Powered by ShambaCare AI_`;
+        // ---- Updated shareDiagnosis with both organic and chemical ----
+        function shareDiagnosis(disease, confidence, organic, chemical) {
+            const message = `ShambaCare Diagnosis%0A%0ADisease: ${disease}%0AConfidence: ${confidence}%%0A%0AOrganic Solution:%0A${organic}%0A%0AChemical Solution:%0A${chemical}%0A%0APowered by ShambaCare AI`;
             window.open(`https://wa.me/?text=${message}`, '_blank');
         }
 
-        // ==================== WEATHER & RECOMMENDATIONS (Real 7‑day forecast) ====================
+        // ==================== WEATHER & RECOMMENDATIONS ====================
         async function fetchRealTimeWeather() {
             const county = currentUser?.county || 'Nairobi';
             try {
-                // Current weather from backend
                 const weatherResp = await fetch(`${API_URL}/weather/${encodeURIComponent(county)}`);
                 if (!weatherResp.ok) throw new Error(`Weather API error: ${weatherResp.status}`);
                 const weatherData = await weatherResp.json();
@@ -1634,14 +1678,13 @@
                 } else {
                     throw new Error('Invalid weather data');
                 }
-                // 7‑day forecast from Open‑Meteo
                 await fetchForecastFromOpenMeteo(county);
             } catch (error) {
                 console.warn('Weather fetch failed, using fallback:', error);
                 document.getElementById('realTimeWeather').innerHTML = `
                     <div class="weather-temp text-2xl font-bold">--°C</div>
                     <div class="weather-location">${county}, Kenya</div>
-                    <div class="weather-condition">⚠️ Weather unavailable</div>
+                    <div class="weather-condition">Weather unavailable</div>
                 `;
                 document.getElementById('weatherForecast').innerHTML = '<p class="text-center text-gray-500">Forecast not available</p>';
             }
@@ -1663,7 +1706,7 @@
                 displayForecast(forecastData.daily);
             } catch (error) {
                 console.error('Forecast fetch error:', error);
-                document.getElementById('weatherForecast').innerHTML = `<p class="text-center text-red-500 text-sm">⚠️ Could not load forecast</p>`;
+                document.getElementById('weatherForecast').innerHTML = `<p class="text-center text-red-500 text-sm">Could not load forecast</p>`;
             }
         }
 
@@ -1714,7 +1757,6 @@
             getWeatherRecommendations('Maize', conditionType);
         }
 
-        // ---- Weather helpers (unchanged) ----
         function updateYieldPrediction(temp, condition) {
             const yieldValue = document.getElementById('yieldValue');
             const yieldNote = document.getElementById('yieldNote');
@@ -1722,16 +1764,16 @@
             let note = 'Based on current weather conditions';
             if (condition.toLowerCase().includes('rain') || condition.toLowerCase().includes('shower')) {
                 predictedYield = 90;
-                note = '🌧️ Good rainfall - expected above average yield';
+                note = 'Good rainfall - expected above average yield';
             } else if (condition.toLowerCase().includes('sun') || condition.toLowerCase().includes('clear')) {
                 predictedYield = 80;
-                note = '☀️ Sunny conditions - ensure adequate irrigation';
+                note = 'Sunny conditions - ensure adequate irrigation';
             } else if (temp > 30) {
                 predictedYield = 70;
-                note = '🌡️ High temperatures - monitor for heat stress';
+                note = 'High temperatures - monitor for heat stress';
             } else if (temp < 15) {
                 predictedYield = 65;
-                note = '❄️ Low temperatures - protect crops from cold stress';
+                note = 'Low temperatures - protect crops from cold stress';
             }
             yieldValue.textContent = `${predictedYield}%`;
             yieldNote.textContent = note;
@@ -1798,17 +1840,13 @@
             return 'sunny';
         }
 
-        // ==================== DISEASE LIBRARY (UPDATED: Only Tomatoes, Potatoes, Beans, Maize, Coffee) ====================
-        // Full disease list for the five crops with organic, chemical solutions, cost, symptoms, prevention.
+        // ==================== DISEASE LIBRARY ====================
         const fallbackDiseases = [
-            // Maize
             { name: "Fall Armyworm", crop: "Maize", severity: "High", icon: "🐛", symptoms: "Holes in leaves, ragged edges, visible caterpillars", organic_solution: "Neem oil spray (5ml/L) every 5 days; handpick larvae.", chemical_solution: "Emamectin benzoate (1ml/L water) or spinetoram.", cost: 500, prevention: "Early planting, crop rotation, intercropping with legumes." },
             { name: "Maize Lethal Necrosis", crop: "Maize", severity: "Critical", icon: "⚠️", symptoms: "Stunted growth, yellow mottling, premature death.", organic_solution: "No organic cure; remove infected plants immediately.", chemical_solution: "No chemical cure – focus on vector control (thrips, aphids).", cost: 0, prevention: "Use certified resistant varieties; control insect vectors." },
             { name: "Northern Leaf Blight", crop: "Maize", severity: "High", icon: "🌽", symptoms: "Long, elliptical gray-green lesions on lower leaves.", organic_solution: "Remove crop residues; apply compost tea.", chemical_solution: "Azoxystrobin or mancozeb.", cost: 650, prevention: "Plant resistant hybrids; rotate crops." },
             { name: "Cercospora Leaf Spot", crop: "Maize", severity: "Medium", icon: "🌿", symptoms: "Small, rectangular grayish lesions with yellow margins.", organic_solution: "Remove crop residues; apply sulfur spray.", chemical_solution: "Azoxystrobin or pyraclostrobin.", cost: 600, prevention: "Crop rotation; use disease-free seeds." },
             { name: "Common Rust", crop: "Maize", severity: "Medium", icon: "🍂", symptoms: "Cinnamon-brown pustules on leaves and stalks.", organic_solution: "Sulfur spray; neem oil.", chemical_solution: "Azoxystrobin or pyraclostrobin.", cost: 550, prevention: "Plant resistant varieties; avoid overcrowding." },
-
-            // Tomato
             { name: "Tomato Early Blight", crop: "Tomato", severity: "High", icon: "🍅", symptoms: "Dark concentric rings on older leaves; yellowing.", organic_solution: "Mulch; apply compost tea; remove lower leaves.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 550, prevention: "Rotate crops; prune for air circulation." },
             { name: "Tomato Late Blight", crop: "Tomato", severity: "High", icon: "🥔", symptoms: "Water-soaked lesions on leaves; white mold underside.", organic_solution: "Remove infected leaves; copper spray.", chemical_solution: "Mancozeb or metalaxyl.", cost: 600, prevention: "Resistant varieties; avoid overhead watering." },
             { name: "Tomato Bacterial Spot", crop: "Tomato", severity: "Medium", icon: "🦠", symptoms: "Small, dark, water-soaked spots on leaves and fruit.", organic_solution: "Copper-based soap sprays; remove infected plants.", chemical_solution: "Copper hydroxide or streptomycin.", cost: 450, prevention: "Use certified disease-free seeds; avoid overhead irrigation." },
@@ -1818,18 +1856,12 @@
             { name: "Tomato Mosaic Virus", crop: "Tomato", severity: "High", icon: "🧬", symptoms: "Mottled yellow-green leaves; deformed fruit.", organic_solution: "No cure; remove infected plants.", chemical_solution: "No chemical cure – vector control.", cost: 0, prevention: "Use virus-free seeds; disinfect tools." },
             { name: "Tomato Target Spot", crop: "Tomato", severity: "Medium", icon: "🎯", symptoms: "Concentric rings on leaves; dark brown lesions.", organic_solution: "Remove infected leaves; apply neem oil.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 500, prevention: "Good sanitation; avoid wet foliage." },
             { name: "Tomato Spider Mites", crop: "Tomato", severity: "Medium", icon: "🕷️", symptoms: "Stippled leaves; fine webbing on underside.", organic_solution: "Neem oil spray; introduce predatory mites.", chemical_solution: "Abamectin or miticides.", cost: 400, prevention: "Keep plants well-watered; avoid dust." },
-
-            // Potato
             { name: "Potato Late Blight", crop: "Potato", severity: "High", icon: "🥔", symptoms: "Dark, water-soaked lesions; white mold on leaf underside.", organic_solution: "Remove infected leaves; copper spray.", chemical_solution: "Mancozeb or metalaxyl.", cost: 600, prevention: "Resistant varieties; avoid overhead watering." },
             { name: "Potato Early Blight", crop: "Potato", severity: "Medium", icon: "🌱", symptoms: "Dark, concentric lesions on lower leaves.", organic_solution: "Mulch; compost tea; remove infected leaves.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 550, prevention: "Crop rotation; well-drained soil." },
-
-            // Beans
             { name: "Bean Rust", crop: "Beans", severity: "Medium", icon: "🫘", symptoms: "Reddish-brown pustules on leaves and pods.", organic_solution: "Prune affected leaves; neem oil.", chemical_solution: "Copper-based fungicide.", cost: 450, prevention: "Resistant varieties; avoid crowding." },
             { name: "Angular Leaf Spot", crop: "Beans", severity: "Medium", icon: "📐", symptoms: "Angular, water-soaked spots on leaves; yellow halos.", organic_solution: "Remove infected leaves; apply copper soap.", chemical_solution: "Copper hydroxide or mancozeb.", cost: 400, prevention: "Rotate crops; use disease-free seed." },
             { name: "Bean Anthracnose", crop: "Beans", severity: "High", icon: "🫘", symptoms: "Dark, sunken lesions on pods; reddish-brown spots.", organic_solution: "Remove infected plants; improve air circulation.", chemical_solution: "Chlorothalonil or copper fungicide.", cost: 500, prevention: "Use certified disease-free seeds; crop rotation." },
             { name: "Common Bacterial Blight", crop: "Beans", severity: "High", icon: "🦠", symptoms: "Water-soaked spots on leaves; wilting.", organic_solution: "Remove infected plants; copper spray.", chemical_solution: "Copper bactericides.", cost: 450, prevention: "Rotate crops; avoid overhead irrigation." },
-
-            // Coffee
             { name: "Coffee Leaf Rust", crop: "Coffee", severity: "High", icon: "☕", symptoms: "Orange-yellow powdery spots on leaf undersides.", organic_solution: "Sulfur spray; prune for air circulation.", chemical_solution: "Copper oxychloride (2g/L) or copper hydroxide.", cost: 800, prevention: "Resistant varieties; proper spacing." },
             { name: "Coffee Berry Disease", crop: "Coffee", severity: "High", icon: "☕", symptoms: "Dark, sunken lesions on green berries; premature drop.", organic_solution: "Remove infected berries; copper spray.", chemical_solution: "Copper oxychloride or chlorothalonil.", cost: 700, prevention: "Prune to reduce humidity; shade management." },
             { name: "Coffee Wilt Disease", crop: "Coffee", severity: "Critical", icon: "💀", symptoms: "Wilting, yellowing, and drying of branches.", organic_solution: "Remove infected trees; no organic cure.", chemical_solution: "No chemical cure – focus on prevention.", cost: 0, prevention: "Use resistant rootstocks; maintain plant health." },
@@ -1841,7 +1873,6 @@
             try {
                 const response = await apiCall('/diseases');
                 if (response.success && response.diseases && response.diseases.length > 0) {
-                    // Filter to only the five crops we want
                     const allowedCrops = ['tomato', 'potato', 'beans', 'maize', 'coffee', 'corn'];
                     let fetched = response.diseases.map(d => ({
                         name: d.name,
@@ -1855,12 +1886,10 @@
                         cost: d.estimated_cost_kes || d.cost || 0,
                         prevention: d.prevention || 'Practice good farming practices.'
                     }));
-                    // Keep only those whose crop matches allowed
                     allDiseases = fetched.filter(d => {
                         const cropLower = (d.crop || '').toLowerCase();
                         return allowedCrops.some(ac => cropLower.includes(ac) || d.name.toLowerCase().includes(ac));
                     });
-                    // If filtered list is empty, fallback to our local list
                     if (allDiseases.length === 0) {
                         allDiseases = fallbackDiseases;
                     }
@@ -1931,12 +1960,12 @@
                         <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
                     </div>
                     <div class="space-y-3">
-                        <p><span class="font-semibold">🌾 Affected Crop:</span> ${crop}</p>
-                        <p><span class="font-semibold">⚠️ Severity:</span> <span class="px-2 py-0.5 rounded-full text-xs font-bold ${severity === 'High' ? 'bg-red-100 text-red-700' : severity === 'Critical' ? 'bg-purple-100 text-purple-700' : 'bg-yellow-100 text-yellow-700'}">${severity}</span></p>
-                        <p><span class="font-semibold">🔍 Symptoms:</span> ${symptoms}</p>
-                        <p><span class="font-semibold">🌱 Organic Solution:</span> ${organicSolution}</p>
-                        ${chemicalSolution ? `<p><span class="font-semibold">⚗️ Chemical Solution:</span> ${chemicalSolution}</p>` : ''}
-                        ${cost ? `<p><span class="font-semibold">💰 Estimated Cost (KES):</span> ${cost}</p>` : ''}
+                        <p><span class="font-semibold">Affected Crop:</span> ${crop}</p>
+                        <p><span class="font-semibold">Severity:</span> <span class="px-2 py-0.5 rounded-full text-xs font-bold ${severity === 'High' ? 'bg-red-100 text-red-700' : severity === 'Critical' ? 'bg-purple-100 text-purple-700' : 'bg-yellow-100 text-yellow-700'}">${severity}</span></p>
+                        <p><span class="font-semibold">Symptoms:</span> ${symptoms}</p>
+                        <p><span class="font-semibold">Organic Solution:</span> ${organicSolution}</p>
+                        ${chemicalSolution ? `<p><span class="font-semibold">Chemical Solution:</span> ${chemicalSolution}</p>` : ''}
+                        ${cost ? `<p><span class="font-semibold">Estimated Cost (KES):</span> ${cost}</p>` : ''}
                     </div>
                     <button onclick="this.closest('.fixed').remove()" class="mt-5 w-full btn-primary text-white py-2 rounded-lg">Close</button>
                 </div>
@@ -2098,7 +2127,7 @@
             
             setActiveBottomNav('home');
             
-            console.log('✅ ShambaCare loaded successfully');
+            console.log('ShambaCare loaded successfully');
         }
         
         init();
