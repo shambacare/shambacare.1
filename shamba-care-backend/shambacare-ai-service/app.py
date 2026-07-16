@@ -76,7 +76,6 @@ def validate_image(image_bytes, filename):
         return False, "The image file seems corrupted. Please try a different photo."
 
     # 3. Optionally check dimensions (minimum size to be useful)
-    # (we'll re-open because verify closes the file)
     try:
         pil_img = Image.open(io.BytesIO(image_bytes))
         width, height = pil_img.size
@@ -263,8 +262,8 @@ def predict():
         disease_display = disease_raw.replace('___', ' - ').replace('_', ' ')
 
         # --- CHECK IF IT'S A PLANT LEAF ---
-        # If the max confidence is below 12%, it's likely not a plant leaf
-        if confidence < 12.0:
+        # If the max confidence is below 9%, it's likely not a plant leaf
+        if confidence < 9.0:
             return jsonify({
                 'error': 'This doesn\'t look like a clear plant leaf photo. Please upload a close-up of a leaf with good lighting.',
                 'success': False
