@@ -17,35 +17,16 @@
                     colors: {
                         agri: {
                             green: {
-                                50: '#f0fdf4',
-                                100: '#dcfce7',
-                                200: '#bbf7d0',
-                                300: '#86efac',
-                                400: '#4ade80',
-                                500: '#22c55e',
-                                600: '#16a34a',
-                                700: '#15803d',
-                                800: '#166534',
-                                900: '#14532d',
-                                950: '#052e16',
+                                50: '#f0fdf4', 100: '#dcfce7', 200: '#bbf7d0', 300: '#86efac',
+                                400: '#4ade80', 500: '#22c55e', 600: '#16a34a', 700: '#15803d',
+                                800: '#166534', 900: '#14532d', 950: '#052e16',
                             },
                             blue: {
-                                50: '#f0f9ff',
-                                100: '#e0f2fe',
-                                200: '#bae6fd',
-                                300: '#7dd3fc',
-                                400: '#38bdf8',
-                                500: '#0ea5e9',
-                                600: '#0284c7',
-                                700: '#0369a1',
-                                800: '#075985',
-                                900: '#0c4a6e',
-                                950: '#082f49',
+                                50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc',
+                                400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1',
+                                800: '#075985', 900: '#0c4a6e', 950: '#082f49',
                             }
                         }
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }
                 }
             }
@@ -56,186 +37,130 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root {
-            --primary-green: #16a34a;
-            --primary-blue: #0284c7;
-            --agri-gradient: linear-gradient(135deg, #16a34a 0%, #0284c7 100%);
-            --glass-bg: rgba(255, 255, 255, 0.8);
-            --glass-border: rgba(255, 255, 255, 0.2);
-        }
-
-        .dark {
-            --glass-bg: rgba(15, 23, 42, 0.8);
-            --glass-border: rgba(255, 255, 255, 0.1);
-        }
-
-        * { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
-
-        /* Background & Overlays */
+        * { font-family: 'Inter', sans-serif; }
         .background-slideshow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; overflow: hidden; }
-        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; animation: kenBurns 20s ease-in-out infinite alternate; }
+        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 0; transition: opacity 1.5s ease-in-out; animation: kenBurns 20s ease-in-out infinite alternate; }
         .slide.active { opacity: 1; }
-        @keyframes kenBurns { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
+        @keyframes kenBurns { 0% { transform: scale(1) translateX(0); } 100% { transform: scale(1.1) translateX(-2%); } }
+        .background-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.75) 100%); z-index: -1; }
         
-        .background-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: linear-gradient(135deg, rgba(6, 20, 14, 0.7) 0%, rgba(8, 47, 73, 0.8) 100%); 
-            z-index: -1; 
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--primary-green); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--primary-blue); }
-
-        /* Animations */
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar-thumb { background: #16a34a; border-radius: 10px; }
+        
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
         
-        .animate-fadeInUp { animation: fadeInUp 0.6s ease-out forwards; }
-        .animate-fadeIn { animation: fadeIn 0.5s ease-out forwards; }
-        .float-animation { animation: float 4s ease-in-out infinite; }
-
-        /* Components */
-        .glass-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 1.5rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        .animate-fadeInUp { animation: fadeInUp 0.6s ease-out; }
+        .animate-fadeIn { animation: fadeIn 0.5s ease-out; }
+        .animate-slideInRight { animation: slideInRight 0.5s ease-out; }
+        .animate-scaleIn { animation: scaleIn 0.4s ease-out; }
+        .float-animation { animation: float 3s ease-in-out infinite; }
         
-        .card-hover:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            border-color: var(--primary-green);
-        }
-
-        .gradient-text {
-            background: var(--agri-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .btn-primary {
-            background: var(--agri-gradient);
-            color: white !important;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(22, 163, 74, 0.4);
-            filter: brightness(1.1);
-        }
-
-        .upload-zone {
-            border: 2px dashed #cbd5e1;
-            transition: all 0.3s ease;
-        }
-        .upload-zone:hover, .upload-zone.drag-over {
-            border-color: var(--primary-green);
-            background: rgba(22, 163, 74, 0.05);
-        }
-
-        /* Navigations */
-        nav {
-            background: rgba(0, 0, 0, 0.6) !important;
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        .card-hover { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); cursor: pointer; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); border-color: #16a34a; }
         
-        .nav-link {
-            position: relative;
-            color: white !important;
-            opacity: 0.8;
-            transition: all 0.3s ease;
-        }
-        .nav-link:hover {
-            opacity: 1;
-            color: #4ade80 !important;
-        }
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--agri-gradient);
-            transition: width 0.3s ease;
-        }
+        .gradient-text { background: linear-gradient(135deg, #22c55e 0%, #0ea5e9 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .stat-number { font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, #22c55e 0%, #0ea5e9 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        @media (max-width: 640px) { .container { padding-left: 1rem; padding-right: 1rem; overflow-x: hidden; } button, .clickable { min-height: 44px; } }
+        @media (min-width: 1024px) { .container { max-width: 1280px; } }
+        
+        .btn-primary { background: linear-gradient(135deg, #16a34a 0%, #0284c7 100%); transition: all 0.3s ease; border: none; cursor: pointer; color: white !important; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(22,163,74,0.4); }
+        
+        .upload-zone { transition: all 0.3s ease; border: 2px dashed #cbd5e1; cursor: pointer; }
+        .upload-zone:hover, .upload-zone.drag-over { border-color: #16a34a; background-color: rgba(22,163,74,0.05); }
+        
+        .toast { animation: slideInRight 0.3s ease-out, fadeOut 0.3s ease-out 2.7s forwards; position: fixed; bottom: 24px; right: 16px; z-index: 1000; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .toast.success { background: #10b981; color: white; }
+        .toast.error { background: #ef4444; color: white; }
+        .toast.info { background: #3b82f6; color: white; }
+        @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
+        
+        .desktop-nav { display: flex; align-items: center; gap: 1.5rem; }
+        .nav-link { position: relative; font-weight: 500; transition: color 0.3s ease; color: white !important; cursor: pointer; }
+        .nav-link:hover { color: #4ade80 !important; }
+        .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: linear-gradient(135deg, #22c55e, #0ea5e9); transition: width 0.3s ease; }
         .nav-link:hover::after { width: 100%; }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(15px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            display: none;
-            justify-content: space-around;
-            padding: 12px 16px 24px;
-            z-index: 50;
-        }
-        @media (max-width: 768px) {
-            .bottom-nav { display: flex; }
-            body { padding-bottom: 80px; }
-        }
-        .bottom-nav-item.active { color: #4ade80; }
-
-        /* Specific Cards */
-        .disease-card, .farm-card, .crop-item {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 1rem;
-            padding: 1rem;
-            transition: all 0.3s ease;
-        }
-        .dark .disease-card, .dark .farm-card, .dark .crop-item {
-            background: #1e293b;
-            border-color: #334155;
-        }
-
-        .yield-card {
-            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%) !important;
-            border: 1px solid #dcfce7 !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-        .dark .yield-card {
-            background: linear-gradient(135deg, #1e293b 0%, #064e3b 100%) !important;
-            border-color: #065f46 !important;
-        }
-
-        /* Dark Mode Utility Overrides */
-        .dark body { background-color: #06140e; color: #f1f5f9; }
-        .dark .bg-white { background-color: #111827; }
-        .dark .text-gray-800 dark:text-gray-100 { color: #f1f5f9; }
-        .dark .text-gray-600 dark:text-gray-400 { color: #94a3b8; }
-        .dark .border-gray-200 { border-color: #1f2937; }
         
-        /* Toast */
-        .toast {
-            border-radius: 12px;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Forms */
-        input, select, textarea {
-            transition: all 0.2s ease;
-        }
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--primary-green) !important;
-            ring: 2px solid rgba(22, 163, 74, 0.2);
-        }
+        .mobile-menu-btn { display: none; }
+        .mobile-menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 40; opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
+        .mobile-menu-overlay.active { opacity: 1; visibility: visible; }
+        .mobile-menu-panel { position: fixed; top: 0; right: 0; width: 280px; height: 100%; background: white; z-index: 50; transform: translateX(100%); transition: transform 0.3s ease-in-out; }
+        .dark .mobile-menu-panel { background: #1e293b; }
+        .mobile-menu-panel.active { transform: translateX(0); }
+        @media (max-width: 768px) { .desktop-nav { display: none; } .mobile-menu-btn { display: block; } }
+        
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,0.2); display: none; justify-content: space-around; padding: 10px 16px 20px; z-index: 40; }
+        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: rgba(255,255,255,0.7); transition: all 0.2s ease; cursor: pointer; }
+        .bottom-nav-item.active { color: #4ade80; }
+        .bottom-nav-item i { font-size: 24px; }
+        .bottom-nav-item span { font-size: 11px; font-weight: 500; }
+        @media (max-width: 768px) { .bottom-nav { display: flex; } body { padding-bottom: 70px; } }
+        
+        .section-header-container { background: white; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; border: 1px solid #e5e7eb; }
+        .dark .section-header-container { background: #1e293b; border-color: #334155; }
+        .section-header-container h2, .section-header-container h3 { color: #1e293b !important; }
+        .dark .section-header-container h2, .dark .section-header-container h3 { color: #f1f5f9 !important; }
+        
+        .blue-button { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; transition: all 0.3s ease; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; border: none; }
+        .blue-button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(14,165,233,0.3); }
+        
+        .confidence-meter { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin: 10px 0; }
+        .dark .confidence-meter { background: #334155; }
+        .confidence-fill { height: 100%; transition: width 0.5s ease; background: linear-gradient(90deg, #f59e0b, #10b981); }
+        
+        .diagnosis-loader { width: 48px; height: 48px; border: 3px solid #e5e7eb; border-bottom-color: #16a34a; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
+        .profile-modal-content { background: white; border-radius: 1.5rem; }
+        .dark .profile-modal-content { background: #1e293b; }
+        
+        .rating-star { color: #facc15; font-size: 1.2rem; }
+        .rating-star.empty { color: #d1d5db; }
+        
+        .farmer-review-card { transition: all 0.3s ease; background: white; border-radius: 1rem; padding: 1.25rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; }
+        .dark .farmer-review-card { background: #1e293b; border-color: #334155; }
+        .farmer-review-card:hover { transform: scale(1.02); border-color: #16a34a; }
+        
+        nav { background: rgba(0,0,0,0.5) !important; backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.2); }
+        .task-pending { background: #fef3c7; border-left: 4px solid #f59e0b; }
+        .dark .task-pending { background: #422006; border-left-color: #f59e0b; }
+        .task-completed { background: #d1fae5; border-left: 4px solid #10b981; opacity: 0.8; }
+        .dark .task-completed { background: #064e3b; border-left-color: #10b981; }
+        
+        .chat-message { display: flex; margin-bottom: 1rem; animation: fadeInUp 0.3s ease-out; }
+        .chat-message.farmer { justify-content: flex-end; }
+        .chat-message.admin { justify-content: flex-start; }
+        .chat-bubble { max-width: 70%; padding: 10px 14px; border-radius: 18px; position: relative; }
+        .chat-message.farmer .chat-bubble { background: #16a34a; color: #ffffff; border-bottom-right-radius: 4px; }
+        .chat-message.admin .chat-bubble { background: #e5e7eb; color: #1e293b; border-bottom-left-radius: 4px; }
+        .dark .chat-message.admin .chat-bubble { background: #334155; color: #f1f5f9; }
+        
+        .skeleton { background: linear-gradient(90deg, #e5e7eb 25%, #d1d5db 50%, #e5e7eb 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+        .dark .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); }
+        
+        .zoom-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
+        .zoom-modal.active { display: flex; }
+        
+        .yield-card { background: white !important; border: 1px solid #e5e7eb !important; border-radius: 1rem; padding: 1.25rem; }
+        .dark .yield-card { background: #1e293b !important; border-color: #facc15 !important; }
+        
+        body { background-color: #f8fafc; color: #1e293b; }
+        .dark body { background-color: #0f172a; color: #f1f5f9; }
+        
+        /* Dark mode text helpers */
+        .dark .text-gray-800 { color: #f1f5f9 !important; }
+        .dark .text-gray-700 { color: #e2e8f0 !important; }
+        .dark .text-gray-600 { color: #cbd5e1 !important; }
+        .dark .text-gray-500 { color: #94a3b8 !important; }
+        .dark .bg-white { background-color: #1e293b !important; }
+        .dark .bg-gray-50, .dark .bg-gray-100 { background-color: #111827 !important; }
+        .dark .border-gray-200, .dark .border-gray-300 { border-color: #334155 !important; }
     </style>
     
 </head>
@@ -272,7 +197,7 @@
                     <a href="#" onclick="handleLogout()" class="nav-link text-red-400"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <button onclick="toggleTheme()" class="glass-card/10 hover:bg-white/20 p-2 rounded-lg transition"><i id="themeIcon" class="fas fa-moon text-white"></i></button>
+                    <button onclick="toggleTheme()" class="bg-white/10 hover:bg-white/20 p-2 rounded-lg transition"><i id="themeIcon" class="fas fa-moon text-white"></i></button>
                     <button id="mobileMenuToggle" class="mobile-menu-btn bg-white/10 hover:bg-white/20 p-2 rounded-lg transition"><i class="fas fa-bars text-white text-xl"></i></button>
                 </div>
             </div>
@@ -289,15 +214,15 @@
     <!-- Mobile Menu -->
     <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
     <div id="mobileMenuPanel" class="mobile-menu-panel dark:bg-gray-900 dark:text-white">
-        <div class="flex justify-between items-center p-4 border-b dark:border-gray-700"><span class="font-bold"><i class="fas fa-leaf text-agri-green-600 mr-2"></i>Menu</span><button id="closeMobileMenu"><i class="fas fa-times text-xl"></i></button></div>
+        <div class="flex justify-between items-center p-4 border-b dark:border-gray-700"><span class="font-bold"><i class="fas fa-leaf text-green-600 mr-2"></i>Menu</span><button id="closeMobileMenu"><i class="fas fa-times text-xl"></i></button></div>
         <div class="flex flex-col p-4 space-y-3">
-            <a href="#" onclick="scrollToSection('home');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-home w-6 text-agri-green-600"></i> Home</a>
-            <a href="#" onclick="scrollToSection('diagnosis');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-microscope w-6 text-agri-green-600"></i> Diagnosis</a>
-            <a href="#" onclick="scrollToSection('shambas');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-tractor w-6 text-agri-green-600"></i> My Shambas</a>
-            <a href="#" onclick="scrollToSection('crops');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-seedling w-6 text-agri-green-600"></i> Crops</a>
-            <a href="#" onclick="scrollToSection('library');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-book w-6 text-agri-green-600"></i> Disease Library</a>
+            <a href="#" onclick="scrollToSection('home');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-home w-6 text-green-600"></i> Home</a>
+            <a href="#" onclick="scrollToSection('diagnosis');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-microscope w-6 text-green-600"></i> Diagnosis</a>
+            <a href="#" onclick="scrollToSection('shambas');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-tractor w-6 text-green-600"></i> My Shambas</a>
+            <a href="#" onclick="scrollToSection('crops');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-seedling w-6 text-green-600"></i> Crops</a>
+            <a href="#" onclick="scrollToSection('library');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-book w-6 text-green-600"></i> Disease Library</a>
             <a href="#" onclick="scrollToSection('reviews');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-star w-6 text-yellow-500"></i> Reviews</a>
-            <a href="#" onclick="scrollToSection('contact');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-envelope w-6 text-agri-green-600"></i> Contact</a>
+            <a href="#" onclick="scrollToSection('contact');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-envelope w-6 text-green-600"></i> Contact</a>
             <div class="border-t my-2 pt-3"></div>
             <a href="#" onclick="handleLogout();closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-red-50 dark:hover:bg-red-900 flex items-center text-red-600"><i class="fas fa-sign-out-alt w-6"></i> Sign Out</a>
         </div>
@@ -306,7 +231,7 @@
     <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('profileModal')">
         <div class="profile-modal-content rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
             <div class="p-4 border-b rounded-t-2xl flex justify-between items-center">
-                <h3 class="font-bold text-lg"><i class="fas fa-user-circle text-agri-green-600 mr-2"></i> My Profile</h3>
+                <h3 class="font-bold text-lg"><i class="fas fa-user-circle text-green-600 mr-2"></i> My Profile</h3>
                 <button onclick="closeModal('profileModal')"><i class="fas fa-times text-xl text-red-500"></i></button>
             </div>
             <div class="p-5 space-y-4">
@@ -315,9 +240,9 @@
                     <div><h4 class="font-bold" id="profileName">Loading...</h4><p class="text-sm text-gray-500" id="profileEmail">-</p></div>
                 </div>
                 <div class="space-y-3">
-                    <div class="flex justify-between py-2 border-b"><span><i class="fas fa-phone-alt w-6 text-agri-green-600"></i> Phone</span><span id="profilePhone">-</span></div>
-                    <div class="flex justify-between py-2 border-b"><span><i class="fas fa-map-marker-alt w-6 text-agri-green-600"></i> County</span><span id="profileCounty">-</span></div>
-                    <div class="flex justify-between py-2 border-b"><span><i class="fas fa-credit-card w-6 text-agri-green-600"></i> Subscription</span><span id="profilePlan">Basic</span></div>
+                    <div class="flex justify-between py-2 border-b"><span><i class="fas fa-phone-alt w-6 text-green-600"></i> Phone</span><span id="profilePhone">-</span></div>
+                    <div class="flex justify-between py-2 border-b"><span><i class="fas fa-map-marker-alt w-6 text-green-600"></i> County</span><span id="profileCounty">-</span></div>
+                    <div class="flex justify-between py-2 border-b"><span><i class="fas fa-credit-card w-6 text-green-600"></i> Subscription</span><span id="profilePlan">Basic</span></div>
                 </div>
                 <button onclick="handleLogout()" class="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition font-semibold"><i class="fas fa-sign-out-alt mr-2"></i> Sign Out</button>
             </div>
@@ -341,7 +266,7 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <div class="glass-card/20 rounded-full p-3"><i class="fas fa-cloud-sun text-3xl"></i></div>
+                            <div class="bg-white/20 rounded-full p-3"><i class="fas fa-cloud-sun text-3xl"></i></div>
                             <p class="text-sm mt-2 font-semibold" id="weatherTemp">--°C</p>
                             <p class="text-xs" id="weatherDesc">Loading weather...</p>
                         </div>
@@ -349,17 +274,17 @@
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-4">
-                <div class="glass-card card-hover rounded-2xl p-4 shadow-lg card-hover" onclick="scrollToSection('crops')">
-                    <div class="flex justify-between mb-2"><i class="fas fa-chart-line text-agri-green-600 text-2xl"></i><span class="text-xs text-gray-400">+12%</span></div>
+                <div class="bg-white/95 rounded-2xl p-4 shadow-lg card-hover" onclick="scrollToSection('crops')">
+                    <div class="flex justify-between mb-2"><i class="fas fa-chart-line text-green-600 text-2xl"></i><span class="text-xs text-gray-400">+12%</span></div>
                     <p class="stat-number text-3xl font-bold" id="overallHealth">-</p>
                     <p class="text-sm text-gray-500 mt-1">Overall Health Score</p>
                     <div class="mt-2 h-2 bg-gray-200 rounded-full"><div id="healthBar" class="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full" style="width: 0%"></div></div>
                 </div>
-                <div class="glass-card card-hover rounded-2xl p-4 shadow-lg card-hover" onclick="showGlobalTasks()">
+                <div class="bg-white/95 rounded-2xl p-4 shadow-lg card-hover" onclick="showGlobalTasks()">
                     <div class="flex justify-between mb-2"><i class="fas fa-tasks text-orange-500 text-2xl"></i><span class="text-xs text-gray-400">Tasks</span></div>
                     <p class="stat-number text-3xl font-bold" id="pendingTasks">0</p>
                     <p class="text-sm text-gray-500 mt-1">Pending Tasks</p>
-                    <div class="mt-2 text-xs text-agri-green-600">Click to view all →</div>
+                    <div class="mt-2 text-xs text-green-600">Click to view all →</div>
                 </div>
             </div>
         </div>
@@ -384,7 +309,7 @@
                     </div>
                     <div id="uploadArea" class="upload-zone border-2 border-dashed border-green-300 rounded-xl p-8 text-center cursor-pointer transition-all bg-green-50/30 hover:bg-green-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700" onclick="document.getElementById('imageInput').click()">
                         <i class="fas fa-cloud-upload-alt text-5xl text-green-400 mb-3"></i>
-                        <p class="text-gray-600 dark:text-gray-400 dark:text-gray-300 font-medium">Tap to upload or take a photo</p>
+                        <p class="text-gray-600 dark:text-gray-300 font-medium">Tap to upload or take a photo</p>
                         <p class="text-xs text-gray-400 dark:text-gray-400 mt-1">Supported: JPG, PNG (max 10MB) • Use clear leaf photo</p>
                         <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageUpload(this)">
                     </div>
@@ -398,12 +323,12 @@
                     <div id="diagnosisResult" class="hidden mt-6"></div>
                 </div>
             </div>
-            <div class="glass-card card-hover rounded-2xl shadow-xl p-5 card-hover dark:bg-gray-800 dark:border-gray-700">
-                <h3 class="font-bold text-gray-800 dark:text-gray-100 dark:text-white"><i class="fas fa-cloud-sun-rain text-agri-green-600 mr-2"></i> Weather & Recommendations</h3>
+            <div class="bg-white/95 rounded-2xl shadow-xl p-5 card-hover dark:bg-gray-800 dark:border-gray-700">
+                <h3 class="font-bold text-gray-800 dark:text-white"><i class="fas fa-cloud-sun-rain text-green-600 mr-2"></i> Weather & Recommendations</h3>
                 <div id="realTimeWeather" class="text-center py-3">
-                    <div class="weather-temp text-2xl font-bold text-gray-800 dark:text-gray-100 dark:text-white">--°C</div>
-                    <div class="weather-location text-gray-600 dark:text-gray-400 dark:text-gray-300">Nairobi, Kenya</div>
-                    <div class="weather-condition text-gray-600 dark:text-gray-400 dark:text-gray-300"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+                    <div class="weather-temp text-2xl font-bold text-gray-800 dark:text-white">--°C</div>
+                    <div class="weather-location text-gray-600 dark:text-gray-300">Nairobi, Kenya</div>
+                    <div class="weather-condition text-gray-600 dark:text-gray-300"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
                 </div>
                 <div id="weatherForecast" class="space-y-2 mt-3"></div>
                 <div id="weatherRecommendations" class="mt-3 space-y-2"></div>
@@ -424,7 +349,7 @@
         <div id="shambas" class="mb-8">
             <div class="section-header-container dark:bg-gray-800 dark:border-gray-700">
                 <div>
-                    <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 dark:text-white"><i class="fas fa-tractor text-agri-green-600 mr-2"></i> My Shambas</h2>
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-tractor text-green-600 mr-2"></i> My Shambas</h2>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your farms and crops</p>
                 </div>
                 <button onclick="showEnhancedAddFarmModal()" class="blue-button">Add New Farm</button>
@@ -434,7 +359,7 @@
         <!-- Crops Section -->
         <div id="crops" class="mb-8">
             <div class="section-header-container dark:bg-gray-800 dark:border-gray-700">
-                <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 dark:text-white"><i class="fas fa-seedling text-agri-green-600 mr-2"></i> Active Crops Health Status</h2>
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-seedling text-green-600 mr-2"></i> Active Crops Health Status</h2>
                 <span class="blue-button" style="cursor: default;"><i class="fas fa-calendar"></i> Last updated today</span>
             </div>
             <div id="cropsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
@@ -443,21 +368,21 @@
         <div id="reviews" class="mb-8">
             <div class="section-header-container dark:bg-gray-800 dark:border-gray-700">
                 <div>
-                    <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 dark:text-white"><i class="fas fa-star text-yellow-500 mr-2"></i> Farmer Ratings & Reviews</h2>
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-star text-yellow-500 mr-2"></i> Farmer Ratings & Reviews</h2>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">See what fellow farmers say about ShambaCare</p>
                 </div>
                 <button onclick="scrollToSection('contact')" class="blue-button"><i class="fas fa-pen"></i> Leave a Review</button>
             </div>
             <div id="reviewsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             <div id="reviewsViewAllWrapper" class="text-center mt-4 hidden">
-                <button onclick="toggleAllReviews()" class="view-all-toggle text-agri-blue-600 dark:text-blue-400">View All Reviews</button>
+                <button onclick="toggleAllReviews()" class="view-all-toggle text-blue-600 dark:text-blue-400">View All Reviews</button>
             </div>
         </div>
         <!-- Disease Library -->
         <div id="library" class="mb-8">
             <div class="section-header-container dark:bg-gray-800 dark:border-gray-700">
                 <div>
-                    <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 dark:text-white"><i class="fas fa-book text-agri-green-600 mr-2"></i> Common Crop Issues in Kenya</h2>
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-book text-green-600 mr-2"></i> Common Crop Issues in Kenya</h2>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Search and learn about crop diseases, symptoms, and treatments</p>
                 </div>
                 <div class="relative">
@@ -467,46 +392,46 @@
             </div>
             <div id="diseaseLibraryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
             <div id="diseaseViewAllWrapper" class="text-center mt-4 hidden">
-                <button onclick="toggleAllDiseases()" class="view-all-toggle text-agri-blue-600 dark:text-blue-400">View All Diseases</button>
+                <button onclick="toggleAllDiseases()" class="view-all-toggle text-blue-600 dark:text-blue-400">View All Diseases</button>
             </div>
         </div>
         <!-- Contact Section -->
         <div id="contact" class="mb-8">
             <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 text-center mb-8">
-                <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 dark:text-white">Let's <span class="gradient-text">Connect</span></h1>
-                <p class="text-gray-600 dark:text-gray-400 dark:text-gray-300">Send us your feedback or reach out for support</p>
+                <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Let's <span class="gradient-text">Connect</span></h1>
+                <p class="text-gray-600 dark:text-gray-300">Send us your feedback or reach out for support</p>
             </div>
             <!-- Contact Methods -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                <div class="glass-card card-hover dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center card-hover dark:border-gray-700">
-                    <i class="fas fa-phone-alt text-agri-green-600 text-3xl mb-3"></i>
-                    <h3 class="font-semibold text-gray-800 dark:text-gray-100 dark:text-white">Phone</h3>
+                <div class="bg-white/95 dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center card-hover dark:border-gray-700">
+                    <i class="fas fa-phone-alt text-green-600 text-3xl mb-3"></i>
+                    <h3 class="font-semibold text-gray-800 dark:text-white">Phone</h3>
                     <div class="space-y-2 mt-2">
-                        <div><span class="font-medium text-gray-700 dark:text-gray-300">Chrispinus:</span> <a href="tel:+254793681781" class="text-gray-600 dark:text-gray-400 dark:text-gray-400 hover:text-agri-green-600 dark:hover:text-green-400">+254 793 681 781</a></div>
-                        <div><span class="font-medium text-gray-700 dark:text-gray-300">Ian:</span> <a href="tel:+254708059908" class="text-gray-600 dark:text-gray-400 dark:text-gray-400 hover:text-agri-green-600 dark:hover:text-green-400">+254 708 059 908</a></div>
-                        <div><span class="font-medium text-gray-700 dark:text-gray-300">Joshua:</span> <a href="tel:+254717768346" class="text-gray-600 dark:text-gray-400 dark:text-gray-400 hover:text-agri-green-600 dark:hover:text-green-400">+254 717 768 346</a></div>
+                        <div><span class="font-medium text-gray-700 dark:text-gray-300">Chrispinus:</span> <a href="tel:+254793681781" class="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400">+254 793 681 781</a></div>
+                        <div><span class="font-medium text-gray-700 dark:text-gray-300">Ian:</span> <a href="tel:+254708059908" class="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400">+254 708 059 908</a></div>
+                        <div><span class="font-medium text-gray-700 dark:text-gray-300">Joshua:</span> <a href="tel:+254717768346" class="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400">+254 717 768 346</a></div>
                     </div>
                 </div>
-                <div class="glass-card card-hover dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center card-hover dark:border-gray-700">
-                    <i class="fas fa-envelope text-agri-green-600 text-3xl mb-3"></i>
-                    <h3 class="font-semibold text-gray-800 dark:text-gray-100 dark:text-white">Email</h3>
-                    <a href="mailto:shambacare2026@gmail.com" class="text-gray-600 dark:text-gray-400 dark:text-gray-400 hover:text-agri-green-600 dark:hover:text-green-400">shambacare2026@gmail.com</a>
+                <div class="bg-white/95 dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center card-hover dark:border-gray-700">
+                    <i class="fas fa-envelope text-green-600 text-3xl mb-3"></i>
+                    <h3 class="font-semibold text-gray-800 dark:text-white">Email</h3>
+                    <a href="mailto:shambacare2026@gmail.com" class="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400">shambacare2026@gmail.com</a>
                 </div>
-                <div class="glass-card card-hover dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center card-hover dark:border-gray-700">
-                    <i class="fas fa-map-marker-alt text-agri-green-600 text-3xl mb-3"></i>
-                    <h3 class="font-semibold text-gray-800 dark:text-gray-100 dark:text-white">Visit Us</h3>
-                    <p class="text-gray-600 dark:text-gray-400 dark:text-gray-300">Westlands Business Park, Nairobi</p>
+                <div class="bg-white/95 dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center card-hover dark:border-gray-700">
+                    <i class="fas fa-map-marker-alt text-green-600 text-3xl mb-3"></i>
+                    <h3 class="font-semibold text-gray-800 dark:text-white">Visit Us</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Westlands Business Park, Nairobi</p>
                 </div>
-                <div class="glass-card card-hover dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center card-hover dark:border-gray-700">
-                    <i class="fas fa-clock text-agri-green-600 text-3xl mb-3"></i>
-                    <h3 class="font-semibold text-gray-800 dark:text-gray-100 dark:text-white">Hours</h3>
-                    <p class="text-gray-600 dark:text-gray-400 dark:text-gray-300">Mon-Fri: 8am-5pm</p>
+                <div class="bg-white/95 dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center card-hover dark:border-gray-700">
+                    <i class="fas fa-clock text-green-600 text-3xl mb-3"></i>
+                    <h3 class="font-semibold text-gray-800 dark:text-white">Hours</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Mon-Fri: 8am-5pm</p>
                 </div>
             </div>
             <!-- Chat + Feedback Form -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
                 <!-- Chat Support -->
-                <div class="glass-card card-hover dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden card-hover dark:border-gray-700">
+                <div class="bg-white/95 dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden card-hover dark:border-gray-700">
                     <div class="bg-gradient-to-r from-green-600 to-green-700 p-5">
                         <h2 class="text-xl font-bold text-white"><i class="fas fa-comments mr-2"></i> Chat with Support</h2>
                         <p class="text-green-100 text-sm">Send us a message and we'll respond within 24 hours</p>
@@ -516,14 +441,14 @@
                             <div class="text-center py-8 text-gray-500 dark:text-gray-300">Loading messages...</div>
                         </div>
                         <div class="flex gap-2">
-                            <input type="text" id="quickMessageInput" placeholder="Type your message here..." class="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 dark:text-gray-100 dark:text-white bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+                            <input type="text" id="quickMessageInput" placeholder="Type your message here..." class="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 dark:text-white bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
                             <button onclick="sendQuickMessage()" class="btn-primary text-white px-4 py-3 rounded-lg font-semibold chat-send-btn whitespace-nowrap"><i class="fas fa-paper-plane mr-1"></i><span> Send</span></button>
                         </div>
                         <p class="text-xs text-gray-400 dark:text-gray-400 mt-2"><i class="fas fa-clock"></i> Our support team typically responds within 24 hours</p>
                     </div>
                 </div>
                 <!-- Review Form -->
-                <div class="glass-card card-hover dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden card-hover dark:border-gray-700">
+                <div class="bg-white/95 dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden card-hover dark:border-gray-700">
                     <div class="bg-gradient-to-r from-green-600 to-green-700 p-5">
                         <h2 class="text-xl font-bold text-white"><i class="fas fa-star mr-2"></i> Leave a Review</h2>
                         <p class="text-green-100 text-sm">Share your experience – help other farmers</p>
@@ -552,16 +477,16 @@
             </div>
             <!-- Map & Newsletter -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-                <div class="glass-card card-hover dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden card-hover dark:border-gray-700">
+                <div class="bg-white/95 dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden card-hover dark:border-gray-700">
                     <div class="bg-gradient-to-r from-green-600 to-green-700 p-5"><h2 class="text-xl font-bold text-white">Find Us Here</h2><p class="text-green-100 text-sm">Visit our office in Nairobi</p></div>
                     <div class="h-80 w-full"><iframe class="w-full h-full" frameborder="0" style="border:0" allowfullscreen loading="lazy" src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=Westlands+Nairobi+Kenya&zoom=14"></iframe></div>
-                    <div class="p-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600"><div class="flex items-center justify-between text-sm"><span class="text-gray-600 dark:text-gray-400 dark:text-gray-300"><i class="fas fa-location-dot text-agri-green-600 mr-2"></i>Westlands Business Park, Nairobi</span><a href="https://maps.google.com/?q=Westlands+Nairobi+Kenya" target="_blank" class="text-agri-green-600 dark:text-green-400 hover:underline">Open in Maps <i class="fas fa-external-link-alt ml-1"></i></a></div></div>
+                    <div class="p-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600"><div class="flex items-center justify-between text-sm"><span class="text-gray-600 dark:text-gray-300"><i class="fas fa-location-dot text-green-600 mr-2"></i>Westlands Business Park, Nairobi</span><a href="https://maps.google.com/?q=Westlands+Nairobi+Kenya" target="_blank" class="text-green-600 dark:text-green-400 hover:underline">Open in Maps <i class="fas fa-external-link-alt ml-1"></i></a></div></div>
                 </div>
                 <div class="bg-gradient-to-r from-green-600 to-green-700 rounded-2xl p-8 text-center flex flex-col justify-center">
                     <i class="fas fa-envelope-open-text text-white text-4xl mb-4"></i>
                     <h3 class="text-2xl font-bold text-white mb-2">Stay Updated</h3>
                     <div class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                        <input type="email" id="newsletterEmail" placeholder="Your email" class="flex-1 px-4 py-2 rounded-lg bg-white text-gray-800 dark:text-gray-100 dark:bg-gray-700 dark:text-white">
+                        <input type="email" id="newsletterEmail" placeholder="Your email" class="flex-1 px-4 py-2 rounded-lg bg-white text-gray-800 dark:bg-gray-700 dark:text-white">
                         <button onclick="subscribeNewsletter()" class="bg-orange-500 hover:bg-orange-600 px-6 py-2 rounded-lg font-semibold text-white transition w-full sm:w-auto">Subscribe</button>
                     </div>
                 </div>
@@ -570,8 +495,8 @@
     </div>
     <!-- Modals (unchanged) -->
     <div id="addFarmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('addFarmModal')">
-        <div class="glass-card dark:bg-gray-800 rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
-            <div class="p-4 border-b dark:border-gray-700"><h3 class="font-bold text-gray-800 dark:text-gray-100 dark:text-white"><i class="fas fa-plus-circle text-agri-green-600 mr-2"></i> Add New Farm</h3></div>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
+            <div class="p-4 border-b dark:border-gray-700"><h3 class="font-bold text-gray-800 dark:text-white"><i class="fas fa-plus-circle text-green-600 mr-2"></i> Add New Farm</h3></div>
             <div class="p-4 space-y-3">
                 <input type="text" id="farmName" placeholder="Farm Name" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
                 <input type="text" id="farmLocation" placeholder="Location/County" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
@@ -589,8 +514,8 @@
         </div>
     </div>
     <div id="addCropModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('addCropModal')">
-        <div class="glass-card dark:bg-gray-800 rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
-            <div class="p-4 border-b dark:border-gray-700"><h3 class="font-bold text-gray-800 dark:text-gray-100 dark:text-white"><i class="fas fa-seedling text-agri-green-600 mr-2"></i> Add Crop to Farm</h3></div>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
+            <div class="p-4 border-b dark:border-gray-700"><h3 class="font-bold text-gray-800 dark:text-white"><i class="fas fa-seedling text-green-600 mr-2"></i> Add Crop to Farm</h3></div>
             <div class="p-4 space-y-3">
                 <select id="newCropFarmId" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600"><option value="">Select Farm</option></select>
                 <select id="newCropName" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
@@ -610,26 +535,26 @@
         </div>
     </div>
     <div id="farmTasksModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('farmTasksModal')">
-        <div class="glass-card dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto animate-scaleIn" onclick="event.stopPropagation()">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto animate-scaleIn" onclick="event.stopPropagation()">
             <div class="sticky top-0 bg-white dark:bg-gray-800 p-4 border-b dark:border-gray-700 flex justify-between items-center">
-                <h3 class="font-bold text-xl text-gray-800 dark:text-gray-100 dark:text-white"><i class="fas fa-tasks text-agri-green-600 mr-2"></i> Farm Activities</h3>
+                <h3 class="font-bold text-xl text-gray-800 dark:text-white"><i class="fas fa-tasks text-green-600 mr-2"></i> Farm Activities</h3>
                 <button onclick="closeModal('farmTasksModal')" class="text-red-500"><i class="fas fa-times text-xl"></i></button>
             </div>
             <div id="farmTasksList" class="p-4 dark:text-gray-300"></div>
         </div>
     </div>
     <div id="globalTasksModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('globalTasksModal')">
-        <div class="glass-card dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto animate-scaleIn" onclick="event.stopPropagation()">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto animate-scaleIn" onclick="event.stopPropagation()">
             <div class="sticky top-0 bg-white dark:bg-gray-800 p-4 border-b dark:border-gray-700 flex justify-between items-center">
-                <h3 class="font-bold text-xl text-gray-800 dark:text-gray-100 dark:text-white"><i class="fas fa-tasks text-agri-green-600 mr-2"></i> All Pending Tasks</h3>
+                <h3 class="font-bold text-xl text-gray-800 dark:text-white"><i class="fas fa-tasks text-green-600 mr-2"></i> All Pending Tasks</h3>
                 <button onclick="closeModal('globalTasksModal')" class="text-red-500"><i class="fas fa-times text-xl"></i></button>
             </div>
             <div id="globalTasksList" class="p-4 dark:text-gray-300"></div>
         </div>
     </div>
     <div id="cropHealthModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('cropHealthModal')">
-        <div class="glass-card dark:bg-gray-800 rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
-            <div class="p-4 border-b dark:border-gray-700"><h3 class="font-bold text-gray-800 dark:text-gray-100 dark:text-white"><i class="fas fa-stethoscope text-agri-green-600 mr-2"></i> Crop Health Assessment</h3></div>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
+            <div class="p-4 border-b dark:border-gray-700"><h3 class="font-bold text-gray-800 dark:text-white"><i class="fas fa-stethoscope text-green-600 mr-2"></i> Crop Health Assessment</h3></div>
             <div class="p-4 space-y-3">
                 <input type="hidden" id="healthCropId">
                 <select id="healthStatus" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
@@ -640,13 +565,13 @@
                     <option value="critical">Critical - Immediate action needed</option>
                 </select>
                 <textarea id="healthNotes" rows="3" placeholder="Describe any issues, pests, or diseases observed..." class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600"></textarea>
-                <div class="flex gap-3"><button onclick="closeModal('cropHealthModal')" class="flex-1 bg-gray-300 dark:bg-gray-600 py-2 rounded-lg">Cancel</button><button onclick="submitCropHealthAssessment()" class="flex-1 bg-agri-green-600 text-white py-2 rounded-lg">Submit Assessment</button></div>
+                <div class="flex gap-3"><button onclick="closeModal('cropHealthModal')" class="flex-1 bg-gray-300 dark:bg-gray-600 py-2 rounded-lg">Cancel</button><button onclick="submitCropHealthAssessment()" class="flex-1 bg-green-600 text-white py-2 rounded-lg">Submit Assessment</button></div>
             </div>
         </div>
     </div>
     <div id="newMessageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('newMessageModal')">
-        <div class="glass-card dark:bg-gray-800 rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
-            <div class="p-4 border-b dark:border-gray-700"><h3 class="font-bold text-gray-800 dark:text-gray-100 dark:text-white"><i class="fas fa-plus-circle text-agri-green-600 mr-2"></i> New Message</h3></div>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
+            <div class="p-4 border-b dark:border-gray-700"><h3 class="font-bold text-gray-800 dark:text-white"><i class="fas fa-plus-circle text-green-600 mr-2"></i> New Message</h3></div>
             <div class="p-4 space-y-3">
                 <textarea id="newMessageText" rows="4" placeholder="Describe your issue or question in detail..." class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600"></textarea>
                 <div class="flex gap-3"><button onclick="closeModal('newMessageModal')" class="flex-1 bg-gray-300 dark:bg-gray-600 py-2 rounded-lg">Cancel</button><button onclick="sendNewMessage()" class="flex-1 btn-primary text-white py-2 rounded-lg">Send Message</button></div>
@@ -654,7 +579,7 @@
         </div>
     </div>
     <div class="fixed bottom-24 right-4 space-y-3 z-50">
-        <button onclick="scrollToSection('contact')" class="w-12 h-12 bg-agri-green-600 rounded-full shadow-lg flex items-center justify-center hover:bg-agri-green-700 transition transform hover:scale-110"><i class="fas fa-comment-dots text-white"></i></button>
+        <button onclick="scrollToSection('contact')" class="w-12 h-12 bg-green-600 rounded-full shadow-lg flex items-center justify-center hover:bg-green-700 transition transform hover:scale-110"><i class="fas fa-comment-dots text-white"></i></button>
     </div>
 
     <script>
@@ -1015,12 +940,12 @@
                 <div class="farmer-review-card dark:bg-gray-800">
                     <div class="flex justify-between items-start">
                         <div>
-                            <h3 class="font-bold text-gray-800 dark:text-gray-100 dark:text-white">${escapeHtml(r.name)}</h3>
+                            <h3 class="font-bold text-gray-800 dark:text-white">${escapeHtml(r.name)}</h3>
                             <p class="text-sm text-gray-500 dark:text-gray-400">${escapeHtml(r.location)}</p>
                         </div>
                         <div class="text-yellow-500 text-lg">${'★'.repeat(Math.round(r.rating))}${'☆'.repeat(5 - Math.round(r.rating))}</div>
                     </div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-300 mt-2">"${escapeHtml(r.message)}"</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-2">"${escapeHtml(r.message)}"</p>
                     <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">${new Date(r.created_at).toLocaleDateString()}</p>
                 </div>
             `).join('');
@@ -1078,10 +1003,10 @@
                     farmsData = data.farms;
                     if (farmsData.length === 0) {
                         container.innerHTML = `
-                            <div class="glass-card dark:bg-gray-800 rounded-2xl shadow-xl p-6 text-center card-hover">
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 text-center card-hover">
                                 <i class="fas fa-tractor text-5xl text-green-400 mb-4"></i>
-                                <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 dark:text-white">You don't have any farms yet</h3>
-                                <p class="text-gray-600 dark:text-gray-400 dark:text-gray-300 mt-2">Create your first farm to start tracking your crops.</p>
+                                <h3 class="text-xl font-bold text-gray-800 dark:text-white">You don't have any farms yet</h3>
+                                <p class="text-gray-600 dark:text-gray-300 mt-2">Create your first farm to start tracking your crops.</p>
                                 <button onclick="showEnhancedAddFarmModal()" class="mt-4 btn-primary text-white px-6 py-3 rounded-lg font-semibold"><i class="fas fa-plus mr-2"></i> Add Farm</button>
                             </div>
                         `;
@@ -1092,7 +1017,7 @@
                         <div class="farm-card dark:bg-gray-800 dark:border-gray-700">
                             <div class="farm-header">
                                 <div>
-                                    <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 dark:text-white">${farm.name}</h3>
+                                    <h3 class="text-xl font-bold text-gray-800 dark:text-white">${farm.name}</h3>
                                     <p class="text-gray-500 dark:text-gray-400"><i class="fas fa-map-marker-alt mr-1"></i> ${farm.location}</p>
                                     <p class="text-sm text-gray-500 dark:text-gray-400"><i class="fas fa-ruler-combined mr-1"></i> ${farm.size_acres || 0} acres</p>
                                     <p class="text-sm text-gray-500 dark:text-gray-400"><i class="fas fa-seedling mr-1"></i> Main crop: ${farm.main_crop || 'Mixed'}</p>
@@ -1108,16 +1033,16 @@
                                     <div class="crop-item dark:bg-gray-700">
                                         <div class="flex justify-between items-start">
                                             <div>
-                                                <h4 class="font-bold text-gray-800 dark:text-gray-100 dark:text-white">${crop.name} <span class="text-sm font-normal text-gray-500 dark:text-gray-400">${crop.variety || 'Local'}</span></h4>
+                                                <h4 class="font-bold text-gray-800 dark:text-white">${crop.name} <span class="text-sm font-normal text-gray-500 dark:text-gray-400">${crop.variety || 'Local'}</span></h4>
                                                 <p class="text-xs text-gray-400 dark:text-gray-500">Area: ${crop.area || 0} acres • Planted: ${crop.planting_date ? new Date(crop.planting_date).toLocaleDateString() : 'N/A'}</p>
                                                 <div class="mt-1 flex items-center gap-2">
-                                                    <span class="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-300">Health: ${crop.health_score || 85}%</span>
+                                                    <span class="text-sm text-gray-600 dark:text-gray-300">Health: ${crop.health_score || 85}%</span>
                                                     <span class="px-2 py-0.5 rounded-full text-xs ${(crop.health_score || 85) >= 80 ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' : (crop.health_score || 85) >= 60 ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300' : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'}">${crop.status || 'Active'}</span>
                                                 </div>
                                             </div>
                                             <div class="flex gap-2 flex-wrap items-center">
-                                                <button onclick="loadCropTasks(${crop.id})" class="bg-blue-500 hover:bg-agri-blue-600 text-white px-3 py-1 rounded-lg text-xs transition"><i class="fas fa-tasks"></i> Tasks</button>
-                                                <button onclick="assessCropHealth(${crop.id})" class="bg-green-500 hover:bg-agri-green-600 text-white px-3 py-1 rounded-lg text-xs transition"><i class="fas fa-stethoscope"></i> Health</button>
+                                                <button onclick="loadCropTasks(${crop.id})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-xs transition"><i class="fas fa-tasks"></i> Tasks</button>
+                                                <button onclick="assessCropHealth(${crop.id})" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-xs transition"><i class="fas fa-stethoscope"></i> Health</button>
                                                 <button onclick="diagnoseCrop(${crop.id})" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-lg text-xs transition"><i class="fas fa-microscope"></i> Diagnose</button>
                                                 <button id="genTasksBtn_${crop.id}" onclick="generateCropTasks(${crop.id}, '${crop.name}', '${crop.planting_date || new Date().toISOString().split('T')[0]}', ${farm.id})" class="generate-tasks-btn" style="display:none;">Generate Tasks</button>
                                                 <button id="testTaskBtn_${crop.id}" onclick="createTestTask(${crop.id})" class="test-task-btn" style="display:none;">Create Test Task</button>
@@ -1372,19 +1297,19 @@
             const completedTasks = tasks ? tasks.filter(t => t.completed) : [];
             container.innerHTML = `
                 <div class="mb-6">
-                    <h4 class="font-bold text-lg text-agri-green-600 dark:text-green-400 mb-3">Pending Activities (${pendingTasks.length})</h4>
+                    <h4 class="font-bold text-lg text-green-600 dark:text-green-400 mb-3">Pending Activities (${pendingTasks.length})</h4>
                     ${pendingTasks.map(task => `
                         <div class="task-pending dark:bg-gray-700 p-4 rounded-lg mb-3">
                             <div class="flex justify-between items-start">
                                 <div class="flex-1">
-                                    <p class="font-semibold text-gray-800 dark:text-gray-100 dark:text-white">${task.task_name}</p>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-300">${task.description}</p>
+                                    <p class="font-semibold text-gray-800 dark:text-white">${task.task_name}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">${task.description}</p>
                                     <div class="flex items-center gap-4 mt-2">
                                         <span class="text-xs text-gray-400 dark:text-gray-500"><i class="far fa-calendar-alt"></i> <span class="dark:text-green-400">Due:</span> ${new Date(task.scheduled_date).toLocaleDateString()}</span>
                                         <span class="text-xs text-gray-400 dark:text-gray-500"><i class="fas fa-clock"></i> <span class="dark:text-green-400">${task.days_after_previous > 0 ? task.days_after_previous + ' days after previous' : 'Start'}</span></span>
                                     </div>
                                 </div>
-                                <button onclick="completeCropTask(${task.id}, ${cropId})" class="bg-green-500 hover:bg-agri-green-600 text-white px-4 py-2 rounded-lg text-sm transition ml-2">
+                                <button onclick="completeCropTask(${task.id}, ${cropId})" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm transition ml-2">
                                     <i class="fas fa-check"></i> Complete
                                 </button>
                             </div>
@@ -1398,8 +1323,8 @@
                     ${completedTasks.map(task => `
                         <div class="task-completed dark:bg-gray-700 p-3 rounded-lg mb-2">
                             <div class="flex items-center gap-2">
-                                <i class="fas fa-check-circle text-agri-green-600 dark:text-green-400"></i>
-                                <p class="font-semibold text-gray-600 dark:text-gray-400 dark:text-gray-300">${task.task_name}</p>
+                                <i class="fas fa-check-circle text-green-600 dark:text-green-400"></i>
+                                <p class="font-semibold text-gray-600 dark:text-gray-300">${task.task_name}</p>
                                 <span class="text-xs text-gray-400 dark:text-gray-500 ml-auto"><span class="dark:text-green-400">Completed:</span> ${new Date(task.completed_date).toLocaleDateString()}</span>
                             </div>
                         </div>
@@ -1453,8 +1378,8 @@
                         <div class="task-pending dark:bg-gray-700 p-4 rounded-lg">
                             <div class="flex justify-between items-start">
                                 <div>
-                                    <p class="font-semibold text-gray-800 dark:text-gray-100 dark:text-white">${task.farm_name} - ${task.crop_name} - ${task.task_name}</p>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-300 mt-1">${task.description}</p>
+                                    <p class="font-semibold text-gray-800 dark:text-white">${task.farm_name} - ${task.crop_name} - ${task.task_name}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">${task.description}</p>
                                     <p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><span class="dark:text-green-400">Due:</span> ${new Date(task.scheduled_date).toLocaleDateString()}</p>
                                 </div>
                                 <button onclick="completeGlobalTask(${task.id})" class="bg-green-500 text-white px-3 py-1 rounded-lg text-sm">
@@ -1682,8 +1607,8 @@
                             </div>
                             <div class="mb-3">
                                 <div class="flex justify-between text-xs mb-1">
-                                    <span class="text-gray-600 dark:text-gray-400 dark:text-gray-300">Confidence Level</span>
-                                    <span class="font-semibold text-gray-800 dark:text-gray-100 dark:text-white">${confidence}%</span>
+                                    <span class="text-gray-600 dark:text-gray-300">Confidence Level</span>
+                                    <span class="font-semibold text-gray-800 dark:text-white">${confidence}%</span>
                                 </div>
                                 <div class="confidence-meter">
                                     <div class="confidence-fill" style="width: ${Math.min(confidence, 100)}%"></div>
@@ -1692,16 +1617,16 @@
                             </div>
                             <div class="mt-3">
                                 <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">Symptoms:</p>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-300 bg-white dark:bg-gray-700 p-2 rounded">${symptoms}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 p-2 rounded">${symptoms}</p>
                             </div>
                             <div class="mt-3 grid grid-cols-2 gap-3">
                                 <div class="bg-green-100 dark:bg-green-900 p-3 rounded-lg">
                                     <p class="font-semibold text-sm mb-1 text-green-700 dark:text-green-300">Organic Solution</p>
-                                    <p class="text-xs text-agri-green-600 dark:text-green-200">${organic}</p>
+                                    <p class="text-xs text-green-600 dark:text-green-200">${organic}</p>
                                 </div>
                                 <div class="bg-blue-100 dark:bg-blue-900 p-3 rounded-lg">
                                     <p class="font-semibold text-sm mb-1 text-blue-700 dark:text-blue-300">Chemical Solution</p>
-                                    <p class="text-xs text-agri-blue-600 dark:text-blue-200">${chemical}</p>
+                                    <p class="text-xs text-blue-600 dark:text-blue-200">${chemical}</p>
                                 </div>
                             </div>
                             <div class="mt-3 bg-yellow-50 dark:bg-yellow-900/30 p-3 rounded-lg">
@@ -1716,7 +1641,7 @@
                                     <button onclick="clearImage()" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition">
                                         <i class="fas fa-times mr-1"></i> Close
                                     </button>
-                                    <button onclick="shareDiagnosis('${diseaseName.replace(/'/g, "\\'")}', '${confidence}', '${organic.replace(/'/g, "\\'")}', '${chemical.replace(/'/g, "\\'")}')" class="bg-agri-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-agri-green-700 transition">
+                                    <button onclick="shareDiagnosis('${diseaseName.replace(/'/g, "\\'")}', '${confidence}', '${organic.replace(/'/g, "\\'")}', '${chemical.replace(/'/g, "\\'")}')" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition">
                                         <i class="fab fa-whatsapp mr-1"></i> Share
                                     </button>
                                 </div>
@@ -1725,11 +1650,11 @@
                     `;
                     showToast('Diagnosis complete!', 'success');
                 } else {
-                    resultDiv.innerHTML = `<div class="bg-red-50 dark:bg-red-900/30 p-5 rounded-xl border border-red-200 dark:border-red-800"><p class="text-red-600 dark:text-red-400 font-semibold">Error: ${data.error || 'Analysis failed'}</p><p class="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-300 mt-2">Please try again with a clearer image.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
+                    resultDiv.innerHTML = `<div class="bg-red-50 dark:bg-red-900/30 p-5 rounded-xl border border-red-200 dark:border-red-800"><p class="text-red-600 dark:text-red-400 font-semibold">Error: ${data.error || 'Analysis failed'}</p><p class="text-sm text-gray-600 dark:text-gray-300 mt-2">Please try again with a clearer image.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
                 }
             } catch (error) {
                 console.error('AI Service error:', error);
-                resultDiv.innerHTML = `<div class="bg-red-50 dark:bg-red-900/30 p-5 rounded-xl border border-red-200 dark:border-red-800"><p class="text-red-600 dark:text-red-400 font-semibold">Cannot reach AI Service</p><p class="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-300 mt-2">Please try again later.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
+                resultDiv.innerHTML = `<div class="bg-red-50 dark:bg-red-900/30 p-5 rounded-xl border border-red-200 dark:border-red-800"><p class="text-red-600 dark:text-red-400 font-semibold">Cannot reach AI Service</p><p class="text-sm text-gray-600 dark:text-gray-300 mt-2">Please try again later.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
             }
         }
 
@@ -1754,9 +1679,9 @@
             } catch (error) {
                 console.warn('Weather fetch failed, using fallback:', error);
                 document.getElementById('realTimeWeather').innerHTML = `
-                    <div class="weather-temp text-2xl font-bold text-gray-800 dark:text-gray-100 dark:text-white">--°C</div>
-                    <div class="weather-location text-gray-600 dark:text-gray-400 dark:text-gray-300">${county}, Kenya</div>
-                    <div class="weather-condition text-gray-600 dark:text-gray-400 dark:text-gray-300">Weather unavailable</div>
+                    <div class="weather-temp text-2xl font-bold text-gray-800 dark:text-white">--°C</div>
+                    <div class="weather-location text-gray-600 dark:text-gray-300">${county}, Kenya</div>
+                    <div class="weather-condition text-gray-600 dark:text-gray-300">Weather unavailable</div>
                 `;
                 document.getElementById('weatherForecast').innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400">Forecast not available</p>';
             }
@@ -1786,7 +1711,7 @@
             const container = document.getElementById('weatherForecast');
             let html = `
                 <div class="mb-3">
-                    <h4 class="font-bold text-gray-800 dark:text-gray-100 dark:text-white text-lg">Weather Forecast for the Next 7 Days</h4>
+                    <h4 class="font-bold text-gray-800 dark:text-white text-lg">Weather Forecast for the Next 7 Days</h4>
                     <p class="text-xs text-gray-500 dark:text-gray-400">Max / Min temperatures</p>
                 </div>
             `;
@@ -1823,9 +1748,9 @@
             const temp = Math.round(data.main.temp);
             const condition = data.weather[0].description;
             document.getElementById('realTimeWeather').innerHTML = `
-                <div class="weather-temp text-2xl font-bold text-gray-800 dark:text-gray-100 dark:text-white">${temp}°C</div>
-                <div class="weather-location text-gray-600 dark:text-gray-400 dark:text-gray-300">${county}, Kenya</div>
-                <div class="weather-condition text-gray-600 dark:text-gray-400 dark:text-gray-300"><i class="fas fa-cloud"></i> ${condition}</div>
+                <div class="weather-temp text-2xl font-bold text-gray-800 dark:text-white">${temp}°C</div>
+                <div class="weather-location text-gray-600 dark:text-gray-300">${county}, Kenya</div>
+                <div class="weather-condition text-gray-600 dark:text-gray-300"><i class="fas fa-cloud"></i> ${condition}</div>
             `;
             document.getElementById('weatherTemp').textContent = `${temp}°C`;
             document.getElementById('weatherDesc').textContent = condition;
@@ -1995,13 +1920,13 @@
             const displayCount = showAllDiseases ? diseases.length : Math.min(3, diseases.length);
             const displayDiseases = diseases.slice(0, displayCount);
             container.innerHTML = displayDiseases.map(d => `
-                <div class="glass-card dark:bg-gray-800 rounded-xl shadow-md p-4 card-hover border border-green-100 dark:border-gray-700 transition-all hover:shadow-lg cursor-pointer disease-card" onclick="showDiseaseDetail('${d.name.replace(/'/g, "\\'")}', '${d.crop.replace(/'/g, "\\'")}', '${d.severity}', '${(d.symptoms || '').replace(/'/g, "\\'")}', '${(d.organic_solution || d.solution || '').replace(/'/g, "\\'")}', '${(d.chemical_solution || '').replace(/'/g, "\\'")}', ${d.cost || 0})">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 card-hover border border-green-100 dark:border-gray-700 transition-all hover:shadow-lg cursor-pointer disease-card" onclick="showDiseaseDetail('${d.name.replace(/'/g, "\\'")}', '${d.crop.replace(/'/g, "\\'")}', '${d.severity}', '${(d.symptoms || '').replace(/'/g, "\\'")}', '${(d.organic_solution || d.solution || '').replace(/'/g, "\\'")}', '${(d.chemical_solution || '').replace(/'/g, "\\'")}', ${d.cost || 0})">
                     <div class="flex items-center gap-2 mb-2">
-                        <h4 class="font-bold text-gray-800 dark:text-gray-100 dark:text-white">${d.name}</h4>
+                        <h4 class="font-bold text-gray-800 dark:text-white">${d.name}</h4>
                     </div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">Affects: ${d.crop}</p>
                     <span class="inline-block px-2 py-1 rounded-full text-xs font-bold mt-2 ${d.severity === 'High' ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' : d.severity === 'Critical' ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300' : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300'}">${d.severity} Severity</span>
-                    <p class="text-xs text-gray-600 dark:text-gray-400 dark:text-gray-300 mt-2 line-clamp-2">💡 ${(d.solution || '').substring(0, 80)}${(d.solution || '').length > 80 ? '...' : ''}</p>
+                    <p class="text-xs text-gray-600 dark:text-gray-300 mt-2 line-clamp-2">💡 ${(d.solution || '').substring(0, 80)}${(d.solution || '').length > 80 ? '...' : ''}</p>
                 </div>
             `).join('');
             if (diseases.length > 3) {
@@ -2024,18 +1949,18 @@
             modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
             modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
             modal.innerHTML = `
-                <div class="glass-card dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 animate-scaleIn" onclick="event.stopPropagation()">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 animate-scaleIn" onclick="event.stopPropagation()">
                     <div class="flex justify-between items-start mb-4">
-                        <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 dark:text-white">${name}</h3>
-                        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:hover:text-gray-300"><i class="fas fa-times text-xl"></i></button>
+                        <h3 class="text-xl font-bold text-gray-800 dark:text-white">${name}</h3>
+                        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"><i class="fas fa-times text-xl"></i></button>
                     </div>
                     <div class="space-y-3 text-gray-700 dark:text-gray-300">
-                        <p><span class="font-semibold text-gray-800 dark:text-gray-100 dark:text-white disease-detail-label">Affected Crop:</span> ${crop}</p>
-                        <p><span class="font-semibold text-gray-800 dark:text-gray-100 dark:text-white disease-detail-label">Severity:</span> <span class="px-2 py-0.5 rounded-full text-xs font-bold ${severity === 'High' ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' : severity === 'Critical' ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300' : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300'}">${severity}</span></p>
-                        <p><span class="font-semibold text-gray-800 dark:text-gray-100 dark:text-white disease-detail-label">Symptoms:</span> ${symptoms}</p>
-                        <p><span class="font-semibold text-gray-800 dark:text-gray-100 dark:text-white disease-detail-label">Organic Solution:</span> ${organicSolution}</p>
-                        ${chemicalSolution ? `<p><span class="font-semibold text-gray-800 dark:text-gray-100 dark:text-white disease-detail-label">Chemical Solution:</span> ${chemicalSolution}</p>` : ''}
-                        ${cost ? `<p><span class="font-semibold text-gray-800 dark:text-gray-100 dark:text-white disease-detail-label">Estimated Cost (KES):</span> ${cost}</p>` : ''}
+                        <p><span class="font-semibold text-gray-800 dark:text-white disease-detail-label">Affected Crop:</span> ${crop}</p>
+                        <p><span class="font-semibold text-gray-800 dark:text-white disease-detail-label">Severity:</span> <span class="px-2 py-0.5 rounded-full text-xs font-bold ${severity === 'High' ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' : severity === 'Critical' ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300' : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300'}">${severity}</span></p>
+                        <p><span class="font-semibold text-gray-800 dark:text-white disease-detail-label">Symptoms:</span> ${symptoms}</p>
+                        <p><span class="font-semibold text-gray-800 dark:text-white disease-detail-label">Organic Solution:</span> ${organicSolution}</p>
+                        ${chemicalSolution ? `<p><span class="font-semibold text-gray-800 dark:text-white disease-detail-label">Chemical Solution:</span> ${chemicalSolution}</p>` : ''}
+                        ${cost ? `<p><span class="font-semibold text-gray-800 dark:text-white disease-detail-label">Estimated Cost (KES):</span> ${cost}</p>` : ''}
                     </div>
                     <button onclick="this.closest('.fixed').remove()" class="mt-5 w-full btn-primary text-white py-2 rounded-lg">Close</button>
                 </div>
@@ -2106,12 +2031,12 @@
                         container.innerHTML = '<div class="text-center py-8 text-gray-500 dark:text-gray-400 col-span-full bg-white dark:bg-gray-800 rounded-xl">No crops added yet.</div>';
                     } else {
                         container.innerHTML = data.crops.map(crop => `
-                            <div class="glass-card dark:bg-gray-800 rounded-xl shadow-lg p-5 card-hover">
+                            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-5 card-hover">
                                 <div class="flex justify-between">
-                                    <div><h3 class="font-bold text-gray-800 dark:text-gray-100 dark:text-white">${crop.name}</h3><p class="text-sm text-gray-500 dark:text-gray-400">${crop.variety || 'Local variety'}</p></div>
+                                    <div><h3 class="font-bold text-gray-800 dark:text-white">${crop.name}</h3><p class="text-sm text-gray-500 dark:text-gray-400">${crop.variety || 'Local variety'}</p></div>
                                     <span class="px-2 py-1 rounded-full text-xs ${crop.health_score >= 80 ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' : crop.health_score >= 60 ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300' : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'}">${crop.status || 'Active'}</span>
                                 </div>
-                                <div class="mt-3"><div class="flex justify-between text-sm"><span class="text-gray-600 dark:text-gray-400 dark:text-gray-300">Health Score</span><span class="font-semibold text-agri-green-600 dark:text-green-400">${crop.health_score || 85}%</span></div><div class="h-2 bg-gray-200 dark:bg-gray-600 rounded-full"><div class="h-full bg-green-500 rounded-full" style="width:${crop.health_score || 85}%"></div></div></div>
+                                <div class="mt-3"><div class="flex justify-between text-sm"><span class="text-gray-600 dark:text-gray-300">Health Score</span><span class="font-semibold text-green-600 dark:text-green-400">${crop.health_score || 85}%</span></div><div class="h-2 bg-gray-200 dark:bg-gray-600 rounded-full"><div class="h-full bg-green-500 rounded-full" style="width:${crop.health_score || 85}%"></div></div></div>
                                 <button onclick="scrollToSection('diagnosis')" class="mt-4 w-full bg-green-50 dark:bg-green-900 hover:bg-green-100 dark:hover:bg-green-800 text-green-700 dark:text-green-300 py-2 rounded-lg text-sm transition">Diagnose Now</button>
                             </div>
                         `).join('');
