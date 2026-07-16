@@ -105,15 +105,12 @@
         .zoom-modal img { max-width: 90%; max-height: 90%; object-fit: contain; }
         .export-btn { background: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; transition: all 0.3s ease; cursor: pointer; border: none; }
         .export-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16,185,129,0.3); }
-        .yield-card { background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 1rem; padding: 1.25rem; color: white; border: 1px solid #facc15; }
-        .yield-card .yield-value { font-size: 2rem; font-weight: 700; color: #facc15; }
-        .yield-card .yield-label { font-size: 0.75rem; color: #94a3b8; }
 
         /* ===== LIGHT MODE – all containers are pure white ===== */
         body { background-color: #f8fafc; color: #1e293b; }
         .bg-white\/95 { background-color: rgba(255,255,255,0.95); }
         .bg-white { background-color: #ffffff; }
-        .bg-gray-50, .bg-gray-100 { background-color: #ffffff; } /* force white */
+        .bg-gray-50, .bg-gray-100 { background-color: #ffffff; }
         .bg-green-50 { background-color: #f0fdf4; }
         .bg-blue-50 { background-color: #eff6ff; }
         .bg-yellow-50 { background-color: #fffbeb; }
@@ -129,6 +126,27 @@
         .card-hover { background: #ffffff; }
         .modal-content { background: #ffffff; }
         #weatherRecommendations > div { background: #ffffff; }
+
+        /* ---- ALL CARDS (including Yield) are white in light mode ---- */
+        .yield-card {
+            background: #ffffff !important;
+            border: 1px solid #e5e7eb !important;
+            border-radius: 1rem;
+            padding: 1.25rem;
+            color: #1e293b !important;
+        }
+        .yield-card .yield-value {
+            color: #1e293b !important;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .yield-card .yield-label {
+            color: #4b5563 !important;
+            font-size: 0.75rem;
+        }
+        .yield-card .text-gray-400 {
+            color: #6b7280 !important;
+        }
 
         /* ===== DARK MODE – all containers become dark ===== */
         .dark body { background-color: #0f172a; color: #f1f5f9; }
@@ -150,6 +168,22 @@
         .dark .card-hover { background: #1e293b; }
         .dark .modal-content { background: #1e293b; }
         .dark #weatherRecommendations > div { background: #1e293b; }
+
+        /* ---- Dark mode for Yield Card: keep its distinctive gold accent ---- */
+        .dark .yield-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a) !important;
+            border-color: #facc15 !important;
+            color: #f1f5f9 !important;
+        }
+        .dark .yield-card .yield-value {
+            color: #facc15 !important;
+        }
+        .dark .yield-card .yield-label {
+            color: #94a3b8 !important;
+        }
+        .dark .yield-card .text-gray-400 {
+            color: #94a3b8 !important;
+        }
 
         /* Dark mode text – all primary text becomes white, labels become light green */
         .dark .text-gray-800, .dark .text-gray-700, .dark .text-gray-600,
@@ -183,7 +217,6 @@
         .dark .mobile-menu-panel a { color: #f1f5f9; }
         .dark .mobile-menu-panel a:hover { background: #1e293b; }
         .dark .mobile-menu-panel .border-b { border-color: #334155; }
-        .dark .yield-card { background: linear-gradient(135deg, #1e293b, #0f172a); border-color: #facc15; }
         .dark .rating-star.empty { color: #4b5563; }
         .dark .chat-message.admin .chat-bubble { background: #334155; color: #f1f5f9; }
         .dark .chat-message.farmer .chat-bubble { background: #2563eb; color: #ffffff; }
