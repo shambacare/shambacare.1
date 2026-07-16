@@ -1,13 +1,14 @@
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.efficientnet import preprocess_input  # Correct for EfficientNetB0
+from tensorflow.keras.applications.efficientnet import preprocess_input
 import numpy as np
 import io
 import json
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from PIL import Image, UnidentifiedImageError
 
 app = Flask(__name__)
 CORS(app)
@@ -54,9 +55,37 @@ def preprocess_image(image_bytes):
     img = image.load_img(io.BytesIO(image_bytes), target_size=(224, 224))
     img_array = image.img_to_array(img)
     img_array = np.expand_dims(img_array, axis=0)
-    # EfficientNetB0 preprocessing (scales pixels to [-1, 1])
     img_array = preprocess_input(img_array)
     return img_array
+
+# ----------------------------------------------------------------------
+# Validation helper – checks if the image is valid and likely a plant leaf
+# ----------------------------------------------------------------------
+def validate_image(image_bytes, filename):
+    # 1. Check file size (max 10 MB)
+    if len(image_bytes) > 10 * 1024 * 1024:
+        return False, "Image is too large. Please upload a file smaller than 10 MB."
+
+    # 2. Try to open with PIL to verify it's a valid image
+    try:
+        pil_img = Image.open(io.BytesIO(image_bytes))
+        pil_img.verify()  # Verify integrity
+    except UnidentifiedImageError:
+        return False, "The file does not appear to be a valid image. Please upload a JPG or PNG photo of a plant leaf."
+    except Exception:
+        return False, "The image file seems corrupted. Please try a different photo."
+
+    # 3. Optionally check dimensions (minimum size to be useful)
+    # (we'll re-open because verify closes the file)
+    try:
+        pil_img = Image.open(io.BytesIO(image_bytes))
+        width, height = pil_img.size
+        if width < 100 or height < 100:
+            return False, "The image is too small. Please upload a clearer, larger photo of the leaf."
+    except:
+        pass
+
+    return True, "OK"
 
 # ----------------------------------------------------------------------
 # Full Disease Library – Organic & Chemical Solutions
@@ -205,18 +234,26 @@ def get_treatment(disease_name):
     }
 
 # ----------------------------------------------------------------------
-# Prediction endpoint with confidence handling
+# Prediction endpoint with image validation and leaf detection
 # ----------------------------------------------------------------------
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'image' not in request.files:
-        return jsonify({'error': 'No image', 'success': False}), 400
+        return jsonify({'error': 'No image uploaded', 'success': False}), 400
     file = request.files['image']
     if file.filename == '':
-        return jsonify({'error': 'No file', 'success': False}), 400
+        return jsonify({'error': 'No file selected', 'success': False}), 400
 
     try:
         image_bytes = file.read()
+        filename = file.filename
+
+        # --- VALIDATE IMAGE ---
+        valid, msg = validate_image(image_bytes, filename)
+        if not valid:
+            return jsonify({'error': msg, 'success': False}), 400
+
+        # --- PREPROCESS AND PREDICT ---
         input_tensor = preprocess_image(image_bytes)
         predictions = model.predict(input_tensor)[0]
         probabilities = tf.nn.softmax(predictions).numpy()
@@ -224,6 +261,14 @@ def predict():
         confidence = float(probabilities[idx]) * 100
         disease_raw = CLASS_NAMES[idx]
         disease_display = disease_raw.replace('___', ' - ').replace('_', ' ')
+
+        # --- CHECK IF IT'S A PLANT LEAF ---
+        # If the max confidence is below 12%, it's likely not a plant leaf
+        if confidence < 12.0:
+            return jsonify({
+                'error': 'This doesn\'t look like a clear plant leaf photo. Please upload a close-up of a leaf with good lighting.',
+                'success': False
+            }), 400
 
         print(f"Predicted: {disease_display} with confidence {confidence:.1f}%")
 
@@ -238,18 +283,19 @@ def predict():
             'symptoms': treatment['symptoms'],
             'estimated_cost': treatment['cost'],
             'prevention_tips': treatment['prevention'],
-            'source': 'EfficientNetB0 (PlantVillage)'
+            'source': 'ShambaCare Model'
         }
 
         if confidence < 50:
-            response['warning'] = 'Very low confidence. Please upload a clearer photo of the leaf.'
-        elif confidence < 70:
             response['warning'] = 'Low confidence. The image may be blurry; try a clearer photo for better accuracy.'
 
         return jsonify(response)
+
+    except UnidentifiedImageError:
+        return jsonify({'error': 'The file is not a valid image. Please upload a JPG or PNG photo of a plant leaf.', 'success': False}), 400
     except Exception as e:
         print(f"Prediction error: {e}")
-        return jsonify({'error': str(e), 'success': False}), 500
+        return jsonify({'error': 'Unable to process the image. Please try a different photo.', 'success': False}), 500
 
 @app.route('/health', methods=['GET'])
 def health():
