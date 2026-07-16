@@ -108,7 +108,9 @@
         .yield-card { background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 1rem; padding: 1.25rem; color: white; border: 1px solid #facc15; }
         .yield-card .yield-value { font-size: 2rem; font-weight: 700; color: #facc15; }
         .yield-card .yield-label { font-size: 0.75rem; color: #94a3b8; }
-        /* Light mode defaults - all containers use white/light backgrounds */
+
+        /* ===== LIGHT MODE (default) – all backgrounds are white/light ===== */
+        body { background-color: #f8fafc; color: #1e293b; }
         .bg-white\/95 { background-color: rgba(255,255,255,0.95); }
         .bg-white { background-color: #ffffff; }
         .bg-gray-50 { background-color: #f9fafb; }
@@ -125,6 +127,9 @@
         .crop-item { background: #f9fafb; }
         .chat-panel { background: #f9fafb; }
         .card-hover { background: #ffffff; }
+
+        /* ===== DARK MODE OVERRIDES ===== */
+        .dark body { background-color: #0f172a; color: #f1f5f9; }
         .dark .bg-white\/95 { background-color: rgba(30,41,59,0.95); }
         .dark .bg-white { background-color: #1e293b; }
         .dark .bg-gray-50 { background-color: #1e293b; }
@@ -141,11 +146,13 @@
         .dark .crop-item { background: #1e293b; }
         .dark .chat-panel { background: #1e293b; }
         .dark .card-hover { background: #1e293b; }
-        /* Dark text overrides */
-        .dark .text-gray-600, .dark .text-gray-500, .dark .text-gray-700,
-        .dark .text-gray-800, .dark .text-gray-400, .dark .text-gray-900,
-        .dark .text-black, .dark h1, .dark h2, .dark h3, .dark .font-bold,
-        .dark .section-header-container h2, .dark .nav-link, .dark .stat-number,
+
+        /* Dark mode text colours – labels in disease modal and tasks get light green */
+        .dark .label-text { color: #4ade80; } /* light green */
+        .dark .text-gray-800, .dark .text-gray-700, .dark .text-gray-600,
+        .dark .text-gray-500, .dark .text-gray-400, .dark .text-black,
+        .dark .font-bold, .dark h1, .dark h2, .dark h3, .dark .nav-link,
+        .dark .stat-number, .dark .section-header-container h2,
         .dark .farmer-review-card .text-gray-800,
         .dark .farmer-review-card .text-gray-600,
         .dark .farmer-review-card .text-gray-500,
@@ -154,6 +161,7 @@
         .dark .disease-card .text-gray-500 {
             color: #f1f5f9 !important;
         }
+        /* Keep specific colors for some elements */
         .dark .text-green-600 { color: #4ade80 !important; }
         .dark .text-red-600 { color: #f87171 !important; }
         .dark .text-yellow-600 { color: #facc15 !important; }
@@ -186,6 +194,11 @@
             border-color: #3b82f6;
         }
         .dark .card-hover:hover { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
+        /* Ensure modal content in dark mode */
+        .dark .modal-content { background: #1e293b; }
+        /* Light mode default modal content */
+        .modal-content { background: #ffffff; }
+
         /* Additional fixes for light mode text */
         .text-gray-800 { color: #1e293b; }
         .text-gray-600 { color: #4b5563; }
@@ -198,6 +211,7 @@
         .text-red-700 { color: #b91c1c; }
         .text-yellow-700 { color: #a16207; }
         .text-blue-700 { color: #1d4ed8; }
+
         /* Mobile farm card adjustments */
         .farm-card { padding: 1rem; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 1rem; }
         .farm-header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem; }
@@ -211,23 +225,13 @@
             .crop-item .flex > div:first-child { flex: 1; min-width: 120px; }
             .crop-item .flex .flex { flex-wrap: wrap; gap: 0.25rem; }
         }
-        /* Ensure all containers have light background in light mode */
-        .bg-white, .bg-white\/95, .bg-gray-50, .bg-green-50, .bg-blue-50, .bg-yellow-50,
-        .section-header-container, .farmer-review-card, .profile-modal-content,
-        .task-pending, .task-completed, .disease-card, .farm-card, .crop-item,
-        .chat-panel, .card-hover {
-            background: #ffffff;
+        /* Label styling in dark mode for disease detail and tasks */
+        .dark .disease-detail-label {
+            color: #4ade80 !important;
         }
-        .dark .bg-white, .dark .bg-white\/95, .dark .bg-gray-50, .dark .bg-green-50,
-        .dark .bg-blue-50, .dark .bg-yellow-50, .dark .section-header-container,
-        .dark .farmer-review-card, .dark .profile-modal-content,
-        .dark .task-pending, .dark .task-completed, .dark .disease-card,
-        .dark .farm-card, .dark .crop-item, .dark .chat-panel, .dark .card-hover {
-            background: #1e293b !important;
+        .dark .task-label {
+            color: #86efac !important; /* lighter green for tasks */
         }
-        /* Ensure modals have light background in light mode */
-        .modal-content { background: #ffffff; }
-        .dark .modal-content { background: #1e293b; }
     </style>
 </head>
 <body class="antialiased">
@@ -360,9 +364,7 @@
                 <div class="bg-gradient-to-r from-green-500 to-green-600 p-5"><h3 class="text-white font-bold text-xl"><i class="fas fa-microchip mr-2"></i> AI Crop Diagnosis</h3><p class="text-green-100 text-sm">Upload leaf photo • Instant analysis • Free for Kenyan farmers</p></div>
                 <div class="p-6">
                     <div class="flex flex-wrap gap-3 mb-4">
-                        <!-- Take Photo button – opens camera directly -->
                         <button onclick="openCameraDirect()" class="flex-1 bg-green-100 text-green-700 py-3 rounded-xl font-semibold hover:bg-green-200 transition"><i class="fas fa-camera mr-2"></i> Take Photo</button>
-                        <!-- Choose from Gallery button – opens file picker -->
                         <button onclick="openFilePicker()" class="flex-1 bg-blue-100 text-blue-700 py-3 rounded-xl font-semibold hover:bg-blue-200 transition"><i class="fas fa-images mr-2"></i> Choose from Gallery</button>
                     </div>
                     <div class="flex gap-3 mb-4">
@@ -1380,8 +1382,8 @@
                                     <p class="font-semibold text-gray-800 dark:text-white">${task.task_name}</p>
                                     <p class="text-sm text-gray-600 dark:text-gray-300">${task.description}</p>
                                     <div class="flex items-center gap-4 mt-2">
-                                        <span class="text-xs text-gray-400 dark:text-gray-500"><i class="far fa-calendar-alt"></i> Due: ${new Date(task.scheduled_date).toLocaleDateString()}</span>
-                                        <span class="text-xs text-gray-400 dark:text-gray-500"><i class="fas fa-clock"></i> ${task.days_after_previous > 0 ? task.days_after_previous + ' days after previous' : 'Start'}</span>
+                                        <span class="text-xs text-gray-400 dark:text-gray-500"><i class="far fa-calendar-alt"></i> <span class="dark:text-green-400">Due:</span> ${new Date(task.scheduled_date).toLocaleDateString()}</span>
+                                        <span class="text-xs text-gray-400 dark:text-gray-500"><i class="fas fa-clock"></i> <span class="dark:text-green-400">${task.days_after_previous > 0 ? task.days_after_previous + ' days after previous' : 'Start'}</span></span>
                                     </div>
                                 </div>
                                 <button onclick="completeCropTask(${task.id}, ${cropId})" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm transition ml-2">
@@ -1400,7 +1402,7 @@
                             <div class="flex items-center gap-2">
                                 <i class="fas fa-check-circle text-green-600 dark:text-green-400"></i>
                                 <p class="font-semibold text-gray-600 dark:text-gray-300">${task.task_name}</p>
-                                <span class="text-xs text-gray-400 dark:text-gray-500 ml-auto">Completed: ${new Date(task.completed_date).toLocaleDateString()}</span>
+                                <span class="text-xs text-gray-400 dark:text-gray-500 ml-auto"><span class="dark:text-green-400">Completed:</span> ${new Date(task.completed_date).toLocaleDateString()}</span>
                             </div>
                         </div>
                     `).join('')}
@@ -1455,7 +1457,7 @@
                                 <div>
                                     <p class="font-semibold text-gray-800 dark:text-white">${task.farm_name} - ${task.crop_name} - ${task.task_name}</p>
                                     <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">${task.description}</p>
-                                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Due: ${new Date(task.scheduled_date).toLocaleDateString()}</p>
+                                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><span class="dark:text-green-400">Due:</span> ${new Date(task.scheduled_date).toLocaleDateString()}</p>
                                 </div>
                                 <button onclick="completeGlobalTask(${task.id})" class="bg-green-500 text-white px-3 py-1 rounded-lg text-sm">
                                     <i class="fas fa-check"></i> Complete
@@ -1797,7 +1799,6 @@
 
         function displayForecast(daily) {
             const container = document.getElementById('weatherForecast');
-            // Add a single header and then each day with range
             let html = `
                 <div class="mb-3">
                     <h4 class="font-bold text-gray-800 dark:text-white text-lg">Weather Forecast for the Next 7 Days</h4>
@@ -2040,12 +2041,12 @@
                         <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"><i class="fas fa-times text-xl"></i></button>
                     </div>
                     <div class="space-y-3 text-gray-700 dark:text-gray-300">
-                        <p><span class="font-semibold text-gray-800 dark:text-white">Affected Crop:</span> ${crop}</p>
-                        <p><span class="font-semibold text-gray-800 dark:text-white">Severity:</span> <span class="px-2 py-0.5 rounded-full text-xs font-bold ${severity === 'High' ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' : severity === 'Critical' ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300' : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300'}">${severity}</span></p>
-                        <p><span class="font-semibold text-gray-800 dark:text-white">Symptoms:</span> ${symptoms}</p>
-                        <p><span class="font-semibold text-gray-800 dark:text-white">Organic Solution:</span> ${organicSolution}</p>
-                        ${chemicalSolution ? `<p><span class="font-semibold text-gray-800 dark:text-white">Chemical Solution:</span> ${chemicalSolution}</p>` : ''}
-                        ${cost ? `<p><span class="font-semibold text-gray-800 dark:text-white">Estimated Cost (KES):</span> ${cost}</p>` : ''}
+                        <p><span class="font-semibold text-gray-800 dark:text-white disease-detail-label">Affected Crop:</span> ${crop}</p>
+                        <p><span class="font-semibold text-gray-800 dark:text-white disease-detail-label">Severity:</span> <span class="px-2 py-0.5 rounded-full text-xs font-bold ${severity === 'High' ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' : severity === 'Critical' ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300' : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300'}">${severity}</span></p>
+                        <p><span class="font-semibold text-gray-800 dark:text-white disease-detail-label">Symptoms:</span> ${symptoms}</p>
+                        <p><span class="font-semibold text-gray-800 dark:text-white disease-detail-label">Organic Solution:</span> ${organicSolution}</p>
+                        ${chemicalSolution ? `<p><span class="font-semibold text-gray-800 dark:text-white disease-detail-label">Chemical Solution:</span> ${chemicalSolution}</p>` : ''}
+                        ${cost ? `<p><span class="font-semibold text-gray-800 dark:text-white disease-detail-label">Estimated Cost (KES):</span> ${cost}</p>` : ''}
                     </div>
                     <button onclick="this.closest('.fixed').remove()" class="mt-5 w-full btn-primary text-white py-2 rounded-lg">Close</button>
                 </div>
