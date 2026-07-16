@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ===== ALL STYLES (unchanged) ===== */
+        /* ===== ALL STYLES ===== */
         * { font-family: 'Inter', sans-serif; }
         .background-slideshow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; overflow: hidden; }
         .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 0; transition: opacity 1.5s ease-in-out; animation: kenBurns 20s ease-in-out infinite alternate; }
@@ -108,74 +108,64 @@
         .yield-card { background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 1rem; padding: 1.25rem; color: white; border: 1px solid #facc15; }
         .yield-card .yield-value { font-size: 2rem; font-weight: 700; color: #facc15; }
         .yield-card .yield-label { font-size: 0.75rem; color: #94a3b8; }
+        /* Dark mode overrides for better visibility */
         .dark body { background-color: #0f172a; color: #f1f5f9; }
         .dark .bg-white, .dark .bg-white\/95, .dark .bg-gray-50, .dark .bg-green-50,
         .dark .bg-blue-50, .dark .bg-yellow-50, .dark .bg-gray-100,
         .dark .section-header-container, .dark .farmer-review-card,
-        .dark .profile-modal-content, .dark .task-pending, .dark .task-completed { background: #1e293b !important; }
-        .dark .chat-message.admin .chat-bubble { background: #334155; color: #f1f5f9; }
-        .dark .chat-message.farmer .chat-bubble { background: #2563eb; color: #ffffff; }
-        .dark .task-pending { border-left-color: #f59e0b; }
-        .dark .task-completed { border-left-color: #10b981; }
-        .dark .text-gray-600, .dark .text-gray-500, .dark .text-gray-700, .dark .text-gray-800 { color: #cbd5e1 !important; }
-        .dark h1, .dark h2, .dark h3, .dark .font-bold, .dark .section-header-container h2 { color: #facc15 !important; }
+        .dark .profile-modal-content, .dark .task-pending, .dark .task-completed,
+        .dark .disease-card, .dark .farm-card, .dark .crop-item,
+        .dark .chat-panel, .dark .card-hover {
+            background: #1e293b !important;
+            border-color: #334155 !important;
+        }
+        .dark .text-gray-600, .dark .text-gray-500, .dark .text-gray-700,
+        .dark .text-gray-800, .dark .text-gray-400, .dark .text-gray-900,
+        .dark .text-black, .dark h1, .dark h2, .dark h3, .dark .font-bold,
+        .dark .section-header-container h2, .dark .nav-link, .dark .stat-number,
+        .dark .farmer-review-card .text-gray-800,
+        .dark .farmer-review-card .text-gray-600,
+        .dark .farmer-review-card .text-gray-500,
+        .dark .disease-card .text-gray-800,
+        .dark .disease-card .text-gray-600,
+        .dark .disease-card .text-gray-500 {
+            color: #f1f5f9 !important;
+        }
+        .dark .text-green-600 { color: #4ade80 !important; }
+        .dark .text-red-600 { color: #f87171 !important; }
+        .dark .text-yellow-600 { color: #facc15 !important; }
+        .dark .text-blue-600 { color: #60a5fa !important; }
         .dark .border { border-color: #334155 !important; }
-        .dark input, .dark select, .dark textarea { background: #0f172a; border-color: #facc15; color: #f1f5f9; }
-        .dark .upload-zone { background: #0f172a; border-color: #facc15; }
+        .dark input, .dark select, .dark textarea {
+            background: #0f172a;
+            border-color: #4b5563;
+            color: #f1f5f9;
+        }
+        .dark .upload-zone { background: #0f172a; border-color: #4b5563; }
         .dark .bg-green-100 { background: #064e3b !important; color: #d1fae5 !important; }
         .dark .bg-blue-100 { background: #1e3a8a !important; color: #dbeafe !important; }
         .dark .bg-yellow-50 { background: #78350f !important; }
         .dark .text-yellow-800 { color: #fef08a !important; }
-        .dark .text-green-600 { color: #4ade80 !important; }
-        .dark .mobile-menu-panel { background: #0f172a; color: #f1f5f9; }
+        .dark .mobile-menu-panel { background: #0f172a; }
         .dark .mobile-menu-panel a { color: #f1f5f9; }
         .dark .mobile-menu-panel a:hover { background: #1e293b; }
         .dark .mobile-menu-panel .border-b { border-color: #334155; }
         .dark .yield-card { background: linear-gradient(135deg, #1e293b, #0f172a); border-color: #facc15; }
         .dark .rating-star.empty { color: #4b5563; }
-        .farm-card { background: white; border-radius: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 1.25rem; margin-bottom: 1.5rem; border: 1px solid #e5e7eb; }
-        .farm-card .farm-header { display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; }
-        .crop-item { background: #f9fafb; border-radius: 1rem; padding: 1rem; margin-top: 0.75rem; border: 1px solid #e5e7eb; transition: all 0.2s; }
-        .crop-item:hover { background: #f3f4f6; }
-        .dark .farm-card { background: #1e293b; border-color: #334155; }
-        .dark .crop-item { background: #0f172a; border-color: #334155; }
-        .dark .crop-item:hover { background: #1e293b; }
-        .farm-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
-        .test-task-btn { background: #8b5cf6; color: white; padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-size: 0.7rem; cursor: pointer; border: none; transition: background 0.2s; }
-        .test-task-btn:hover { background: #7c3aed; }
-        .generate-tasks-btn { background: #f59e0b; color: #1e293b; padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-size: 0.7rem; cursor: pointer; border: none; transition: background 0.2s; }
-        .generate-tasks-btn:hover { background: #d97706; }
-        .delete-btn { background: transparent; color: #ef4444; border: none; cursor: pointer; font-size: 1.1rem; padding: 0.25rem 0.5rem; border-radius: 0.5rem; transition: all 0.2s; }
-        .delete-btn:hover { background: #fecaca; color: #dc2626; transform: scale(1.1); }
-        .dark .delete-btn:hover { background: #7f1d1d; color: #fca5a5; }
-        .chat-panel { background: #f8fafc; border: 1px solid #e2e8f0; }
-        .dark .chat-panel { background: #1e293b; border-color: #334155; }
-        .farmer-review-card .text-gray-800 { color: #1e293b !important; }
-        .farmer-review-card .text-gray-600 { color: #475569 !important; }
-        .farmer-review-card .text-gray-500 { color: #64748b !important; }
-        .dark .farmer-review-card .text-gray-800 { color: #f1f5f9 !important; }
-        .dark .farmer-review-card .text-gray-600 { color: #cbd5e1 !important; }
-        .dark .farmer-review-card .text-gray-500 { color: #94a3b8 !important; }
-        .view-all-toggle { background: transparent; border: none; color: #3b82f6; font-weight: 600; cursor: pointer; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: all 0.2s; }
-        .view-all-toggle:hover { background: #eff6ff; color: #2563eb; }
+        .dark .farmer-review-card { background: #1e293b; }
+        .dark .chat-message.admin .chat-bubble { background: #334155; color: #f1f5f9; }
+        .dark .chat-message.farmer .chat-bubble { background: #2563eb; color: #ffffff; }
+        .dark .task-pending { background: #422006 !important; border-left-color: #f59e0b; }
+        .dark .task-completed { background: #064e3b !important; border-left-color: #10b981; }
         .dark .view-all-toggle { color: #60a5fa; }
         .dark .view-all-toggle:hover { background: #1e293b; color: #93c5fd; }
-        @media (max-width: 640px) {
-            .chat-send-btn { padding: 0.75rem 1rem; font-size: 0.875rem; }
-            .chat-send-btn i { margin-right: 0.25rem; }
-            .chat-send-btn span { display: inline; }
+        .dark .blue-button { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .dark .btn-primary { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .dark .upload-zone:hover, .dark .upload-zone.drag-over {
+            background-color: #1e293b;
+            border-color: #3b82f6;
         }
-        @media (max-width: 400px) {
-            .chat-send-btn span { display: none; }
-            .chat-send-btn i { margin-right: 0; }
-            .chat-send-btn { padding: 0.75rem 0.9rem; }
-        }
-        .disease-card .text-gray-800 { color: #1e293b !important; }
-        .disease-card .text-gray-600 { color: #475569 !important; }
-        .disease-card .text-gray-500 { color: #64748b !important; }
-        .dark .disease-card .text-gray-800 { color: #f1f5f9 !important; }
-        .dark .disease-card .text-gray-600 { color: #cbd5e1 !important; }
-        .dark .disease-card .text-gray-500 { color: #94a3b8 !important; }
+        .dark .card-hover:hover { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body class="antialiased">
@@ -308,11 +298,13 @@
                 <div class="bg-gradient-to-r from-green-500 to-green-600 p-5"><h3 class="text-white font-bold text-xl"><i class="fas fa-microchip mr-2"></i> AI Crop Diagnosis</h3><p class="text-green-100 text-sm">Upload leaf photo • Instant analysis • Free for Kenyan farmers</p></div>
                 <div class="p-6">
                     <div class="flex flex-wrap gap-3 mb-4">
+                        <!-- Take Photo button – opens camera directly -->
                         <button onclick="openCameraDirect()" class="flex-1 bg-green-100 text-green-700 py-3 rounded-xl font-semibold hover:bg-green-200 transition"><i class="fas fa-camera mr-2"></i> Take Photo</button>
+                        <!-- Choose from Gallery button – opens file picker -->
                         <button onclick="openFilePicker()" class="flex-1 bg-blue-100 text-blue-700 py-3 rounded-xl font-semibold hover:bg-blue-200 transition"><i class="fas fa-images mr-2"></i> Choose from Gallery</button>
                     </div>
                     <div class="flex gap-3 mb-4">
-                        <select id="cropSelect" class="flex-1 p-3 border rounded-xl bg-gray-50">
+                        <select id="cropSelect" class="flex-1 p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600">
                             <option value="">All Crops (Auto-detect)</option>
                             <option value="tomato">Tomato</option>
                             <option value="potato">Potato</option>
@@ -321,10 +313,10 @@
                             <option value="beans">Beans</option>
                         </select>
                     </div>
-                    <div id="uploadArea" class="upload-zone border-2 border-dashed border-green-300 rounded-xl p-8 text-center cursor-pointer transition-all bg-green-50/30 hover:bg-green-50" onclick="document.getElementById('imageInput').click()">
+                    <div id="uploadArea" class="upload-zone border-2 border-dashed border-green-300 rounded-xl p-8 text-center cursor-pointer transition-all bg-green-50/30 hover:bg-green-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700" onclick="document.getElementById('imageInput').click()">
                         <i class="fas fa-cloud-upload-alt text-5xl text-green-400 mb-3"></i>
-                        <p class="text-gray-600 font-medium">Tap to upload or take a photo</p>
-                        <p class="text-xs text-gray-400 mt-1">Supported: JPG, PNG (max 10MB) • Use clear leaf photo</p>
+                        <p class="text-gray-600 dark:text-gray-300 font-medium">Tap to upload or take a photo</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-400 mt-1">Supported: JPG, PNG (max 10MB) • Use clear leaf photo</p>
                         <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageUpload(this)">
                     </div>
                     <div id="imagePreview" class="hidden mt-4">
@@ -337,12 +329,12 @@
                     <div id="diagnosisResult" class="hidden mt-6"></div>
                 </div>
             </div>
-            <div class="bg-white/95 rounded-2xl shadow-xl p-5 card-hover">
-                <h3 class="font-bold"><i class="fas fa-cloud-sun-rain text-green-600 mr-2"></i> Weather & Recommendations</h3>
+            <div class="bg-white/95 rounded-2xl shadow-xl p-5 card-hover dark:bg-gray-800 dark:border-gray-700">
+                <h3 class="font-bold text-gray-800 dark:text-white"><i class="fas fa-cloud-sun-rain text-green-600 mr-2"></i> Weather & Recommendations</h3>
                 <div id="realTimeWeather" class="text-center py-3">
-                    <div class="weather-temp text-2xl font-bold">--°C</div>
-                    <div class="weather-location">Nairobi, Kenya</div>
-                    <div class="weather-condition"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+                    <div class="weather-temp text-2xl font-bold text-gray-800 dark:text-white">--°C</div>
+                    <div class="weather-location text-gray-600 dark:text-gray-300">Nairobi, Kenya</div>
+                    <div class="weather-condition text-gray-600 dark:text-gray-300"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
                 </div>
                 <div id="weatherForecast" class="space-y-2 mt-3"></div>
                 <div id="weatherRecommendations" class="mt-3 space-y-2"></div>
@@ -356,116 +348,123 @@
                     </div>
                     <p class="text-xs text-gray-400 mt-2" id="yieldNote">Based on current weather conditions</p>
                 </div>
-                <div class="mt-4 p-3 bg-yellow-50 rounded-lg"><i class="fas fa-exclamation-triangle text-yellow-600"></i><p class="text-sm text-yellow-800">Check weather before spraying</p></div>
+                <div class="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg"><i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400"></i><p class="text-sm text-yellow-800 dark:text-yellow-200">Check weather before spraying</p></div>
             </div>
         </div>
         <!-- My Shambas -->
         <div id="shambas" class="mb-8">
-            <div class="section-header-container">
+            <div class="section-header-container dark:bg-gray-800 dark:border-gray-700">
                 <div>
-                    <h2 class="text-xl font-bold"><i class="fas fa-tractor text-green-600 mr-2"></i> My Shambas</h2>
-                    <p class="text-sm text-gray-500 mt-1">Manage your farms and crops</p>
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-tractor text-green-600 mr-2"></i> My Shambas</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your farms and crops</p>
                 </div>
-                <button onclick="showEnhancedAddFarmModal()" class="blue-button"><i class="fas fa-plus"></i> Add New Farm</button>
+                <button onclick="showEnhancedAddFarmModal()" class="blue-button">Add New Farm</button>
             </div>
-            <div id="farmsContainer" class="grid grid-cols-1 gap-5">
-                <div class="skeleton skeleton-card"></div>
-            </div>
+            <div id="farmsContainer" class="grid grid-cols-1 gap-5"></div>
         </div>
         <!-- Crops Section -->
         <div id="crops" class="mb-8">
-            <div class="section-header-container"><h2 class="text-xl font-bold"><i class="fas fa-seedling text-green-600 mr-2"></i> Active Crops Health Status</h2><span class="blue-button" style="cursor: default;"><i class="fas fa-calendar"></i> Last updated today</span></div>
-            <div id="cropsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                <div class="skeleton skeleton-card"></div>
-                <div class="skeleton skeleton-card"></div>
-                <div class="skeleton skeleton-card"></div>
+            <div class="section-header-container dark:bg-gray-800 dark:border-gray-700">
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-seedling text-green-600 mr-2"></i> Active Crops Health Status</h2>
+                <span class="blue-button" style="cursor: default;"><i class="fas fa-calendar"></i> Last updated today</span>
             </div>
+            <div id="cropsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
         </div>
         <!-- Reviews Section -->
         <div id="reviews" class="mb-8">
-            <div class="section-header-container">
+            <div class="section-header-container dark:bg-gray-800 dark:border-gray-700">
                 <div>
-                    <h2 class="text-xl font-bold"><i class="fas fa-star text-yellow-500 mr-2"></i> Farmer Ratings & Reviews</h2>
-                    <p class="text-sm text-gray-500 mt-1">See what fellow farmers say about ShambaCare</p>
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-star text-yellow-500 mr-2"></i> Farmer Ratings & Reviews</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">See what fellow farmers say about ShambaCare</p>
                 </div>
                 <button onclick="scrollToSection('contact')" class="blue-button"><i class="fas fa-pen"></i> Leave a Review</button>
             </div>
             <div id="reviewsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             <div id="reviewsViewAllWrapper" class="text-center mt-4 hidden">
-                <button onclick="toggleAllReviews()" class="view-all-toggle"><i class="fas fa-chevron-down mr-2"></i> View All Reviews</button>
+                <button onclick="toggleAllReviews()" class="view-all-toggle text-blue-600 dark:text-blue-400">View All Reviews</button>
             </div>
         </div>
         <!-- Disease Library -->
         <div id="library" class="mb-8">
-            <div class="section-header-container">
+            <div class="section-header-container dark:bg-gray-800 dark:border-gray-700">
                 <div>
-                    <h2 class="text-xl font-bold"><i class="fas fa-book text-green-600 mr-2"></i> Common Crop Issues in Kenya</h2>
-                    <p class="text-sm text-gray-500 mt-1">Search and learn about crop diseases, symptoms, and treatments</p>
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-book text-green-600 mr-2"></i> Common Crop Issues in Kenya</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Search and learn about crop diseases, symptoms, and treatments</p>
                 </div>
                 <div class="relative">
-                    <input type="text" id="diseaseSearchInput" placeholder="Search by disease or crop..." class="pl-10 pr-4 py-2 border rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <input type="text" id="diseaseSearchInput" placeholder="Search by disease or crop..." class="pl-10 pr-4 py-2 border rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white dark:border-gray-600">
                     <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                 </div>
             </div>
-            <div id="diseaseLibraryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="skeleton skeleton-card"></div>
-                <div class="skeleton skeleton-card"></div>
-                <div class="skeleton skeleton-card"></div>
-                <div class="skeleton skeleton-card"></div>
-            </div>
+            <div id="diseaseLibraryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
             <div id="diseaseViewAllWrapper" class="text-center mt-4 hidden">
-                <button onclick="toggleAllDiseases()" class="view-all-toggle"><i class="fas fa-chevron-down mr-2"></i> View All Diseases</button>
+                <button onclick="toggleAllDiseases()" class="view-all-toggle text-blue-600 dark:text-blue-400">View All Diseases</button>
             </div>
         </div>
         <!-- Contact Section -->
         <div id="contact" class="mb-8">
-            <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 text-center mb-8"><h1 class="text-3xl font-bold">Let's <span class="gradient-text">Connect</span></h1><p class="text-gray-600">Send us your feedback or reach out for support</p></div>
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Let's <span class="gradient-text">Connect</span></h1>
+                <p class="text-gray-600 dark:text-gray-300">Send us your feedback or reach out for support</p>
+            </div>
             <!-- Contact Methods -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                <div class="bg-white/95 rounded-2xl shadow-lg p-6 text-center card-hover">
+                <div class="bg-white/95 dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center card-hover dark:border-gray-700">
                     <i class="fas fa-phone-alt text-green-600 text-3xl mb-3"></i>
-                    <h3 class="font-semibold">Phone</h3>
+                    <h3 class="font-semibold text-gray-800 dark:text-white">Phone</h3>
                     <div class="space-y-2 mt-2">
-                        <div><span class="font-medium text-gray-700">Chrispinus:</span> <a href="tel:+254793681781" class="text-gray-600 hover:text-green-600">+254 793 681 781</a></div>
-                        <div><span class="font-medium text-gray-700">Ian:</span> <a href="tel:+254708059908" class="text-gray-600 hover:text-green-600">+254 708 059 908</a></div>
-                        <div><span class="font-medium text-gray-700">Joshua:</span> <a href="tel:+254717768346" class="text-gray-600 hover:text-green-600">+254 717 768 346</a></div>
+                        <div><span class="font-medium text-gray-700 dark:text-gray-300">Chrispinus:</span> <a href="tel:+254793681781" class="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400">+254 793 681 781</a></div>
+                        <div><span class="font-medium text-gray-700 dark:text-gray-300">Ian:</span> <a href="tel:+254708059908" class="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400">+254 708 059 908</a></div>
+                        <div><span class="font-medium text-gray-700 dark:text-gray-300">Joshua:</span> <a href="tel:+254717768346" class="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400">+254 717 768 346</a></div>
                     </div>
                 </div>
-                <div class="bg-white/95 rounded-2xl shadow-lg p-6 text-center card-hover"><i class="fas fa-envelope text-green-600 text-3xl mb-3"></i><h3 class="font-semibold">Email</h3><a href="mailto:shambacare2026@gmail.com" class="text-gray-600 hover:text-green-600">shambacare2026@gmail.com</a></div>
-                <div class="bg-white/95 rounded-2xl shadow-lg p-6 text-center card-hover"><i class="fas fa-map-marker-alt text-green-600 text-3xl mb-3"></i><h3 class="font-semibold">Visit Us</h3><p class="text-gray-600">Westlands Business Park, Nairobi</p></div>
-                <div class="bg-white/95 rounded-2xl shadow-lg p-6 text-center card-hover"><i class="fas fa-clock text-green-600 text-3xl mb-3"></i><h3 class="font-semibold">Hours</h3><p class="text-gray-600">Mon-Fri: 8am-5pm</p></div>
+                <div class="bg-white/95 dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center card-hover dark:border-gray-700">
+                    <i class="fas fa-envelope text-green-600 text-3xl mb-3"></i>
+                    <h3 class="font-semibold text-gray-800 dark:text-white">Email</h3>
+                    <a href="mailto:shambacare2026@gmail.com" class="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400">shambacare2026@gmail.com</a>
+                </div>
+                <div class="bg-white/95 dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center card-hover dark:border-gray-700">
+                    <i class="fas fa-map-marker-alt text-green-600 text-3xl mb-3"></i>
+                    <h3 class="font-semibold text-gray-800 dark:text-white">Visit Us</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Westlands Business Park, Nairobi</p>
+                </div>
+                <div class="bg-white/95 dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center card-hover dark:border-gray-700">
+                    <i class="fas fa-clock text-green-600 text-3xl mb-3"></i>
+                    <h3 class="font-semibold text-gray-800 dark:text-white">Hours</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Mon-Fri: 8am-5pm</p>
+                </div>
             </div>
             <!-- Chat + Feedback Form -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
                 <!-- Chat Support -->
-                <div class="bg-white/95 rounded-2xl shadow-xl overflow-hidden card-hover">
+                <div class="bg-white/95 dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden card-hover dark:border-gray-700">
                     <div class="bg-gradient-to-r from-green-600 to-green-700 p-5">
                         <h2 class="text-xl font-bold text-white"><i class="fas fa-comments mr-2"></i> Chat with Support</h2>
                         <p class="text-green-100 text-sm">Send us a message and we'll respond within 24 hours</p>
                     </div>
                     <div class="p-4">
-                        <div class="chat-panel h-64 overflow-y-auto p-3 rounded-lg mb-3" id="chatMessagesList">
-                            <div class="text-center py-8 text-gray-500">Loading messages...</div>
+                        <div class="chat-panel h-64 overflow-y-auto p-3 rounded-lg mb-3 dark:bg-gray-700" id="chatMessagesList">
+                            <div class="text-center py-8 text-gray-500 dark:text-gray-300">Loading messages...</div>
                         </div>
                         <div class="flex gap-2">
                             <input type="text" id="quickMessageInput" placeholder="Type your message here..." class="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 dark:text-white bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
                             <button onclick="sendQuickMessage()" class="btn-primary text-white px-4 py-3 rounded-lg font-semibold chat-send-btn whitespace-nowrap"><i class="fas fa-paper-plane mr-1"></i><span> Send</span></button>
                         </div>
-                        <p class="text-xs text-gray-400 mt-2"><i class="fas fa-clock"></i> Our support team typically responds within 24 hours</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-400 mt-2"><i class="fas fa-clock"></i> Our support team typically responds within 24 hours</p>
                     </div>
                 </div>
                 <!-- Review Form -->
-                <div class="bg-white/95 rounded-2xl shadow-xl overflow-hidden card-hover">
+                <div class="bg-white/95 dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden card-hover dark:border-gray-700">
                     <div class="bg-gradient-to-r from-green-600 to-green-700 p-5">
                         <h2 class="text-xl font-bold text-white"><i class="fas fa-star mr-2"></i> Leave a Review</h2>
                         <p class="text-green-100 text-sm">Share your experience – help other farmers</p>
                     </div>
                     <form id="feedbackForm" class="p-6 space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input type="text" id="feedbackName" placeholder="Your Name" class="w-full p-3 border rounded-lg" required>
-                            <input type="email" id="feedbackEmail" placeholder="Your Email" class="w-full p-3 border rounded-lg" required>
+                            <input type="text" id="feedbackName" placeholder="Your Name" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600" required>
+                            <input type="email" id="feedbackEmail" placeholder="Your Email" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600" required>
                         </div>
-                        <input type="text" id="feedbackLocation" placeholder="Your County (e.g., Kiambu)" class="w-full p-3 border rounded-lg" required>
+                        <input type="text" id="feedbackLocation" placeholder="Your County (e.g., Kiambu)" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600" required>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Rating</label>
                             <div id="starRating" class="flex gap-2 text-3xl cursor-pointer">
@@ -477,23 +476,23 @@
                             </div>
                             <input type="hidden" id="feedbackRating" value="0">
                         </div>
-                        <textarea id="feedbackMessage" rows="4" placeholder="Write your review or feedback..." class="w-full p-3 border rounded-lg" required></textarea>
+                        <textarea id="feedbackMessage" rows="4" placeholder="Write your review or feedback..." class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600" required></textarea>
                         <button type="submit" class="w-full btn-primary text-white py-3 rounded-lg font-semibold"><i class="fas fa-paper-plane mr-2"></i> Submit Review</button>
                     </form>
                 </div>
             </div>
             <!-- Map & Newsletter -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-                <div class="bg-white/95 rounded-2xl shadow-xl overflow-hidden card-hover">
+                <div class="bg-white/95 dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden card-hover dark:border-gray-700">
                     <div class="bg-gradient-to-r from-green-600 to-green-700 p-5"><h2 class="text-xl font-bold text-white">Find Us Here</h2><p class="text-green-100 text-sm">Visit our office in Nairobi</p></div>
                     <div class="h-80 w-full"><iframe class="w-full h-full" frameborder="0" style="border:0" allowfullscreen loading="lazy" src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=Westlands+Nairobi+Kenya&zoom=14"></iframe></div>
-                    <div class="p-4 bg-gray-50 border-t border-gray-200"><div class="flex items-center justify-between text-sm"><span class="text-gray-600"><i class="fas fa-location-dot text-green-600 mr-2"></i>Westlands Business Park, Nairobi</span><a href="https://maps.google.com/?q=Westlands+Nairobi+Kenya" target="_blank" class="text-green-600 hover:underline">Open in Maps <i class="fas fa-external-link-alt ml-1"></i></a></div></div>
+                    <div class="p-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600"><div class="flex items-center justify-between text-sm"><span class="text-gray-600 dark:text-gray-300"><i class="fas fa-location-dot text-green-600 mr-2"></i>Westlands Business Park, Nairobi</span><a href="https://maps.google.com/?q=Westlands+Nairobi+Kenya" target="_blank" class="text-green-600 dark:text-green-400 hover:underline">Open in Maps <i class="fas fa-external-link-alt ml-1"></i></a></div></div>
                 </div>
                 <div class="bg-gradient-to-r from-green-600 to-green-700 rounded-2xl p-8 text-center flex flex-col justify-center">
                     <i class="fas fa-envelope-open-text text-white text-4xl mb-4"></i>
                     <h3 class="text-2xl font-bold text-white mb-2">Stay Updated</h3>
                     <div class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                        <input type="email" id="newsletterEmail" placeholder="Your email" class="flex-1 px-4 py-2 rounded-lg bg-white text-gray-800">
+                        <input type="email" id="newsletterEmail" placeholder="Your email" class="flex-1 px-4 py-2 rounded-lg bg-white text-gray-800 dark:bg-gray-700 dark:text-white">
                         <button onclick="subscribeNewsletter()" class="bg-orange-500 hover:bg-orange-600 px-6 py-2 rounded-lg font-semibold text-white transition w-full sm:w-auto">Subscribe</button>
                     </div>
                 </div>
@@ -503,84 +502,91 @@
     <!-- Modals -->
     <!-- Add Farm Modal -->
     <div id="addFarmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('addFarmModal')">
-        <div class="bg-white rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
-            <div class="p-4 border-b"><h3 class="font-bold"><i class="fas fa-plus-circle text-green-600 mr-2"></i> Add New Farm</h3></div>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
+            <div class="p-4 border-b dark:border-gray-700"><h3 class="font-bold text-gray-800 dark:text-white"><i class="fas fa-plus-circle text-green-600 mr-2"></i> Add New Farm</h3></div>
             <div class="p-4 space-y-3">
-                <input type="text" id="farmName" placeholder="Farm Name" class="w-full p-3 border rounded-lg">
-                <input type="text" id="farmLocation" placeholder="Location/County" class="w-full p-3 border rounded-lg">
-                <input type="number" id="farmSize" placeholder="Size (acres)" class="w-full p-3 border rounded-lg">
-                <select id="farmCrop" class="w-full p-3 border rounded-lg"><option value="">Select Main Crop</option><option value="Maize">🌽 Maize</option><option value="Coffee">☕ Coffee</option><option value="Tomato">🍅 Tomato</option><option value="Potato">🥔 Potato</option><option value="Beans">🫘 Beans</option></select>
+                <input type="text" id="farmName" placeholder="Farm Name" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                <input type="text" id="farmLocation" placeholder="Location/County" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                <input type="number" id="farmSize" placeholder="Size (acres)" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                <select id="farmCrop" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                    <option value="">Select Main Crop</option>
+                    <option value="Maize">Maize</option>
+                    <option value="Coffee">Coffee</option>
+                    <option value="Tomato">Tomato</option>
+                    <option value="Potato">Potato</option>
+                    <option value="Beans">Beans</option>
+                </select>
                 <button onclick="addFarm()" class="w-full btn-primary text-white py-3 rounded-lg"><i class="fas fa-check-circle mr-2"></i> Create Farm</button>
             </div>
         </div>
     </div>
     <!-- Add Crop Modal -->
     <div id="addCropModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('addCropModal')">
-        <div class="bg-white rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
-            <div class="p-4 border-b"><h3 class="font-bold"><i class="fas fa-seedling text-green-600 mr-2"></i> Add Crop to Farm</h3></div>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
+            <div class="p-4 border-b dark:border-gray-700"><h3 class="font-bold text-gray-800 dark:text-white"><i class="fas fa-seedling text-green-600 mr-2"></i> Add Crop to Farm</h3></div>
             <div class="p-4 space-y-3">
-                <select id="newCropFarmId" class="w-full p-3 border rounded-lg"><option value="">Select Farm</option></select>
-                <select id="newCropName" class="w-full p-3 border rounded-lg">
+                <select id="newCropFarmId" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600"><option value="">Select Farm</option></select>
+                <select id="newCropName" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
                     <option value="">Select Crop Type</option>
-                    <option value="Maize">🌽 Maize</option>
-                    <option value="Coffee">☕ Coffee</option>
-                    <option value="Tomato">🍅 Tomato</option>
-                    <option value="Potato">🥔 Potato</option>
-                    <option value="Beans">🫘 Beans</option>
-                    <option value="Vegetables">🥬 Vegetables</option>
+                    <option value="Maize">Maize</option>
+                    <option value="Coffee">Coffee</option>
+                    <option value="Tomato">Tomato</option>
+                    <option value="Potato">Potato</option>
+                    <option value="Beans">Beans</option>
+                    <option value="Vegetables">Vegetables</option>
                 </select>
-                <input type="text" id="newCropVariety" placeholder="Variety (optional)" class="w-full p-3 border rounded-lg">
-                <input type="date" id="newCropPlantingDate" class="w-full p-3 border rounded-lg" placeholder="Planting Date">
-                <input type="number" id="newCropArea" placeholder="Area (acres)" class="w-full p-3 border rounded-lg">
+                <input type="text" id="newCropVariety" placeholder="Variety (optional)" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                <input type="date" id="newCropPlantingDate" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600" placeholder="Planting Date">
+                <input type="number" id="newCropArea" placeholder="Area (acres)" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
                 <button onclick="addCropToFarm()" class="w-full btn-primary text-white py-3 rounded-lg"><i class="fas fa-check-circle mr-2"></i> Add Crop</button>
             </div>
         </div>
     </div>
     <!-- Farm Tasks Modal -->
     <div id="farmTasksModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('farmTasksModal')">
-        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto animate-scaleIn" onclick="event.stopPropagation()">
-            <div class="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
-                <h3 class="font-bold text-xl"><i class="fas fa-tasks text-green-600 mr-2"></i> Farm Activities</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto animate-scaleIn" onclick="event.stopPropagation()">
+            <div class="sticky top-0 bg-white dark:bg-gray-800 p-4 border-b dark:border-gray-700 flex justify-between items-center">
+                <h3 class="font-bold text-xl text-gray-800 dark:text-white"><i class="fas fa-tasks text-green-600 mr-2"></i> Farm Activities</h3>
                 <button onclick="closeModal('farmTasksModal')" class="text-red-500"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <div id="farmTasksList" class="p-4"><div class="text-center py-8">Loading tasks...</div></div>
+            <div id="farmTasksList" class="p-4 dark:text-gray-300"></div>
         </div>
     </div>
     <!-- Global Tasks Modal -->
     <div id="globalTasksModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('globalTasksModal')">
-        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto animate-scaleIn" onclick="event.stopPropagation()">
-            <div class="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
-                <h3 class="font-bold text-xl"><i class="fas fa-tasks text-green-600 mr-2"></i> All Pending Tasks</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto animate-scaleIn" onclick="event.stopPropagation()">
+            <div class="sticky top-0 bg-white dark:bg-gray-800 p-4 border-b dark:border-gray-700 flex justify-between items-center">
+                <h3 class="font-bold text-xl text-gray-800 dark:text-white"><i class="fas fa-tasks text-green-600 mr-2"></i> All Pending Tasks</h3>
                 <button onclick="closeModal('globalTasksModal')" class="text-red-500"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <div id="globalTasksList" class="p-4"><div class="text-center py-8">Loading tasks...</div></div>
+            <div id="globalTasksList" class="p-4 dark:text-gray-300"></div>
         </div>
     </div>
     <!-- Crop Health Modal -->
     <div id="cropHealthModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('cropHealthModal')">
-        <div class="bg-white rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
-            <div class="p-4 border-b"><h3 class="font-bold"><i class="fas fa-stethoscope text-green-600 mr-2"></i> Crop Health Assessment</h3></div>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
+            <div class="p-4 border-b dark:border-gray-700"><h3 class="font-bold text-gray-800 dark:text-white"><i class="fas fa-stethoscope text-green-600 mr-2"></i> Crop Health Assessment</h3></div>
             <div class="p-4 space-y-3">
                 <input type="hidden" id="healthCropId">
-                <select id="healthStatus" class="w-full p-3 border rounded-lg">
-                    <option value="excellent">🌿 Excellent - Very healthy</option>
-                    <option value="good">👍 Good - Minor issues</option>
-                    <option value="fair">⚠️ Fair - Some problems</option>
-                    <option value="poor">💀 Poor - Major issues</option>
-                    <option value="critical">🚨 Critical - Immediate action needed</option>
+                <select id="healthStatus" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                    <option value="excellent">Excellent - Very healthy</option>
+                    <option value="good">Good - Minor issues</option>
+                    <option value="fair">Fair - Some problems</option>
+                    <option value="poor">Poor - Major issues</option>
+                    <option value="critical">Critical - Immediate action needed</option>
                 </select>
-                <textarea id="healthNotes" rows="3" placeholder="Describe any issues, pests, or diseases observed..." class="w-full p-3 border rounded-lg"></textarea>
-                <div class="flex gap-3"><button onclick="closeModal('cropHealthModal')" class="flex-1 bg-gray-300 py-2 rounded-lg">Cancel</button><button onclick="submitCropHealthAssessment()" class="flex-1 bg-green-600 text-white py-2 rounded-lg">Submit Assessment</button></div>
+                <textarea id="healthNotes" rows="3" placeholder="Describe any issues, pests, or diseases observed..." class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600"></textarea>
+                <div class="flex gap-3"><button onclick="closeModal('cropHealthModal')" class="flex-1 bg-gray-300 dark:bg-gray-600 py-2 rounded-lg">Cancel</button><button onclick="submitCropHealthAssessment()" class="flex-1 bg-green-600 text-white py-2 rounded-lg">Submit Assessment</button></div>
             </div>
         </div>
     </div>
     <!-- New Message Modal -->
     <div id="newMessageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('newMessageModal')">
-        <div class="bg-white rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
-            <div class="p-4 border-b"><h3 class="font-bold"><i class="fas fa-plus-circle text-green-600 mr-2"></i> New Message</h3></div>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
+            <div class="p-4 border-b dark:border-gray-700"><h3 class="font-bold text-gray-800 dark:text-white"><i class="fas fa-plus-circle text-green-600 mr-2"></i> New Message</h3></div>
             <div class="p-4 space-y-3">
-                <textarea id="newMessageText" rows="4" placeholder="Describe your issue or question in detail..." class="w-full p-3 border rounded-lg"></textarea>
-                <div class="flex gap-3"><button onclick="closeModal('newMessageModal')" class="flex-1 bg-gray-300 py-2 rounded-lg">Cancel</button><button onclick="sendNewMessage()" class="flex-1 btn-primary text-white py-2 rounded-lg">Send Message</button></div>
+                <textarea id="newMessageText" rows="4" placeholder="Describe your issue or question in detail..." class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600"></textarea>
+                <div class="flex gap-3"><button onclick="closeModal('newMessageModal')" class="flex-1 bg-gray-300 dark:bg-gray-600 py-2 rounded-lg">Cancel</button><button onclick="sendNewMessage()" class="flex-1 btn-primary text-white py-2 rounded-lg">Send Message</button></div>
             </div>
         </div>
     </div>
@@ -826,8 +832,8 @@
             if (!container) return;
             container.innerHTML = `
                 <div class="text-center py-8">
-                    <i class="fas fa-comments text-4xl text-gray-300 mb-3"></i>
-                    <p class="text-gray-500">No messages yet. Start a conversation with our support team!</p>
+                    <i class="fas fa-comments text-4xl text-gray-300 dark:text-gray-500 mb-3"></i>
+                    <p class="text-gray-500 dark:text-gray-400">No messages yet. Start a conversation with our support team!</p>
                     <button onclick="openNewMessageModal()" class="mt-3 btn-primary text-white px-4 py-2 rounded-lg text-sm">Send First Message</button>
                 </div>
             `;
@@ -910,7 +916,7 @@
 
         async function loadReviews() {
             const container = document.getElementById('reviewsContainer');
-            container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">Loading reviews...</div>';
+            container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">Loading reviews...</div>';
             try {
                 let reviews = [];
                 try {
@@ -929,7 +935,7 @@
                 renderReviews(reviews);
             } catch (error) {
                 console.error('Load reviews error:', error);
-                container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">Error loading reviews.</div>';
+                container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">Error loading reviews.</div>';
             }
         }
 
@@ -937,23 +943,23 @@
             const container = document.getElementById('reviewsContainer');
             const wrapper = document.getElementById('reviewsViewAllWrapper');
             if (!reviews || reviews.length === 0) {
-                container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">No reviews yet. Be the first to share your experience!</div>';
+                container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">No reviews yet. Be the first to share your experience!</div>';
                 wrapper.classList.add('hidden');
                 return;
             }
             const displayCount = showAllReviews ? reviews.length : Math.min(3, reviews.length);
             const displayReviews = reviews.slice(0, displayCount);
             container.innerHTML = displayReviews.map(r => `
-                <div class="farmer-review-card">
+                <div class="farmer-review-card dark:bg-gray-800">
                     <div class="flex justify-between items-start">
                         <div>
-                            <h3 class="font-bold text-gray-800">${escapeHtml(r.name)}</h3>
-                            <p class="text-sm text-gray-500">${escapeHtml(r.location)}</p>
+                            <h3 class="font-bold text-gray-800 dark:text-white">${escapeHtml(r.name)}</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">${escapeHtml(r.location)}</p>
                         </div>
                         <div class="text-yellow-500 text-lg">${'★'.repeat(Math.round(r.rating))}${'☆'.repeat(5 - Math.round(r.rating))}</div>
                     </div>
-                    <p class="text-sm text-gray-600 mt-2">"${escapeHtml(r.message)}"</p>
-                    <p class="text-xs text-gray-400 mt-2">${new Date(r.created_at).toLocaleDateString()}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-2">"${escapeHtml(r.message)}"</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">${new Date(r.created_at).toLocaleDateString()}</p>
                 </div>
             `).join('');
             if (reviews.length > 3) {
@@ -1010,10 +1016,10 @@
                     farmsData = data.farms;
                     if (farmsData.length === 0) {
                         container.innerHTML = `
-                            <div class="bg-white rounded-2xl shadow-xl p-6 text-center card-hover">
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 text-center card-hover">
                                 <i class="fas fa-tractor text-5xl text-green-400 mb-4"></i>
-                                <h3 class="text-xl font-bold text-gray-800">You don't have any farms yet</h3>
-                                <p class="text-gray-600 mt-2">Create your first farm to start tracking your crops.</p>
+                                <h3 class="text-xl font-bold text-gray-800 dark:text-white">You don't have any farms yet</h3>
+                                <p class="text-gray-600 dark:text-gray-300 mt-2">Create your first farm to start tracking your crops.</p>
                                 <button onclick="showEnhancedAddFarmModal()" class="mt-4 btn-primary text-white px-6 py-3 rounded-lg font-semibold"><i class="fas fa-plus mr-2"></i> Add Farm</button>
                             </div>
                         `;
@@ -1021,13 +1027,13 @@
                         return;
                     }
                     container.innerHTML = farmsData.map(farm => `
-                        <div class="farm-card">
+                        <div class="farm-card dark:bg-gray-800 dark:border-gray-700">
                             <div class="farm-header">
                                 <div>
                                     <h3 class="text-xl font-bold text-gray-800 dark:text-white">${farm.name}</h3>
-                                    <p class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i> ${farm.location}</p>
-                                    <p class="text-sm text-gray-500"><i class="fas fa-ruler-combined mr-1"></i> ${farm.size_acres || 0} acres</p>
-                                    <p class="text-sm text-gray-500"><i class="fas fa-seedling mr-1"></i> Main crop: ${farm.main_crop || 'Mixed'}</p>
+                                    <p class="text-gray-500 dark:text-gray-400"><i class="fas fa-map-marker-alt mr-1"></i> ${farm.location}</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400"><i class="fas fa-ruler-combined mr-1"></i> ${farm.size_acres || 0} acres</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400"><i class="fas fa-seedling mr-1"></i> Main crop: ${farm.main_crop || 'Mixed'}</p>
                                 </div>
                                 <div class="flex gap-2 flex-wrap items-center">
                                     <button onclick="showAddCropModal(${farm.id})" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm transition"><i class="fas fa-plus"></i> Add Crop</button>
@@ -1037,14 +1043,14 @@
                             </div>
                             <div id="cropsForFarm_${farm.id}" class="mt-3 space-y-2">
                                 ${farm.crops && farm.crops.length > 0 ? farm.crops.map(crop => `
-                                    <div class="crop-item">
+                                    <div class="crop-item dark:bg-gray-700">
                                         <div class="flex justify-between items-start">
                                             <div>
-                                                <h4 class="font-bold text-gray-800 dark:text-white">${crop.name} <span class="text-sm font-normal text-gray-500">${crop.variety || 'Local'}</span></h4>
-                                                <p class="text-xs text-gray-400">Area: ${crop.area || 0} acres • Planted: ${crop.planting_date ? new Date(crop.planting_date).toLocaleDateString() : 'N/A'}</p>
+                                                <h4 class="font-bold text-gray-800 dark:text-white">${crop.name} <span class="text-sm font-normal text-gray-500 dark:text-gray-400">${crop.variety || 'Local'}</span></h4>
+                                                <p class="text-xs text-gray-400 dark:text-gray-500">Area: ${crop.area || 0} acres • Planted: ${crop.planting_date ? new Date(crop.planting_date).toLocaleDateString() : 'N/A'}</p>
                                                 <div class="mt-1 flex items-center gap-2">
-                                                    <span class="text-sm">Health: ${crop.health_score || 85}%</span>
-                                                    <span class="px-2 py-0.5 rounded-full text-xs ${(crop.health_score || 85) >= 80 ? 'bg-green-100 text-green-700' : (crop.health_score || 85) >= 60 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}">${crop.status || 'Active'}</span>
+                                                    <span class="text-sm text-gray-600 dark:text-gray-300">Health: ${crop.health_score || 85}%</span>
+                                                    <span class="px-2 py-0.5 rounded-full text-xs ${(crop.health_score || 85) >= 80 ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' : (crop.health_score || 85) >= 60 ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300' : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'}">${crop.status || 'Active'}</span>
                                                 </div>
                                             </div>
                                             <div class="flex gap-2 flex-wrap items-center">
@@ -1057,7 +1063,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                `).join('') : '<p class="text-sm text-gray-500">No crops added yet.</p>'}
+                                `).join('') : '<p class="text-sm text-gray-500 dark:text-gray-400">No crops added yet.</p>'}
                             </div>
                         </div>
                     `).join('');
@@ -1072,12 +1078,12 @@
                     }
                 } else {
                     showToast('Could not load farms', 'error');
-                    container.innerHTML = `<div class="text-center py-8 text-gray-500 col-span-full bg-white rounded-xl">Could not load farms.</div>`;
+                    container.innerHTML = `<div class="text-center py-8 text-gray-500 dark:text-gray-400 col-span-full bg-white dark:bg-gray-800 rounded-xl">Could not load farms.</div>`;
                 }
             } catch (error) {
                 console.error('Load farms error:', error);
                 showToast('Error loading farms: ' + error.message, 'error');
-                container.innerHTML = `<div class="text-center py-8 text-gray-500 col-span-full bg-white rounded-xl">Network error.</div>`;
+                container.innerHTML = `<div class="text-center py-8 text-gray-500 dark:text-gray-400 col-span-full bg-white dark:bg-gray-800 rounded-xl">Network error.</div>`;
             }
         }
 
@@ -1304,16 +1310,16 @@
             const completedTasks = tasks ? tasks.filter(t => t.completed) : [];
             container.innerHTML = `
                 <div class="mb-6">
-                    <h4 class="font-bold text-lg text-green-600 mb-3">Pending Activities (${pendingTasks.length})</h4>
+                    <h4 class="font-bold text-lg text-green-600 dark:text-green-400 mb-3">Pending Activities (${pendingTasks.length})</h4>
                     ${pendingTasks.map(task => `
-                        <div class="task-pending p-4 rounded-lg mb-3">
+                        <div class="task-pending dark:bg-gray-700 p-4 rounded-lg mb-3">
                             <div class="flex justify-between items-start">
                                 <div class="flex-1">
-                                    <p class="font-semibold text-gray-800">${task.task_name}</p>
-                                    <p class="text-sm text-gray-600">${task.description}</p>
+                                    <p class="font-semibold text-gray-800 dark:text-white">${task.task_name}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">${task.description}</p>
                                     <div class="flex items-center gap-4 mt-2">
-                                        <span class="text-xs text-gray-400"><i class="far fa-calendar-alt"></i> Due: ${new Date(task.scheduled_date).toLocaleDateString()}</span>
-                                        <span class="text-xs text-gray-400"><i class="fas fa-clock"></i> ${task.days_after_previous > 0 ? task.days_after_previous + ' days after previous' : 'Start'}</span>
+                                        <span class="text-xs text-gray-400 dark:text-gray-500"><i class="far fa-calendar-alt"></i> Due: ${new Date(task.scheduled_date).toLocaleDateString()}</span>
+                                        <span class="text-xs text-gray-400 dark:text-gray-500"><i class="fas fa-clock"></i> ${task.days_after_previous > 0 ? task.days_after_previous + ' days after previous' : 'Start'}</span>
                                     </div>
                                 </div>
                                 <button onclick="completeCropTask(${task.id}, ${cropId})" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm transition ml-2">
@@ -1322,17 +1328,17 @@
                             </div>
                         </div>
                     `).join('')}
-                    ${pendingTasks.length === 0 ? '<div class="text-center py-8 text-gray-500 bg-green-50 rounded-lg"><i class="fas fa-check-circle text-2xl mb-2"></i><p>No pending tasks.</p></div>' : ''}
+                    ${pendingTasks.length === 0 ? '<div class="text-center py-8 text-gray-500 dark:text-gray-400 bg-green-50 dark:bg-gray-700 rounded-lg"><i class="fas fa-check-circle text-2xl mb-2"></i><p>No pending tasks.</p></div>' : ''}
                 </div>
                 ${completedTasks.length > 0 ? `
                 <div class="mt-6">
-                    <h4 class="font-bold text-gray-500 mb-3">Completed Activities (${completedTasks.length})</h4>
+                    <h4 class="font-bold text-gray-500 dark:text-gray-400 mb-3">Completed Activities (${completedTasks.length})</h4>
                     ${completedTasks.map(task => `
-                        <div class="task-completed p-3 rounded-lg mb-2">
+                        <div class="task-completed dark:bg-gray-700 p-3 rounded-lg mb-2">
                             <div class="flex items-center gap-2">
-                                <i class="fas fa-check-circle text-green-600"></i>
-                                <p class="font-semibold text-gray-600">${task.task_name}</p>
-                                <span class="text-xs text-gray-400 ml-auto">Completed: ${new Date(task.completed_date).toLocaleDateString()}</span>
+                                <i class="fas fa-check-circle text-green-600 dark:text-green-400"></i>
+                                <p class="font-semibold text-gray-600 dark:text-gray-300">${task.task_name}</p>
+                                <span class="text-xs text-gray-400 dark:text-gray-500 ml-auto">Completed: ${new Date(task.completed_date).toLocaleDateString()}</span>
                             </div>
                         </div>
                     `).join('')}
@@ -1380,14 +1386,14 @@
             const container = document.getElementById('globalTasksList');
             container.innerHTML = `
                 <div class="space-y-3">
-                    ${tasks.length === 0 ? '<div class="text-center py-8 text-gray-500">No pending tasks!</div>' : ''}
+                    ${tasks.length === 0 ? '<div class="text-center py-8 text-gray-500 dark:text-gray-400">No pending tasks!</div>' : ''}
                     ${tasks.map(task => `
-                        <div class="task-pending p-4 rounded-lg">
+                        <div class="task-pending dark:bg-gray-700 p-4 rounded-lg">
                             <div class="flex justify-between items-start">
                                 <div>
-                                    <p class="font-semibold">${task.farm_name} - ${task.crop_name} - ${task.task_name}</p>
-                                    <p class="text-sm text-gray-600 mt-1">${task.description}</p>
-                                    <p class="text-xs text-gray-400 mt-1">Due: ${new Date(task.scheduled_date).toLocaleDateString()}</p>
+                                    <p class="font-semibold text-gray-800 dark:text-white">${task.farm_name} - ${task.crop_name} - ${task.task_name}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">${task.description}</p>
+                                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Due: ${new Date(task.scheduled_date).toLocaleDateString()}</p>
                                 </div>
                                 <button onclick="completeGlobalTask(${task.id})" class="bg-green-500 text-white px-3 py-1 rounded-lg text-sm">
                                     <i class="fas fa-check"></i> Complete
@@ -1496,8 +1502,24 @@
         }
 
         // ==================== DIAGNOSIS ====================
-        function openCameraDirect() { document.getElementById('imageInput').click(); }
-        function openFilePicker() { document.getElementById('imageInput').click(); }
+        // Camera button – opens camera directly
+        function openCameraDirect() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.capture = 'environment'; // Use 'user' for front camera
+            input.onchange = function(e) {
+                if (e.target.files.length) {
+                    handleImageUpload(e.target);
+                }
+            };
+            input.click();
+        }
+
+        // Gallery button – opens file picker (no capture)
+        function openFilePicker() {
+            document.getElementById('imageInput').click();
+        }
 
         function handleImageUpload(input) {
             const file = input.files[0];
@@ -1547,10 +1569,12 @@
         async function analyzeImage() {
             const fileInput = document.getElementById('imageInput');
             const cropSelect = document.getElementById('cropSelect');
-            const file = fileInput.files[0];
-            if (!file) { 
-                showToast('Please select an image first', 'error'); 
-                return; 
+            // Get file from either the hidden input (gallery) or the camera input
+            let file = fileInput.files[0];
+            // If no file, check if camera input has a file (but we use the same input)
+            if (!file) {
+                showToast('Please select or capture an image first', 'error');
+                return;
             }
             
             let imageToSend = file;
@@ -1568,7 +1592,7 @@
             }
             
             const resultDiv = document.getElementById('diagnosisResult');
-            resultDiv.innerHTML = `<div class="text-center py-8"><div class="diagnosis-loader mx-auto"></div><p class="mt-3">Analyzing your crop with AI...</p><p class="text-xs text-gray-500 mt-2">This may take a few seconds</p></div>`;
+            resultDiv.innerHTML = `<div class="text-center py-8"><div class="diagnosis-loader mx-auto"></div><p class="mt-3 text-gray-700 dark:text-gray-300">Analyzing your crop with AI...</p><p class="text-xs text-gray-500 dark:text-gray-400 mt-2">This may take a few seconds</p></div>`;
             resultDiv.classList.remove('hidden');
             
             try {
@@ -1597,46 +1621,45 @@
                     const cost = localDisease?.cost || data.estimated_cost || 500;
                     
                     resultDiv.innerHTML = `
-                        <div class="bg-green-50 p-5 rounded-xl border border-green-200 animate-scaleIn">
-                            <div class="flex justify-between items-center border-b pb-3 mb-3">
+                        <div class="bg-green-50 dark:bg-gray-800 p-5 rounded-xl border border-green-200 dark:border-gray-700 animate-scaleIn">
+                            <div class="flex justify-between items-center border-b pb-3 mb-3 border-gray-200 dark:border-gray-600">
                                 <div>
-                                    <h4 class="font-bold text-lg text-red-600">${diseaseName}</h4>
-                                    <p class="text-xs text-gray-500 mt-1">${data.source || 'AI Model'}</p>
-                                    ${data.confidence < 20 ? '<p class="text-xs text-blue-500 mt-1">Confidence adjusted for better accuracy</p>' : ''}
+                                    <h4 class="font-bold text-lg text-red-600 dark:text-red-400">${diseaseName}</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">ShambaCare Model</p>
                                 </div>
-                                <span class="bg-green-100 px-3 py-1 rounded-full text-sm font-semibold">${confidence}% confidence</span>
+                                <span class="bg-green-100 dark:bg-green-900 px-3 py-1 rounded-full text-sm font-semibold text-green-700 dark:text-green-300">${confidence}% confidence</span>
                             </div>
                             <div class="mb-3">
                                 <div class="flex justify-between text-xs mb-1">
-                                    <span>Confidence Level</span>
-                                    <span class="font-semibold">${confidence}%</span>
+                                    <span class="text-gray-600 dark:text-gray-300">Confidence Level</span>
+                                    <span class="font-semibold text-gray-800 dark:text-white">${confidence}%</span>
                                 </div>
                                 <div class="confidence-meter">
                                     <div class="confidence-fill" style="width: ${Math.min(confidence, 100)}%"></div>
                                 </div>
-                                ${confidence < 50 ? '<p class="text-xs text-orange-600 mt-1">Low confidence. Try a clearer photo.</p>' : ''}
+                                ${confidence < 50 ? '<p class="text-xs text-orange-600 dark:text-orange-400 mt-1">Low confidence. Try a clearer photo.</p>' : ''}
                             </div>
                             <div class="mt-3">
-                                <p class="font-semibold text-gray-700 mb-1">Symptoms:</p>
-                                <p class="text-sm text-gray-600 bg-white p-2 rounded">${symptoms}</p>
+                                <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">Symptoms:</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 p-2 rounded">${symptoms}</p>
                             </div>
                             <div class="mt-3 grid grid-cols-2 gap-3">
-                                <div class="bg-green-100 p-3 rounded-lg">
-                                    <p class="font-semibold text-sm mb-1">Organic Solution</p>
-                                    <p class="text-xs">${organic}</p>
+                                <div class="bg-green-100 dark:bg-green-900 p-3 rounded-lg">
+                                    <p class="font-semibold text-sm mb-1 text-green-700 dark:text-green-300">Organic Solution</p>
+                                    <p class="text-xs text-green-600 dark:text-green-200">${organic}</p>
                                 </div>
-                                <div class="bg-blue-100 p-3 rounded-lg">
-                                    <p class="font-semibold text-sm mb-1">Chemical Solution</p>
-                                    <p class="text-xs">${chemical}</p>
+                                <div class="bg-blue-100 dark:bg-blue-900 p-3 rounded-lg">
+                                    <p class="font-semibold text-sm mb-1 text-blue-700 dark:text-blue-300">Chemical Solution</p>
+                                    <p class="text-xs text-blue-600 dark:text-blue-200">${chemical}</p>
                                 </div>
                             </div>
-                            <div class="mt-3 bg-yellow-50 p-3 rounded-lg">
-                                <p class="font-semibold text-sm mb-1">Prevention Tips</p>
-                                <p class="text-xs">${prevention}</p>
+                            <div class="mt-3 bg-yellow-50 dark:bg-yellow-900/30 p-3 rounded-lg">
+                                <p class="font-semibold text-sm mb-1 text-yellow-700 dark:text-yellow-300">Prevention Tips</p>
+                                <p class="text-xs text-yellow-600 dark:text-yellow-200">${prevention}</p>
                             </div>
                             <div class="mt-3 flex justify-between items-center">
-                                <div class="bg-gray-100 px-3 py-1 rounded-full">
-                                    <span class="text-sm font-semibold text-green-700">Est. Cost: KSh ${cost}</span>
+                                <div class="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
+                                    <span class="text-sm font-semibold text-green-700 dark:text-green-300">Est. Cost: KSh ${cost}</span>
                                 </div>
                                 <div class="flex gap-2">
                                     <button onclick="clearImage()" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition">
@@ -1652,11 +1675,11 @@
                     showToast('Diagnosis complete!', 'success');
                     
                 } else {
-                    resultDiv.innerHTML = `<div class="bg-red-50 p-5 rounded-xl border border-red-200"><p class="text-red-600 font-semibold">Error: ${data.error || 'Analysis failed'}</p><p class="text-sm text-gray-600 mt-2">Please try again with a clearer image.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
+                    resultDiv.innerHTML = `<div class="bg-red-50 dark:bg-red-900/30 p-5 rounded-xl border border-red-200 dark:border-red-800"><p class="text-red-600 dark:text-red-400 font-semibold">Error: ${data.error || 'Analysis failed'}</p><p class="text-sm text-gray-600 dark:text-gray-300 mt-2">Please try again with a clearer image.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
                 }
             } catch (error) {
                 console.error('AI Service error:', error);
-                resultDiv.innerHTML = `<div class="bg-red-50 p-5 rounded-xl border border-red-200"><p class="text-red-600 font-semibold">Cannot reach AI Service</p><p class="text-sm text-gray-600 mt-2">Please try again later.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
+                resultDiv.innerHTML = `<div class="bg-red-50 dark:bg-red-900/30 p-5 rounded-xl border border-red-200 dark:border-red-800"><p class="text-red-600 dark:text-red-400 font-semibold">Cannot reach AI Service</p><p class="text-sm text-gray-600 dark:text-gray-300 mt-2">Please try again later.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
             }
         }
 
@@ -1682,11 +1705,11 @@
             } catch (error) {
                 console.warn('Weather fetch failed, using fallback:', error);
                 document.getElementById('realTimeWeather').innerHTML = `
-                    <div class="weather-temp text-2xl font-bold">--°C</div>
-                    <div class="weather-location">${county}, Kenya</div>
-                    <div class="weather-condition">Weather unavailable</div>
+                    <div class="weather-temp text-2xl font-bold text-gray-800 dark:text-white">--°C</div>
+                    <div class="weather-location text-gray-600 dark:text-gray-300">${county}, Kenya</div>
+                    <div class="weather-condition text-gray-600 dark:text-gray-300">Weather unavailable</div>
                 `;
-                document.getElementById('weatherForecast').innerHTML = '<p class="text-center text-gray-500">Forecast not available</p>';
+                document.getElementById('weatherForecast').innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400">Forecast not available</p>';
             }
         }
 
@@ -1706,7 +1729,7 @@
                 displayForecast(forecastData.daily);
             } catch (error) {
                 console.error('Forecast fetch error:', error);
-                document.getElementById('weatherForecast').innerHTML = `<p class="text-center text-red-500 text-sm">Could not load forecast</p>`;
+                document.getElementById('weatherForecast').innerHTML = `<p class="text-center text-red-500 dark:text-red-400 text-sm">Could not load forecast</p>`;
             }
         }
 
@@ -1730,9 +1753,9 @@
                     95: 'fa-bolt', 96: 'fa-bolt', 99: 'fa-bolt'
                 };
                 const icon = iconMap[weatherCode] || 'fa-cloud';
-                const color = weatherCode === 0 ? 'text-yellow-500' : 'text-gray-500';
+                const color = weatherCode === 0 ? 'text-yellow-500' : 'text-gray-500 dark:text-gray-400';
                 html += `
-                    <div class="flex justify-between items-center p-2 hover:bg-green-50 rounded-lg transition">
+                    <div class="flex justify-between items-center p-2 hover:bg-green-50 dark:hover:bg-gray-700 rounded-lg transition text-gray-700 dark:text-gray-300">
                         <span class="w-12 font-medium">${dayName}</span>
                         <i class="fas ${icon} ${color}"></i>
                         <span class="font-semibold">${tempMax}°/${tempMin}°</span>
@@ -1746,9 +1769,9 @@
             const temp = Math.round(data.main.temp);
             const condition = data.weather[0].description;
             document.getElementById('realTimeWeather').innerHTML = `
-                <div class="weather-temp text-2xl font-bold">${temp}°C</div>
-                <div class="weather-location">${county}, Kenya</div>
-                <div class="weather-condition"><i class="fas fa-cloud"></i> ${condition}</div>
+                <div class="weather-temp text-2xl font-bold text-gray-800 dark:text-white">${temp}°C</div>
+                <div class="weather-location text-gray-600 dark:text-gray-300">${county}, Kenya</div>
+                <div class="weather-condition text-gray-600 dark:text-gray-300"><i class="fas fa-cloud"></i> ${condition}</div>
             `;
             document.getElementById('weatherTemp').textContent = `${temp}°C`;
             document.getElementById('weatherDesc').textContent = condition;
@@ -1802,11 +1825,11 @@
             };
             const rec = recommendations[condition] || recommendations['sunny'];
             container.innerHTML = `
-                <div class="bg-blue-50 p-3 rounded-lg mb-2">
-                    <p class="font-semibold text-blue-800"><i class="fas fa-tasks"></i> Recommended Actions:</p>
-                    <ul class="list-disc list-inside text-sm">${rec.actions.map(a => `<li>${a}</li>`).join('')}</ul>
+                <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg mb-2">
+                    <p class="font-semibold text-blue-800 dark:text-blue-300"><i class="fas fa-tasks"></i> Recommended Actions:</p>
+                    <ul class="list-disc list-inside text-sm text-blue-700 dark:text-blue-200">${rec.actions.map(a => `<li>${a}</li>`).join('')}</ul>
                 </div>
-                ${rec.warnings.length ? `<div class="bg-yellow-50 p-3 rounded-lg"><p class="font-semibold text-yellow-800"><i class="fas fa-exclamation-triangle"></i> Warnings:</p><ul class="list-disc list-inside text-sm">${rec.warnings.map(w => `<li>${w}</li>`).join('')}</ul></div>` : ''}
+                ${rec.warnings.length ? `<div class="bg-yellow-50 dark:bg-yellow-900/30 p-3 rounded-lg"><p class="font-semibold text-yellow-800 dark:text-yellow-300"><i class="fas fa-exclamation-triangle"></i> Warnings:</p><ul class="list-disc list-inside text-sm text-yellow-700 dark:text-yellow-200">${rec.warnings.map(w => `<li>${w}</li>`).join('')}</ul></div>` : ''}
             `;
         }
 
@@ -1814,17 +1837,17 @@
             const container = document.getElementById('weatherRecommendations');
             if (container) {
                 container.innerHTML = `
-                    <div class="bg-blue-50 p-3 rounded-lg mb-2">
-                        <p class="font-semibold text-blue-800"><i class="fas fa-tasks"></i> Recommended Actions:</p>
-                        <ul class="list-disc list-inside text-sm">${recommendations.actions.map(a => `<li>${a}</li>`).join('')}</ul>
+                    <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg mb-2">
+                        <p class="font-semibold text-blue-800 dark:text-blue-300"><i class="fas fa-tasks"></i> Recommended Actions:</p>
+                        <ul class="list-disc list-inside text-sm text-blue-700 dark:text-blue-200">${recommendations.actions.map(a => `<li>${a}</li>`).join('')}</ul>
                     </div>
-                    <div class="bg-yellow-50 p-3 rounded-lg mb-2">
-                        <p class="font-semibold text-yellow-800"><i class="fas fa-exclamation-triangle"></i> Warnings:</p>
-                        <ul class="list-disc list-inside text-sm">${recommendations.warnings.map(w => `<li>${w}</li>`).join('')}</ul>
+                    <div class="bg-yellow-50 dark:bg-yellow-900/30 p-3 rounded-lg mb-2">
+                        <p class="font-semibold text-yellow-800 dark:text-yellow-300"><i class="fas fa-exclamation-triangle"></i> Warnings:</p>
+                        <ul class="list-disc list-inside text-sm text-yellow-700 dark:text-yellow-200">${recommendations.warnings.map(w => `<li>${w}</li>`).join('')}</ul>
                     </div>
-                    <div class="bg-green-50 p-3 rounded-lg">
-                        <p class="font-semibold text-green-800"><i class="fas fa-check-circle"></i> Suggested Tasks:</p>
-                        <ul class="list-disc list-inside text-sm">${recommendations.tasks.map(t => `<li>${t}</li>`).join('')}</ul>
+                    <div class="bg-green-50 dark:bg-green-900/30 p-3 rounded-lg">
+                        <p class="font-semibold text-green-800 dark:text-green-300"><i class="fas fa-check-circle"></i> Suggested Tasks:</p>
+                        <ul class="list-disc list-inside text-sm text-green-700 dark:text-green-200">${recommendations.tasks.map(t => `<li>${t}</li>`).join('')}</ul>
                     </div>
                 `;
             }
@@ -1917,21 +1940,21 @@
             const container = document.getElementById('diseaseLibraryContainer');
             const wrapper = document.getElementById('diseaseViewAllWrapper');
             if (!diseases || !diseases.length) {
-                container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">No diseases found matching your search.</div>';
+                container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">No diseases found matching your search.</div>';
                 wrapper.classList.add('hidden');
                 return;
             }
             const displayCount = showAllDiseases ? diseases.length : Math.min(3, diseases.length);
             const displayDiseases = diseases.slice(0, displayCount);
             container.innerHTML = displayDiseases.map(d => `
-                <div class="bg-white rounded-xl shadow-md p-4 card-hover border border-green-100 transition-all hover:shadow-lg cursor-pointer disease-card" onclick="showDiseaseDetail('${d.name.replace(/'/g, "\\'")}', '${d.crop.replace(/'/g, "\\'")}', '${d.severity}', '${(d.symptoms || '').replace(/'/g, "\\'")}', '${(d.organic_solution || d.solution || '').replace(/'/g, "\\'")}', '${(d.chemical_solution || '').replace(/'/g, "\\'")}', ${d.cost || 0})">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 card-hover border border-green-100 dark:border-gray-700 transition-all hover:shadow-lg cursor-pointer disease-card" onclick="showDiseaseDetail('${d.name.replace(/'/g, "\\'")}', '${d.crop.replace(/'/g, "\\'")}', '${d.severity}', '${(d.symptoms || '').replace(/'/g, "\\'")}', '${(d.organic_solution || d.solution || '').replace(/'/g, "\\'")}', '${(d.chemical_solution || '').replace(/'/g, "\\'")}', ${d.cost || 0})">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="text-3xl">${d.icon || '🌿'}</span>
-                        <h4 class="font-bold text-gray-800">${d.name}</h4>
+                        <h4 class="font-bold text-gray-800 dark:text-white">${d.name}</h4>
                     </div>
-                    <p class="text-sm text-gray-500">Affects: ${d.crop}</p>
-                    <span class="inline-block px-2 py-1 rounded-full text-xs font-bold mt-2 ${d.severity === 'High' ? 'bg-red-100 text-red-700' : d.severity === 'Critical' ? 'bg-purple-100 text-purple-700' : 'bg-yellow-100 text-yellow-700'}">${d.severity} Severity</span>
-                    <p class="text-xs text-gray-600 mt-2 line-clamp-2">💡 ${(d.solution || '').substring(0, 80)}${(d.solution || '').length > 80 ? '...' : ''}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Affects: ${d.crop}</p>
+                    <span class="inline-block px-2 py-1 rounded-full text-xs font-bold mt-2 ${d.severity === 'High' ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' : d.severity === 'Critical' ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300' : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300'}">${d.severity} Severity</span>
+                    <p class="text-xs text-gray-600 dark:text-gray-300 mt-2 line-clamp-2">💡 ${(d.solution || '').substring(0, 80)}${(d.solution || '').length > 80 ? '...' : ''}</p>
                 </div>
             `).join('');
             if (diseases.length > 3) {
@@ -1954,18 +1977,18 @@
             modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
             modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
             modal.innerHTML = `
-                <div class="bg-white rounded-2xl max-w-md w-full p-6 animate-scaleIn" onclick="event.stopPropagation()">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 animate-scaleIn" onclick="event.stopPropagation()">
                     <div class="flex justify-between items-start mb-4">
-                        <h3 class="text-xl font-bold text-gray-800">${name}</h3>
-                        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+                        <h3 class="text-xl font-bold text-gray-800 dark:text-white">${name}</h3>
+                        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"><i class="fas fa-times text-xl"></i></button>
                     </div>
-                    <div class="space-y-3">
-                        <p><span class="font-semibold">Affected Crop:</span> ${crop}</p>
-                        <p><span class="font-semibold">Severity:</span> <span class="px-2 py-0.5 rounded-full text-xs font-bold ${severity === 'High' ? 'bg-red-100 text-red-700' : severity === 'Critical' ? 'bg-purple-100 text-purple-700' : 'bg-yellow-100 text-yellow-700'}">${severity}</span></p>
-                        <p><span class="font-semibold">Symptoms:</span> ${symptoms}</p>
-                        <p><span class="font-semibold">Organic Solution:</span> ${organicSolution}</p>
-                        ${chemicalSolution ? `<p><span class="font-semibold">Chemical Solution:</span> ${chemicalSolution}</p>` : ''}
-                        ${cost ? `<p><span class="font-semibold">Estimated Cost (KES):</span> ${cost}</p>` : ''}
+                    <div class="space-y-3 text-gray-700 dark:text-gray-300">
+                        <p><span class="font-semibold text-gray-800 dark:text-white">Affected Crop:</span> ${crop}</p>
+                        <p><span class="font-semibold text-gray-800 dark:text-white">Severity:</span> <span class="px-2 py-0.5 rounded-full text-xs font-bold ${severity === 'High' ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' : severity === 'Critical' ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300' : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300'}">${severity}</span></p>
+                        <p><span class="font-semibold text-gray-800 dark:text-white">Symptoms:</span> ${symptoms}</p>
+                        <p><span class="font-semibold text-gray-800 dark:text-white">Organic Solution:</span> ${organicSolution}</p>
+                        ${chemicalSolution ? `<p><span class="font-semibold text-gray-800 dark:text-white">Chemical Solution:</span> ${chemicalSolution}</p>` : ''}
+                        ${cost ? `<p><span class="font-semibold text-gray-800 dark:text-white">Estimated Cost (KES):</span> ${cost}</p>` : ''}
                     </div>
                     <button onclick="this.closest('.fixed').remove()" class="mt-5 w-full btn-primary text-white py-2 rounded-lg">Close</button>
                 </div>
@@ -2033,16 +2056,16 @@
                 const data = await apiCall('/crops');
                 if (data.success && data.crops) {
                     if (data.crops.length === 0) {
-                        container.innerHTML = '<div class="text-center py-8 text-gray-500 col-span-full bg-white rounded-xl">No crops added yet.</div>';
+                        container.innerHTML = '<div class="text-center py-8 text-gray-500 dark:text-gray-400 col-span-full bg-white dark:bg-gray-800 rounded-xl">No crops added yet.</div>';
                     } else {
                         container.innerHTML = data.crops.map(crop => `
-                            <div class="bg-white rounded-xl shadow-lg p-5 card-hover">
+                            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-5 card-hover">
                                 <div class="flex justify-between">
-                                    <div><h3 class="font-bold">${crop.name}</h3><p class="text-sm text-gray-500">${crop.variety || 'Local variety'}</p></div>
-                                    <span class="px-2 py-1 rounded-full text-xs ${crop.health_score >= 80 ? 'bg-green-100 text-green-700' : crop.health_score >= 60 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}">${crop.status || 'Active'}</span>
+                                    <div><h3 class="font-bold text-gray-800 dark:text-white">${crop.name}</h3><p class="text-sm text-gray-500 dark:text-gray-400">${crop.variety || 'Local variety'}</p></div>
+                                    <span class="px-2 py-1 rounded-full text-xs ${crop.health_score >= 80 ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' : crop.health_score >= 60 ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300' : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'}">${crop.status || 'Active'}</span>
                                 </div>
-                                <div class="mt-3"><div class="flex justify-between text-sm"><span>Health Score</span><span class="font-semibold text-green-600">${crop.health_score || 85}%</span></div><div class="h-2 bg-gray-200 rounded-full"><div class="h-full bg-green-500 rounded-full" style="width:${crop.health_score || 85}%"></div></div></div>
-                                <button onclick="scrollToSection('diagnosis')" class="mt-4 w-full bg-green-50 hover:bg-green-100 text-green-700 py-2 rounded-lg text-sm transition">Diagnose Now</button>
+                                <div class="mt-3"><div class="flex justify-between text-sm"><span class="text-gray-600 dark:text-gray-300">Health Score</span><span class="font-semibold text-green-600 dark:text-green-400">${crop.health_score || 85}%</span></div><div class="h-2 bg-gray-200 dark:bg-gray-600 rounded-full"><div class="h-full bg-green-500 rounded-full" style="width:${crop.health_score || 85}%"></div></div></div>
+                                <button onclick="scrollToSection('diagnosis')" class="mt-4 w-full bg-green-50 dark:bg-green-900 hover:bg-green-100 dark:hover:bg-green-800 text-green-700 dark:text-green-300 py-2 rounded-lg text-sm transition">Diagnose Now</button>
                             </div>
                         `).join('');
                     }
@@ -2053,12 +2076,12 @@
                     document.getElementById('healthScoreDisplay').innerText = avgHealth;
                 } else {
                     showToast('Could not load crops', 'error');
-                    container.innerHTML = '<div class="text-center py-8 text-gray-500 col-span-full bg-white rounded-xl">Could not load crop data.</div>';
+                    container.innerHTML = '<div class="text-center py-8 text-gray-500 dark:text-gray-400 col-span-full bg-white dark:bg-gray-800 rounded-xl">Could not load crop data.</div>';
                 }
             } catch (error) {
                 console.error('Load crops error:', error);
                 showToast('Error loading crops: ' + error.message, 'error');
-                container.innerHTML = '<div class="text-center py-8 text-gray-500 col-span-full bg-white rounded-xl">Network error.</div>';
+                container.innerHTML = '<div class="text-center py-8 text-gray-500 dark:text-gray-400 col-span-full bg-white dark:bg-gray-800 rounded-xl">Network error.</div>';
             }
         }
 
