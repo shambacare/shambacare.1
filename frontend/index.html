@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ===== ALL STYLES ===== */
+        /* ===== ALL STYLES (unchanged) ===== */
         * { font-family: 'Inter', sans-serif; }
         .background-slideshow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; overflow: hidden; }
         .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 0; transition: opacity 1.5s ease-in-out; animation: kenBurns 20s ease-in-out infinite alternate; }
@@ -109,49 +109,49 @@
         .yield-card .yield-value { font-size: 2rem; font-weight: 700; color: #facc15; }
         .yield-card .yield-label { font-size: 0.75rem; color: #94a3b8; }
 
-        /* ===== LIGHT MODE (default) – all containers are pure white ===== */
+        /* ===== LIGHT MODE – all containers are pure white ===== */
         body { background-color: #f8fafc; color: #1e293b; }
         .bg-white\/95 { background-color: rgba(255,255,255,0.95); }
         .bg-white { background-color: #ffffff; }
-        .bg-gray-50 { background-color: #ffffff; } /* override light gray to white */
-        .bg-green-50 { background-color: #f0fdf4; } /* keep subtle green */
-        .bg-blue-50 { background-color: #eff6ff; } /* keep subtle blue */
-        .bg-yellow-50 { background-color: #fffbeb; } /* keep subtle yellow */
+        .bg-gray-50, .bg-gray-100 { background-color: #ffffff; } /* force white */
+        .bg-green-50 { background-color: #f0fdf4; }
+        .bg-blue-50 { background-color: #eff6ff; }
+        .bg-yellow-50 { background-color: #fffbeb; }
         .section-header-container { background: #ffffff; border-color: #e5e7eb; }
         .farmer-review-card { background: #ffffff; }
         .profile-modal-content { background: #ffffff; }
         .task-pending { background: #fef3c7; border-left-color: #f59e0b; }
         .task-completed { background: #d1fae5; border-left-color: #10b981; }
         .disease-card { background: #ffffff; border-color: #e5e7eb; }
-        .farm-card { background: #ffffff; }
-        .crop-item { background: #ffffff; } /* changed from gray to white */
-        .chat-panel { background: #ffffff; } /* changed from gray to white */
+        .farm-card { background: #ffffff; border-color: #e5e7eb; }
+        .crop-item { background: #ffffff; border-color: #e5e7eb; }
+        .chat-panel { background: #ffffff; border-color: #e5e7eb; }
         .card-hover { background: #ffffff; }
         .modal-content { background: #ffffff; }
         #weatherRecommendations > div { background: #ffffff; }
 
-        /* ===== DARK MODE OVERRIDES ===== */
+        /* ===== DARK MODE – all containers become dark ===== */
         .dark body { background-color: #0f172a; color: #f1f5f9; }
         .dark .bg-white\/95 { background-color: rgba(30,41,59,0.95); }
         .dark .bg-white { background-color: #1e293b; }
-        .dark .bg-gray-50 { background-color: #1e293b; }
+        .dark .bg-gray-50, .dark .bg-gray-100 { background-color: #1e293b; }
         .dark .bg-green-50 { background-color: #064e3b; }
         .dark .bg-blue-50 { background-color: #1e3a8a; }
         .dark .bg-yellow-50 { background-color: #78350f; }
         .dark .section-header-container { background: #1e293b; border-color: #334155; }
         .dark .farmer-review-card { background: #1e293b; }
-        .dark .profile-modal-content { background: #1e293b; color: #f1f5f9; } /* ensure all text white */
+        .dark .profile-modal-content { background: #1e293b; }
         .dark .task-pending { background: #422006; border-left-color: #f59e0b; }
         .dark .task-completed { background: #064e3b; border-left-color: #10b981; }
         .dark .disease-card { background: #1e293b; border-color: #334155; }
-        .dark .farm-card { background: #1e293b; }
-        .dark .crop-item { background: #1e293b; }
-        .dark .chat-panel { background: #1e293b; }
+        .dark .farm-card { background: #1e293b; border-color: #334155; }
+        .dark .crop-item { background: #1e293b; border-color: #334155; }
+        .dark .chat-panel { background: #1e293b; border-color: #334155; }
         .dark .card-hover { background: #1e293b; }
         .dark .modal-content { background: #1e293b; }
         .dark #weatherRecommendations > div { background: #1e293b; }
 
-        /* Dark mode text colours – all main text becomes white */
+        /* Dark mode text – all primary text becomes white, labels become light green */
         .dark .text-gray-800, .dark .text-gray-700, .dark .text-gray-600,
         .dark .text-gray-500, .dark .text-gray-400, .dark .text-black,
         .dark .font-bold, .dark h1, .dark h2, .dark h3, .dark .nav-link,
@@ -162,14 +162,12 @@
         .dark .disease-card .text-gray-800,
         .dark .disease-card .text-gray-600,
         .dark .disease-card .text-gray-500,
-        .dark .profile-modal-content * { color: #f1f5f9 !important; } /* force all modal content white */
-        /* Keep specific colors for icons and badges */
+        .dark .profile-modal-content * { color: #f1f5f9 !important; }
         .dark .text-green-600 { color: #4ade80 !important; }
         .dark .text-red-600 { color: #f87171 !important; }
         .dark .text-yellow-600 { color: #facc15 !important; }
         .dark .text-blue-600 { color: #60a5fa !important; }
-        .dark .text-red-500 { color: #f87171 !important; } /* for close buttons */
-        .dark .text-green-500 { color: #4ade80 !important; }
+        .dark .text-red-500 { color: #f87171 !important; }
         .dark .border { border-color: #334155 !important; }
         .dark input, .dark select, .dark textarea {
             background: #0f172a;
@@ -240,6 +238,18 @@
         .dark .disease-detail-label { color: #4ade80 !important; }
         /* Task labels in dark mode */
         .dark .task-label { color: #86efac !important; }
+
+        /* Additional override for modals to ensure white background in light mode */
+        #addFarmModal .bg-white, #addCropModal .bg-white,
+        #farmTasksModal .bg-white, #globalTasksModal .bg-white,
+        #cropHealthModal .bg-white, #newMessageModal .bg-white {
+            background: #ffffff;
+        }
+        .dark #addFarmModal .bg-white, .dark #addCropModal .bg-white,
+        .dark #farmTasksModal .bg-white, .dark #globalTasksModal .bg-white,
+        .dark #cropHealthModal .bg-white, .dark #newMessageModal .bg-white {
+            background: #1e293b;
+        }
     </style>
 </head>
 <body class="antialiased">
