@@ -134,53 +134,54 @@
             .farm-card .flex, .crop-item .flex { width: 100%; justify-content: center; }
         }
 
-        /* Chat Section – updated bubble colors */
+        /* Chat Section – updated bubble sizing for compact display */
         .chat-panel { background: #f8fafc; border-radius: 1rem; border: 1px solid #e2e8f0; }
         .dark .chat-panel { background: #0f172a; border-color: #334155; }
         .chat-bubble { 
-            padding: 10px 14px; 
+            padding: 8px 12px;            /* reduced padding */
             border-radius: 18px; 
-            position: relative; 
-            max-width: 75%; 
+            max-width: 80%;               /* wider to avoid excessive height */
             word-wrap: break-word;
             overflow-wrap: break-word;
-            white-space: pre-wrap;
+            white-space: normal;          /* no extra line breaks from pre-wrap */
+            font-size: 0.875rem;          /* consistent font size */
+            line-height: 1.4;             /* comfortable reading */
         }
         .chat-message { 
             display: flex; 
-            margin-bottom: 12px; 
+            margin-bottom: 8px;           /* tighter spacing */
             animation: fadeInUp 0.3s ease-out; 
             align-items: flex-end;
         }
         .chat-message.farmer { justify-content: flex-end; }
         .chat-message.admin { justify-content: flex-start; }
-        /* Farmer messages – green */
+        /* Farmer messages – bluish */
         .chat-message.farmer .chat-bubble { 
-            background: #16a34a; 
+            background: #3b82f6; 
             color: #ffffff; 
             border-bottom-right-radius: 4px; 
         }
-        /* Admin messages – bluish (support team) */
+        /* Admin messages – green (support team) */
         .chat-message.admin .chat-bubble { 
-            background: #3b82f6; 
+            background:  #16a34a; 
             color: #ffffff; 
             border-bottom-left-radius: 4px; 
         }
         .dark .chat-message.admin .chat-bubble { 
-            background: #3b82f6; 
+            background:  #16a34a; 
             color: #ffffff; 
         }
         .chat-name { 
-            font-size: 0.75rem; 
+            font-size: 0.7rem; 
             font-weight: 600; 
             color: #64748b; 
             margin-bottom: 2px; 
             display: block; 
         }
         .chat-time { 
-            font-size: 0.65rem; 
+            font-size: 0.6rem; 
             color: #94a3b8; 
-            margin-top: 4px; 
+            margin-top: 3px; 
             display: block; 
             text-align: right;
         }
@@ -232,7 +233,7 @@
     
 </head>
 <body class="antialiased">
-    <!-- ===== HTML STRUCTURE ===== -->
+    <!-- ===== HTML STRUCTURE (unchanged) ===== -->
     <div class="background-slideshow">
         <div class="slide" style="background-image: url('coffee1.jpg')"></div>
         <div class="slide" style="background-image: url('maize1.0.jpg')"></div>
