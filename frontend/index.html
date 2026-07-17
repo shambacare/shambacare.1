@@ -129,7 +129,7 @@
             .farm-card .flex, .crop-item .flex { width: 100%; justify-content: center; }
         }
 
-        /* Chat Section Refinement */
+        /* Chat Section Refined for Mobile */
         .chat-panel { background: #f8fafc; border-radius: 1rem; border: 1px solid #e2e8f0; }
         .dark .chat-panel { background: #0f172a; border-color: #334155; }
         .chat-bubble { padding: 10px 14px; border-radius: 18px; position: relative; }
@@ -140,10 +140,11 @@
         .dark .chat-message.admin .chat-bubble { background: #334155; color: #f1f5f9; }
         
         .chat-input-container { display: flex; gap: 8px; align-items: center; width: 100%; }
+        /* Mobile stack: input above button */
         @media (max-width: 640px) {
-            .chat-input-container { flex-direction: column; }
+            .chat-input-container { flex-direction: column; align-items: stretch; gap: 8px; }
             .chat-input-container input { width: 100%; }
-            .chat-send-btn { width: 100%; justify-content: center; }
+            .chat-send-btn { width: 100%; justify-content: center; padding: 12px; }
         }
 
         /* Disease Library & Tasks Typography */
@@ -177,7 +178,7 @@
     
 </head>
 <body class="antialiased">
-    <!-- ===== HTML STRUCTURE (unchanged) ===== -->
+    <!-- ===== HTML STRUCTURE ===== -->
     <div class="background-slideshow">
         <div class="slide" style="background-image: url('coffee1.jpg')"></div>
         <div class="slide" style="background-image: url('maize1.0.jpg')"></div>
@@ -452,7 +453,8 @@
                         <div class="chat-panel h-64 overflow-y-auto p-3 rounded-lg mb-3 dark:bg-gray-700" id="chatMessagesList">
                             <div class="text-center py-8 text-gray-500 dark:text-gray-300">Loading messages...</div>
                         </div>
-                        <div class="chat-input-container">
+                        <!-- Chat input – improved mobile stacking -->
+                        <div class="chat-input-container mt-3">
                             <input type="text" id="quickMessageInput" placeholder="Type your message here..." class="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 dark:text-white bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
                             <button onclick="sendQuickMessage()" class="btn-primary text-white px-4 py-3 rounded-lg font-semibold chat-send-btn whitespace-nowrap"><i class="fas fa-paper-plane mr-1"></i><span> Send</span></button>
                         </div>
@@ -505,7 +507,7 @@
             </div>
         </div>
     </div>
-    <!-- Modals (unchanged) -->
+    <!-- Modals -->
     <div id="addFarmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('addFarmModal')">
         <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
             <div class="p-4 border-b dark:border-gray-700"><h3 class="font-bold text-gray-800 dark:text-white"><i class="fas fa-plus-circle text-green-600 mr-2"></i> Add New Farm</h3></div>
@@ -529,7 +531,9 @@
         <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full animate-scaleIn" onclick="event.stopPropagation()">
             <div class="p-4 border-b dark:border-gray-700"><h3 class="font-bold text-gray-800 dark:text-white"><i class="fas fa-seedling text-green-600 mr-2"></i> Add Crop to Farm</h3></div>
             <div class="p-4 space-y-3">
-                <select id="newCropFarmId" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600"><option value="">Select Farm</option></select>
+                <select id="newCropFarmId" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                    <option value="">Select Farm</option>
+                </select>
                 <select id="newCropName" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
                     <option value="">Select Crop Type</option>
                     <option value="Maize">Maize</option>
@@ -539,7 +543,7 @@
                     <option value="Beans">Beans</option>
                     <option value="Vegetables">Vegetables</option>
                 </select>
-                
+                <input type="text" id="newCropVariety" placeholder="Variety (optional)" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
                 <input type="date" id="newCropPlantingDate" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600" placeholder="Planting Date">
                 <input type="number" id="newCropArea" placeholder="Area (acres)" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
                 <button onclick="addCropToFarm()" class="w-full btn-primary text-white py-3 rounded-lg"><i class="fas fa-check-circle mr-2"></i> Add Crop</button>
@@ -1649,7 +1653,7 @@
                                 <div class="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
                                     <span class="text-sm font-semibold text-green-700 dark:text-green-300">Est. Cost: KSh ${cost}</span>
                                 </div>
-                                <div class="chat-input-container">
+                                <div class="chat-input-container" style="display:flex; gap:8px; width:auto;">
                                     <button onclick="clearImage()" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition">
                                         <i class="fas fa-times mr-1"></i> Close
                                     </button>
