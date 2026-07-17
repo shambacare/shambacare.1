@@ -115,6 +115,11 @@
         
         .rating-star { color: #facc15; font-size: 1.2rem; }
         .rating-star.empty { color: #d1d5db; }
+        .dark .rating-star.empty { color: #4b5563; }
+        .dark .star { color: #facc15; }
+        .star { color: #facc15; }
+        .star.empty { color: #d1d5db; }
+        .dark .star.empty { color: #4b5563; }
         
         .farm-card, .disease-card, .farmer-review-card, .crop-item { 
             background: white; border-radius: 1rem; padding: 1.25rem; border: 1px solid #e5e7eb; transition: all 0.3s ease; 
@@ -129,18 +134,57 @@
             .farm-card .flex, .crop-item .flex { width: 100%; justify-content: center; }
         }
 
-        /* Chat Section Refined for Mobile */
+        /* Chat Section Refined for Mobile & Proper Wrapping */
         .chat-panel { background: #f8fafc; border-radius: 1rem; border: 1px solid #e2e8f0; }
         .dark .chat-panel { background: #0f172a; border-color: #334155; }
-        .chat-bubble { padding: 10px 14px; border-radius: 18px; position: relative; }
-        .chat-name { font-size: 0.75rem; font-weight: 600; color: #64748b; margin-bottom: 2px; display: block; }
-        .chat-time { font-size: 0.7rem; color: #94a3b8; margin-top: 4px; display: block; }
-        .chat-message.farmer .chat-bubble { background: #16a34a; color: #ffffff; border-bottom-right-radius: 4px; }
-        .chat-message.admin .chat-bubble { background: #e5e7eb; color: #1e293b; border-bottom-left-radius: 4px; }
-        .dark .chat-message.admin .chat-bubble { background: #334155; color: #f1f5f9; }
+        .chat-bubble { 
+            padding: 10px 14px; 
+            border-radius: 18px; 
+            position: relative; 
+            max-width: 75%; 
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        .chat-message { 
+            display: flex; 
+            margin-bottom: 12px; 
+            animation: fadeInUp 0.3s ease-out; 
+            align-items: flex-end;
+        }
+        .chat-message.farmer { justify-content: flex-end; }
+        .chat-message.admin { justify-content: flex-start; }
+        .chat-message.farmer .chat-bubble { 
+            background: #16a34a; 
+            color: #ffffff; 
+            border-bottom-right-radius: 4px; 
+        }
+        .chat-message.admin .chat-bubble { 
+            background: #e5e7eb; 
+            color: #1e293b; 
+            border-bottom-left-radius: 4px; 
+        }
+        .dark .chat-message.admin .chat-bubble { 
+            background: #334155; 
+            color: #f1f5f9; 
+        }
+        .chat-name { 
+            font-size: 0.75rem; 
+            font-weight: 600; 
+            color: #64748b; 
+            margin-bottom: 2px; 
+            display: block; 
+        }
+        .chat-time { 
+            font-size: 0.65rem; 
+            color: #94a3b8; 
+            margin-top: 4px; 
+            display: block; 
+            text-align: right;
+        }
+        .dark .chat-time { color: #64748b; }
         
         .chat-input-container { display: flex; gap: 8px; align-items: center; width: 100%; }
-        /* Mobile stack: input above button */
         @media (max-width: 640px) {
             .chat-input-container { flex-direction: column; align-items: stretch; gap: 8px; }
             .chat-input-container input { width: 100%; }
@@ -174,6 +218,14 @@
         .dark .delete-btn { color: #f87171; }
         
         nav { background: rgba(0,0,0,0.5) !important; backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.2); }
+
+        /* Export button dark mode fix */
+        .export-btn { background: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; transition: all 0.3s ease; cursor: pointer; border: none; }
+        .export-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16,185,129,0.3); }
+        .dark .export-btn { background: #10b981; color: #ffffff; }
+
+        /* Zoom modal - remove alt text */
+        .zoom-modal img { max-width: 90%; max-height: 90%; object-fit: contain; }
     </style>
     
 </head>
@@ -188,7 +240,7 @@
     <div class="background-overlay"></div>
     <!-- Zoom Modal -->
     <div id="zoomModal" class="zoom-modal" onclick="closeZoom()">
-        <img id="zoomImage" src="" alt="Zoomed preview">
+        <img id="zoomImage" src="" alt="">
     </div>
     <!-- Navigation -->
     <nav class="backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-white/20">
@@ -476,11 +528,11 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Rating</label>
                             <div id="starRating" class="flex gap-2 text-3xl cursor-pointer">
-                                <span data-value="1" class="star" onclick="setRating(1)">☆</span>
-                                <span data-value="2" class="star" onclick="setRating(2)">☆</span>
-                                <span data-value="3" class="star" onclick="setRating(3)">☆</span>
-                                <span data-value="4" class="star" onclick="setRating(4)">☆</span>
-                                <span data-value="5" class="star" onclick="setRating(5)">☆</span>
+                                <span data-value="1" class="star empty" onclick="setRating(1)">☆</span>
+                                <span data-value="2" class="star empty" onclick="setRating(2)">☆</span>
+                                <span data-value="3" class="star empty" onclick="setRating(3)">☆</span>
+                                <span data-value="4" class="star empty" onclick="setRating(4)">☆</span>
+                                <span data-value="5" class="star empty" onclick="setRating(5)">☆</span>
                             </div>
                             <input type="hidden" id="feedbackRating" value="0">
                         </div>
@@ -543,7 +595,6 @@
                     <option value="Beans">Beans</option>
                     <option value="Vegetables">Vegetables</option>
                 </select>
-                <input type="text" id="newCropVariety" placeholder="Variety (optional)" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
                 <input type="date" id="newCropPlantingDate" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600" placeholder="Planting Date">
                 <input type="number" id="newCropArea" placeholder="Area (acres)" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
                 <button onclick="addCropToFarm()" class="w-full btn-primary text-white py-3 rounded-lg"><i class="fas fa-check-circle mr-2"></i> Add Crop</button>
@@ -761,8 +812,13 @@
             document.getElementById('feedbackRating').value = val;
             const stars = document.querySelectorAll('#starRating .star');
             stars.forEach((star, index) => {
-                star.textContent = index < val ? '★' : '☆';
-                star.className = 'star ' + (index < val ? 'text-yellow-500' : 'text-gray-300');
+                if (index < val) {
+                    star.textContent = '★';
+                    star.classList.remove('empty');
+                } else {
+                    star.textContent = '☆';
+                    star.classList.add('empty');
+                }
             });
         }
 
@@ -811,6 +867,24 @@
             }
         }
 
+        // Helper function to format date safely
+        function formatChatDate(dateStr) {
+            if (!dateStr) return 'Just now';
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return 'Just now';
+                const now = new Date();
+                const diff = Math.floor((now - date) / 1000);
+                if (diff < 60) return 'Just now';
+                if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+                if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+                if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+                return date.toLocaleDateString();
+            } catch (e) {
+                return 'Just now';
+            }
+        }
+
         function displayChatMessages(messages) {
             const container = document.getElementById('chatMessagesList');
             if (!container) return;
@@ -823,7 +897,7 @@
                     <div class="chat-bubble">
                         <span class="chat-name">${msg.is_from_admin ? 'ShambaCare Support' : 'You'}</span>
                         <p class="text-sm">${escapeHtml(msg.message)}</p>
-                        <span class="chat-time">${new Date(msg.created_at).toLocaleString()}</span>
+                        <span class="chat-time">${formatChatDate(msg.created_at)}</span>
                     </div>
                 </div>
             `).join('');
@@ -1148,7 +1222,6 @@
             const select = document.getElementById('newCropFarmId');
             select.innerHTML = farmsData.map(f => `<option value="${f.id}" ${f.id === farmId ? 'selected' : ''}>${f.name}</option>`).join('');
             document.getElementById('newCropName').value = '';
-            document.getElementById('newCropVariety').value = '';
             document.getElementById('newCropPlantingDate').value = '';
             document.getElementById('newCropArea').value = '';
             document.getElementById('addCropModal').classList.remove('hidden');
@@ -1158,7 +1231,6 @@
         async function addCropToFarm() {
             const farmId = parseInt(document.getElementById('newCropFarmId').value);
             const cropName = document.getElementById('newCropName').value;
-            const variety = document.getElementById('newCropVariety').value;
             const plantingDate = document.getElementById('newCropPlantingDate').value;
             const area = parseFloat(document.getElementById('newCropArea').value);
 
@@ -1173,7 +1245,6 @@
                     body: JSON.stringify({
                         farm_id: farmId,
                         name: cropName,
-                        variety: variety || null,
                         planting_date: plantingDate,
                         area: area
                     })
