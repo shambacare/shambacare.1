@@ -134,7 +134,7 @@
             .farm-card .flex, .crop-item .flex { width: 100%; justify-content: center; }
         }
 
-        /* Chat Section Refined for Mobile & Proper Wrapping */
+        /* Chat Section – updated bubble colors */
         .chat-panel { background: #f8fafc; border-radius: 1rem; border: 1px solid #e2e8f0; }
         .dark .chat-panel { background: #0f172a; border-color: #334155; }
         .chat-bubble { 
@@ -154,19 +154,21 @@
         }
         .chat-message.farmer { justify-content: flex-end; }
         .chat-message.admin { justify-content: flex-start; }
+        /* Farmer messages – green */
         .chat-message.farmer .chat-bubble { 
             background: #16a34a; 
             color: #ffffff; 
             border-bottom-right-radius: 4px; 
         }
+        /* Admin messages – bluish (support team) */
         .chat-message.admin .chat-bubble { 
-            background: #e5e7eb; 
-            color: #1e293b; 
+            background: #3b82f6; 
+            color: #ffffff; 
             border-bottom-left-radius: 4px; 
         }
         .dark .chat-message.admin .chat-bubble { 
-            background: #334155; 
-            color: #f1f5f9; 
+            background: #3b82f6; 
+            color: #ffffff; 
         }
         .chat-name { 
             font-size: 0.75rem; 
