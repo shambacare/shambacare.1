@@ -1,6 +1,6 @@
 // models/index.js
 const { sequelize, Sequelize } = require('../config/database');
-const bcrypt = require('bcryptjs'); // Make sure this is installed
+const bcrypt = require('bcryptjs');
 
 // ==================== USER MODEL ====================
 const User = sequelize.define('User', {
@@ -10,7 +10,7 @@ const User = sequelize.define('User', {
   phone: { type: Sequelize.STRING, allowNull: false },
   county: { type: Sequelize.STRING, allowNull: false },
   password_hash: { type: Sequelize.STRING, allowNull: false },
-  role: { type: Sequelize.STRING, defaultValue: 'farmer' }, // ✅ Changed from ENUM to STRING
+  role: { type: Sequelize.STRING, defaultValue: 'farmer' },
   is_active: { type: Sequelize.BOOLEAN, defaultValue: true },
   reset_token: { type: Sequelize.STRING },
   reset_expires: { type: Sequelize.DATE },
@@ -37,7 +37,6 @@ const User = sequelize.define('User', {
   }
 });
 
-// ✅ Add comparePassword instance method
 User.prototype.comparePassword = async function(password) {
   return bcrypt.compare(password, this.password_hash);
 };
@@ -65,19 +64,25 @@ const Crop = sequelize.define('Crop', {
   status: { type: Sequelize.STRING, defaultValue: 'Active' }
 }, { tableName: 'crops', timestamps: true, underscored: true });
 
-// ==================== DIAGNOSIS MODEL ====================
+// ==================== DIAGNOSIS MODEL (UPDATED) ====================
 const Diagnosis = sequelize.define('Diagnosis', {
   id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-  image_url: { type: Sequelize.STRING },
-  disease_name: { type: Sequelize.STRING },
-  confidence: { type: Sequelize.FLOAT },
-  symptoms: { type: Sequelize.TEXT },
-  organic_solution: { type: Sequelize.TEXT },
-  chemical_solution: { type: Sequelize.TEXT },
-  prevention_tips: { type: Sequelize.TEXT },
-  status: { type: Sequelize.STRING, defaultValue: 'pending' },
-  source: { type: Sequelize.STRING }
-}, { tableName: 'diagnoses', timestamps: true, underscored: true });
+  user_id: { type: Sequelize.INTEGER, allowNull: false },
+  crop_name: { type: Sequelize.STRING(50), allowNull: false },
+  disease_name: { type: Sequelize.STRING(100), allowNull: true },
+  confidence_score: { type: Sequelize.INTEGER, allowNull: true },  // ✅ fixed
+  image_url: { type: Sequelize.STRING(255), allowNull: true },
+  symptoms: { type: Sequelize.TEXT, allowNull: true },
+  recommended_solution: { type: Sequelize.TEXT, allowNull: true },
+  status: { type: Sequelize.STRING, defaultValue: 'Pending' },
+  admin_notes: { type: Sequelize.TEXT, allowNull: true }
+}, {
+  tableName: 'diagnoses',
+  timestamps: true,
+  underscored: true,
+  createdAt: 'created_at',
+  updatedAt: false
+});
 
 // ==================== DISEASE MODEL ====================
 const Disease = sequelize.define('Disease', {
@@ -110,7 +115,7 @@ const Alert = sequelize.define('Alert', {
   read: { type: Sequelize.BOOLEAN, defaultValue: false }
 }, { tableName: 'alerts', timestamps: true, underscored: true });
 
-// ==================== TASK MODEL (FIXED) ====================
+// ==================== TASK MODEL ====================
 const Task = sequelize.define('Task', {
   id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
   task_name: { type: Sequelize.STRING, allowNull: false },
@@ -119,8 +124,9 @@ const Task = sequelize.define('Task', {
   days_after_previous: { type: Sequelize.INTEGER },
   completed: { type: Sequelize.BOOLEAN, defaultValue: false },
   completed_date: { type: Sequelize.DATE },
-  position_order: { type: Sequelize.INTEGER, defaultValue: 0 }, // ✅ Added missing column
-  crop_id: { type: Sequelize.INTEGER, allowNull: false } // ✅ Added crop_id foreign key
+  position_order: { type: Sequelize.INTEGER, defaultValue: 0 },
+  crop_id: { type: Sequelize.INTEGER, allowNull: false },
+  farm_id: { type: Sequelize.INTEGER, allowNull: false }
 }, { tableName: 'tasks', timestamps: true, underscored: true });
 
 // ==================== CROP ACTIVITY MODEL ====================
@@ -161,11 +167,9 @@ Diagnosis.belongsTo(User, { foreignKey: 'user_id', as: 'farmer' });
 User.hasOne(Subscription, { foreignKey: 'user_id', as: 'subscription' });
 Subscription.belongsTo(User, { foreignKey: 'user_id', as: 'subscriber' });
 
-// ✅ Crop → Task (crop_id)
 Crop.hasMany(Task, { foreignKey: 'crop_id', as: 'tasks' });
 Task.belongsTo(Crop, { foreignKey: 'crop_id', as: 'crop' });
 
-// Farm → Task (farm_id) – keep for backward compatibility
 Farm.hasMany(Task, { foreignKey: 'farm_id', as: 'farmTasks' });
 Task.belongsTo(Farm, { foreignKey: 'farm_id', as: 'farm' });
 
