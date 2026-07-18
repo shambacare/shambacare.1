@@ -2,41 +2,45 @@ const express = require('express');
 const { User, Farm, Crop, Diagnosis, Disease, Subscription } = require('../models');
 const { verifyToken, isAdmin } = require('../middleware/auth');
 const { sequelize } = require('../config/database');
-const sgMail = require('@sendgrid/mail');
+const Brevo = require('@getbrevo/brevo');
 const router = express.Router();
 
-// Initialize SendGrid with API key from environment
-if (process.env.SENDGRID_API_KEY) {
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-    console.log('✅ SendGrid initialized');
+// ==================== BREVO EMAIL CONFIGURATION ====================
+let brevoApiInstance = null;
+if (process.env.BREVO_API_KEY) {
+    const apiClient = new Brevo.ApiClient();
+    apiClient.setApiKey(Brevo.ApiClient.apiKeyHeader, process.env.BREVO_API_KEY);
+    brevoApiInstance = new Brevo.TransactionalEmailsApi(apiClient);
+    console.log('✅ Brevo initialized');
 } else {
-    console.warn('⚠️ SENDGRID_API_KEY not set. Email sending will fail.');
+    console.warn('⚠️ BREVO_API_KEY not set. Email sending will fail.');
 }
 
-// Helper function to send emails using SendGrid
-async function sendEmailViaSendGrid({ to, subject, html }) {
-    if (!process.env.SENDGRID_API_KEY) {
-        console.error('SENDGRID_API_KEY not set. Email not sent.');
+// Helper function to send emails using Brevo
+async function sendEmailViaBrevo({ to, subject, html }) {
+    if (!process.env.BREVO_API_KEY || !brevoApiInstance) {
+        console.error('BREVO_API_KEY not set. Email not sent.');
         return { success: false, error: 'No API key' };
     }
     if (!to || !subject || !html) {
         return { success: false, error: 'Missing required fields' };
     }
     try {
-        // Use verified sender email (must be added in SendGrid dashboard)
-        const fromEmail = process.env.FROM_EMAIL || 'shambacare2026@gmail.com';
-        await sgMail.send({
-            to: to,
-            from: fromEmail,
-            subject: subject,
-            html: html
-        });
+        const sendSmtpEmail = new Brevo.SendSmtpEmail();
+        sendSmtpEmail.subject = subject;
+        sendSmtpEmail.htmlContent = html;
+        sendSmtpEmail.sender = { 
+            name: 'ShambaCare', 
+            email: process.env.FROM_EMAIL || 'shambacare2026@gmail.com' 
+        };
+        sendSmtpEmail.to = [{ email: to }];
+        
+        await brevoApiInstance.sendTransacEmail(sendSmtpEmail);
         console.log(`✅ Email sent to ${to}`);
         return { success: true };
     } catch (error) {
-        const errorMsg = error.response?.body?.errors?.[0]?.message || error.message;
-        console.error(`Failed to send to ${to}:`, errorMsg);
-        return { success: false, error: errorMsg };
+        console.error(`Failed to send to ${to}:`, error.message);
+        return { success: false, error: error.message };
     }
 }
 
@@ -77,9 +81,9 @@ router.post('/create-admin', async (req, res) => {
             is_active: true
         });
         
-        // Send welcome email via SendGrid
+        // Send welcome email via Brevo
         try {
-            await sendEmailViaSendGrid({
+            await sendEmailViaBrevo({
                 to: email,
                 subject: 'Welcome to ShambaCare Admin Panel! 🌾',
                 html: `
@@ -123,7 +127,7 @@ router.post('/create-admin', async (req, res) => {
 router.use(verifyToken);
 router.use(isAdmin);
 
-// ==================== DASHBOARD STATISTICS (FIXED with detailed error logging) ====================
+// ==================== DASHBOARD STATISTICS ====================
 router.get('/dashboard/stats', async (req, res) => {
     try {
         const totalFarmers = await User.count({ where: { role: 'farmer' } });
@@ -135,7 +139,6 @@ router.get('/dashboard/stats', async (req, res) => {
         const reviewedDiagnoses = await Diagnosis.count({ where: { status: 'Reviewed' } });
         const resolvedDiagnoses = await Diagnosis.count({ where: { status: 'Resolved' } });
         
-        // Fetch recent activity with proper error handling for associations
         let recentActivity = [];
         try {
             recentActivity = await Diagnosis.findAll({
@@ -148,7 +151,6 @@ router.get('/dashboard/stats', async (req, res) => {
                 }]
             });
         } catch (assocError) {
-            // If association fails, fallback to raw query
             console.warn('⚠️ Association fetch failed, using raw query:', assocError.message);
             const [results] = await sequelize.query(`
                 SELECT d.*, u.name, u.email 
@@ -377,9 +379,9 @@ router.post('/add-farmer', async (req, res) => {
             is_active: true
         });
         
-        // Send welcome email via SendGrid
+        // Send welcome email via Brevo
         try {
-            await sendEmailViaSendGrid({
+            await sendEmailViaBrevo({
                 to: email,
                 subject: 'Welcome to ShambaCare! 🌾',
                 html: `
@@ -434,7 +436,7 @@ router.post('/add-farmer', async (req, res) => {
     }
 });
 
-// ==================== SEND BROADCAST ALERT (Email) ====================
+// ==================== SEND BROADCAST ALERT ====================
 router.post('/send-alert', async (req, res) => {
     const { subject, message, type, region } = req.body;
     
@@ -458,7 +460,7 @@ router.post('/send-alert', async (req, res) => {
         let failedCount = 0;
         
         for (const farmer of farmers) {
-            const result = await sendEmailViaSendGrid({
+            const result = await sendEmailViaBrevo({
                 to: farmer.email,
                 subject: `🌾 ShambaCare Alert: ${subject}`,
                 html: `
@@ -520,7 +522,7 @@ router.get('/chats', async (req, res) => {
     res.json({ success: true, chats: [] });
 });
 
-// Admin reply to farmer chat (sends email via SendGrid)
+// Admin reply to farmer chat (sends email via Brevo)
 router.post('/reply-chat', async (req, res) => {
     const { farmer_id, message, subject } = req.body;
     
@@ -534,7 +536,7 @@ router.post('/reply-chat', async (req, res) => {
             return res.status(404).json({ success: false, message: 'Farmer not found' });
         }
         
-        await sendEmailViaSendGrid({
+        await sendEmailViaBrevo({
             to: farmer.email,
             subject: subject || 'New Reply from ShambaCare Support',
             html: `
