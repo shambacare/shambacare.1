@@ -328,23 +328,58 @@ router.post('/add-farmer', async (req, res) => {
     }
 });
 
-// ==================== BROADCAST ALERT ====================
+// ==================== SEND BROADCAST ALERT (with debug) ====================
 router.post('/send-alert', async (req, res) => {
     const { subject, message, type, region } = req.body;
     if (!subject || !message) {
         return res.status(400).json({ success: false, message: 'Subject and message required' });
     }
     try {
-        const whereClause = { role: 'farmer', is_active: true };
+        // Build where clause – temporarily ignore is_active to see if any farmers exist
+        const whereClause = { role: 'farmer' };
         if (region && region !== 'all') {
             whereClause.county = region;
         }
-        const farmers = await User.findAll({ where: whereClause, attributes: ['id', 'email', 'name'] });
+        console.log('🔍 Alert query whereClause:', JSON.stringify(whereClause));
+
+        const farmers = await User.findAll({
+            where: whereClause,
+            attributes: ['id', 'email', 'name', 'county', 'is_active']
+        });
+
+        console.log(`📊 Found ${farmers.length} farmers matching query`);
+
         if (farmers.length === 0) {
-            return res.json({ success: true, message: 'No active farmers found in this region' });
+            // Return detailed debug info
+            return res.json({
+                success: false,
+                message: 'No farmers found matching the criteria.',
+                debug: {
+                    whereClause,
+                    regionReceived: region,
+                    totalFarmers: await User.count({ where: { role: 'farmer' } }),
+                    activeFarmers: await User.count({ where: { role: 'farmer', is_active: true } }),
+                    sampleFarmers: await User.findAll({
+                        where: { role: 'farmer' },
+                        limit: 3,
+                        attributes: ['id', 'email', 'county', 'is_active']
+                    })
+                }
+            });
         }
+
+        // Optional: filter only active farmers (if is_active column exists)
+        const activeFarmers = farmers.filter(f => f.is_active !== false); // if is_active is true or null
+        if (activeFarmers.length === 0) {
+            return res.json({
+                success: false,
+                message: 'Found farmers but none are active (is_active = false).',
+                debug: { totalFarmers: farmers.length, activeFarmers: 0 }
+            });
+        }
+
         let emailCount = 0, failedCount = 0;
-        for (const farmer of farmers) {
+        for (const farmer of activeFarmers) {
             const result = await sendEmail({
                 to: farmer.email,
                 subject: `🌾 ShambaCare Alert: ${subject}`,
@@ -369,12 +404,13 @@ router.post('/send-alert', async (req, res) => {
             if (result.success) emailCount++;
             else failedCount++;
         }
+
         res.json({
             success: true,
             message: `Alert sent to ${emailCount} farmers (${failedCount} failed)`,
             emailCount,
             failedCount,
-            totalFarmers: farmers.length
+            totalFarmers: activeFarmers.length
         });
     } catch (error) {
         console.error('Alert error:', error);
