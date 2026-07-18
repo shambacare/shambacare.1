@@ -1,4 +1,4 @@
-// routes/auth.js – password reset with code
+// routes/auth.js – password reset with code + verify route
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
@@ -67,7 +67,32 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-// ==================== VERIFY CODE AND RESET PASSWORD ====================
+// ==================== VERIFY CODE (NEW) ====================
+router.post('/verify-code', async (req, res) => {
+  const { email, code } = req.body;
+  if (!email || !code) {
+    return res.status(400).json({ success: false, message: 'Email and code required' });
+  }
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid email or code' });
+    }
+    if (user.reset_token !== code) {
+      return res.status(400).json({ success: false, message: 'Invalid code' });
+    }
+    if (new Date(user.reset_expires) < new Date()) {
+      return res.status(400).json({ success: false, message: 'Code has expired. Please request a new one.' });
+    }
+    // Code is valid
+    res.json({ success: true, message: 'Code verified' });
+  } catch (error) {
+    console.error('Verify code error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ==================== RESET PASSWORD (after code verification) ====================
 router.post('/reset-password', async (req, res) => {
   const { email, code, newPassword } = req.body;
   if (!email || !code || !newPassword) {
