@@ -8,10 +8,16 @@ const router = express.Router();
 // ==================== BREVO EMAIL CONFIGURATION ====================
 let brevoApiInstance = null;
 if (process.env.BREVO_API_KEY) {
-    const apiClient = new Brevo.ApiClient();
-    apiClient.setApiKey(Brevo.ApiClient.apiKeyHeader, process.env.BREVO_API_KEY);
-    brevoApiInstance = new Brevo.TransactionalEmailsApi(apiClient);
-    console.log('✅ Brevo initialized');
+    try {
+        // Correct way to initialize Brevo (Sendinblue) SDK
+        const defaultClient = Brevo.ApiClient.instance;
+        const apiKey = defaultClient.authentications['apiKey'];
+        apiKey.apiKey = process.env.BREVO_API_KEY;
+        brevoApiInstance = new Brevo.TransactionalEmailsApi();
+        console.log('✅ Brevo initialized successfully');
+    } catch (error) {
+        console.error('❌ Failed to initialize Brevo:', error.message);
+    }
 } else {
     console.warn('⚠️ BREVO_API_KEY not set. Email sending will fail.');
 }
@@ -19,7 +25,7 @@ if (process.env.BREVO_API_KEY) {
 // Helper function to send emails using Brevo
 async function sendEmailViaBrevo({ to, subject, html }) {
     if (!process.env.BREVO_API_KEY || !brevoApiInstance) {
-        console.error('BREVO_API_KEY not set. Email not sent.');
+        console.error('BREVO_API_KEY not set or Brevo not initialized.');
         return { success: false, error: 'No API key' };
     }
     if (!to || !subject || !html) {
