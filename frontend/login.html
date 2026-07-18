@@ -188,7 +188,7 @@
         </div>
     </div>
 
-    <!-- Forgot Password Modal (UPDATED for code) -->
+    <!-- Forgot Password Modal -->
     <div id="forgotPasswordModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('forgotPasswordModal')">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 animate-scaleIn" onclick="event.stopPropagation()">
             <h3 class="text-xl font-bold mb-4">Reset Password</h3>
@@ -434,7 +434,7 @@
             }
         }
 
-        // ==================== FORGOT PASSWORD (UPDATED - sends code) ====================
+        // ==================== FORGOT PASSWORD (UPDATED) ====================
         function openForgotPasswordModal() {
             document.getElementById('resetEmail').value = '';
             document.getElementById('forgotPasswordModal').classList.remove('hidden');
@@ -458,8 +458,10 @@
                 if (data.success) {
                     showToast('If the email exists, a reset code has been sent.', 'success');
                     closeModal('forgotPasswordModal');
-                    // Optionally redirect to reset-password.html with email pre-filled
-                    // window.location.href = `reset-password.html?email=${encodeURIComponent(email)}`;
+                    // Redirect to reset password page with email pre-filled
+                    setTimeout(() => {
+                        window.location.href = `reset-password.html?email=${encodeURIComponent(email)}`;
+                    }, 1500);
                 } else {
                     showToast(data.message || 'Failed to send reset code', 'error');
                 }
