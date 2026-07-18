@@ -188,15 +188,15 @@
         </div>
     </div>
 
-    <!-- Forgot Password Modal -->
+    <!-- Forgot Password Modal (UPDATED for code) -->
     <div id="forgotPasswordModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" onclick="closeModal('forgotPasswordModal')">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 animate-scaleIn" onclick="event.stopPropagation()">
             <h3 class="text-xl font-bold mb-4">Reset Password</h3>
-            <p class="text-gray-600 mb-4">Enter your email address and we'll send you a link to reset your password.</p>
+            <p class="text-gray-600 mb-4">Enter your email address and we'll send you a <strong>6-digit code</strong> to reset your password.</p>
             <input type="email" id="resetEmail" placeholder="Your email address" class="w-full p-3 border rounded-lg mb-4">
             <div class="flex gap-3">
                 <button onclick="closeModal('forgotPasswordModal')" class="flex-1 bg-gray-300 py-2 rounded-lg">Cancel</button>
-                <button onclick="sendPasswordReset()" class="flex-1 btn-primary text-white py-2 rounded-lg">Send Reset Link</button>
+                <button onclick="sendPasswordReset()" class="flex-1 btn-primary text-white py-2 rounded-lg">Send Code</button>
             </div>
         </div>
     </div>
@@ -434,7 +434,7 @@
             }
         }
 
-        // ==================== FORGOT PASSWORD ====================
+        // ==================== FORGOT PASSWORD (UPDATED - sends code) ====================
         function openForgotPasswordModal() {
             document.getElementById('resetEmail').value = '';
             document.getElementById('forgotPasswordModal').classList.remove('hidden');
@@ -447,7 +447,7 @@
                 showToast('Please enter your email address', 'error');
                 return;
             }
-            showToast('Sending reset link...', 'info');
+            showToast('Sending reset code...', 'info');
             try {
                 const response = await fetch(`${API_URL}/auth/forgot-password`, {
                     method: 'POST',
@@ -456,10 +456,12 @@
                 });
                 const data = await response.json();
                 if (data.success) {
-                    showToast('If the email exists, a reset link has been sent.', 'success');
+                    showToast('If the email exists, a reset code has been sent.', 'success');
                     closeModal('forgotPasswordModal');
+                    // Optionally redirect to reset-password.html with email pre-filled
+                    // window.location.href = `reset-password.html?email=${encodeURIComponent(email)}`;
                 } else {
-                    showToast(data.message || 'Failed to send reset link', 'error');
+                    showToast(data.message || 'Failed to send reset code', 'error');
                 }
             } catch (error) {
                 console.error(error);
