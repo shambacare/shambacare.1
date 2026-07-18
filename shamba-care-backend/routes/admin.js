@@ -9,7 +9,6 @@ const router = express.Router();
 let brevoApiInstance = null;
 if (process.env.BREVO_API_KEY) {
     try {
-        // Correct way to initialize Brevo (Sendinblue) SDK
         const defaultClient = Brevo.ApiClient.instance;
         const apiKey = defaultClient.authentications['apiKey'];
         apiKey.apiKey = process.env.BREVO_API_KEY;
@@ -22,14 +21,9 @@ if (process.env.BREVO_API_KEY) {
     console.warn('⚠️ BREVO_API_KEY not set. Email sending will fail.');
 }
 
-// Helper function to send emails using Brevo
 async function sendEmailViaBrevo({ to, subject, html }) {
     if (!process.env.BREVO_API_KEY || !brevoApiInstance) {
-        console.error('BREVO_API_KEY not set or Brevo not initialized.');
         return { success: false, error: 'No API key' };
-    }
-    if (!to || !subject || !html) {
-        return { success: false, error: 'Missing required fields' };
     }
     try {
         const sendSmtpEmail = new Brevo.SendSmtpEmail();
@@ -40,7 +34,6 @@ async function sendEmailViaBrevo({ to, subject, html }) {
             email: process.env.FROM_EMAIL || 'shambacare2026@gmail.com' 
         };
         sendSmtpEmail.to = [{ email: to }];
-        
         await brevoApiInstance.sendTransacEmail(sendSmtpEmail);
         console.log(`✅ Email sent to ${to}`);
         return { success: true };
@@ -50,32 +43,25 @@ async function sendEmailViaBrevo({ to, subject, html }) {
     }
 }
 
-// ==================== PUBLIC ENDPOINTS (No token required) ====================
-
-// Create admin user (requires master key)
+// ==================== PUBLIC ENDPOINTS ====================
 router.post('/create-admin', async (req, res) => {
     const { name, email, phone, county, password, masterKey } = req.body;
-    
     const MASTER_KEY = process.env.MASTER_KEY || 'ShambaCare_Master_Key_2024_Secure!';
     
     if (masterKey !== MASTER_KEY) {
         return res.status(403).json({ success: false, message: 'Invalid master key' });
     }
-    
     if (!name || !email || !password) {
         return res.status(400).json({ success: false, message: 'Name, email, and password required' });
     }
-    
     if (password.length < 6) {
         return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
     }
-    
     try {
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             return res.status(400).json({ success: false, message: 'Email already exists' });
         }
-        
         const user = await User.create({
             name,
             email,
@@ -86,41 +72,19 @@ router.post('/create-admin', async (req, res) => {
             email_verified: true,
             is_active: true
         });
-        
-        // Send welcome email via Brevo
         try {
             await sendEmailViaBrevo({
                 to: email,
                 subject: 'Welcome to ShambaCare Admin Panel! 🌾',
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px;">
-                        <h2 style="color: #1e3a5f;">Welcome ${name}!</h2>
-                        <p>You have been granted Admin access to ShambaCare.</p>
-                        <p><strong>Login Credentials:</strong></p>
-                        <ul>
-                            <li>Email: ${email}</li>
-                            <li>Password: [the password you set]</li>
-                        </ul>
-                        <a href="https://shambacare-1.vercel.app/login.html" style="background: #4ade80; color: #1e3a5f; padding: 10px; text-decoration: none;">Login Here</a>
-                        <p>Keep your farmers safe and crops healthy!</p>
-                    </div>
-                `
+                html: `<div style="font-family: Arial, sans-serif; max-width: 600px;"><h2 style="color: #1e3a5f;">Welcome ${name}!</h2><p>You have been granted Admin access to ShambaCare.</p><p><strong>Login Credentials:</strong></p><ul><li>Email: ${email}</li><li>Password: [the password you set]</li></ul><a href="https://shambacare-1.vercel.app/login.html" style="background: #4ade80; color: #1e3a5f; padding: 10px; text-decoration: none;">Login Here</a><p>Keep your farmers safe and crops healthy!</p></div>`
             });
         } catch (emailError) {
             console.log('Welcome email not sent:', emailError.message);
         }
-        
         res.status(201).json({
             success: true,
             message: 'Admin user created successfully',
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                phone: user.phone,
-                county: user.county,
-                role: user.role
-            }
+            user: { id: user.id, name: user.name, email: user.email, phone: user.phone, county: user.county, role: user.role }
         });
     } catch (error) {
         console.error(error);
@@ -128,12 +92,11 @@ router.post('/create-admin', async (req, res) => {
     }
 });
 
-// ==================== PROTECTED ENDPOINTS (Token required + Admin only) ====================
-
+// ==================== PROTECTED ENDPOINTS ====================
 router.use(verifyToken);
 router.use(isAdmin);
 
-// ==================== DASHBOARD STATISTICS ====================
+// ==================== DASHBOARD STATISTICS (FIXED) ====================
 router.get('/dashboard/stats', async (req, res) => {
     try {
         const totalFarmers = await User.count({ where: { role: 'farmer' } });
@@ -144,30 +107,16 @@ router.get('/dashboard/stats', async (req, res) => {
         const pendingDiagnoses = await Diagnosis.count({ where: { status: 'Pending' } });
         const reviewedDiagnoses = await Diagnosis.count({ where: { status: 'Reviewed' } });
         const resolvedDiagnoses = await Diagnosis.count({ where: { status: 'Resolved' } });
-        
-        let recentActivity = [];
-        try {
-            recentActivity = await Diagnosis.findAll({
-                limit: 10,
-                order: [['created_at', 'DESC']],
-                include: [{ 
-                    model: User, 
-                    as: 'farmer',
-                    attributes: ['id', 'name', 'email']
-                }]
-            });
-        } catch (assocError) {
-            console.warn('⚠️ Association fetch failed, using raw query:', assocError.message);
-            const [results] = await sequelize.query(`
-                SELECT d.*, u.name, u.email 
-                FROM diagnoses d
-                LEFT JOIN users u ON d.user_id = u.id
-                ORDER BY d.created_at DESC
-                LIMIT 10
-            `);
-            recentActivity = results;
-        }
-        
+
+        // Raw SQL – avoids model column mismatches
+        const [recentActivity] = await sequelize.query(`
+            SELECT d.*, u.name as farmer_name, u.email as farmer_email
+            FROM diagnoses d
+            LEFT JOIN users u ON d.user_id = u.id
+            ORDER BY d.created_at DESC
+            LIMIT 10
+        `);
+
         res.json({
             success: true,
             stats: {
@@ -188,7 +137,7 @@ router.get('/dashboard/stats', async (req, res) => {
     }
 });
 
-// Get all users
+// ==================== GET ALL USERS ====================
 router.get('/users', async (req, res) => {
     try {
         const users = await User.findAll({
@@ -202,7 +151,7 @@ router.get('/users', async (req, res) => {
     }
 });
 
-// Get a single user by ID
+// ==================== GET USER BY ID ====================
 router.get('/users/:id', async (req, res) => {
     try {
         const user = await User.findByPk(req.params.id, {
@@ -212,11 +161,9 @@ router.get('/users/:id', async (req, res) => {
                 { model: Diagnosis, as: 'diagnoses' }
             ]
         });
-        
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
-        
         res.json({ success: true, user });
     } catch (error) {
         console.error(error);
@@ -224,18 +171,15 @@ router.get('/users/:id', async (req, res) => {
     }
 });
 
-// Update user
+// ==================== UPDATE USER ====================
 router.put('/users/:id', async (req, res) => {
     try {
         const user = await User.findByPk(req.params.id);
-        
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
-        
         const { name, email, phone, county, role, is_active } = req.body;
         await user.update({ name, email, phone, county, role, is_active });
-        
         res.json({ success: true, message: 'User updated successfully', user });
     } catch (error) {
         console.error(error);
@@ -243,15 +187,13 @@ router.put('/users/:id', async (req, res) => {
     }
 });
 
-// Delete user
+// ==================== DELETE USER ====================
 router.delete('/users/:id', async (req, res) => {
     try {
         const user = await User.findByPk(req.params.id);
-        
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
-        
         await user.destroy();
         res.json({ success: true, message: 'User deleted successfully' });
     } catch (error) {
@@ -260,7 +202,7 @@ router.delete('/users/:id', async (req, res) => {
     }
 });
 
-// Get all diagnoses
+// ==================== GET ALL DIAGNOSES ====================
 router.get('/diagnoses/all', async (req, res) => {
     try {
         const diagnoses = await Diagnosis.findAll({
@@ -278,7 +220,7 @@ router.get('/diagnoses/all', async (req, res) => {
     }
 });
 
-// Get all farms
+// ==================== GET ALL FARMS ====================
 router.get('/farms/all', async (req, res) => {
     try {
         const farms = await Farm.findAll({
@@ -295,7 +237,7 @@ router.get('/farms/all', async (req, res) => {
     }
 });
 
-// Get all crops
+// ==================== GET ALL CROPS ====================
 router.get('/crops/all', async (req, res) => {
     try {
         const crops = await Crop.findAll({
@@ -314,7 +256,7 @@ router.get('/crops/all', async (req, res) => {
     }
 });
 
-// Get disease library
+// ==================== DISEASE LIBRARY ====================
 router.get('/diseases', async (req, res) => {
     try {
         const diseases = await Disease.findAll({
@@ -327,7 +269,7 @@ router.get('/diseases', async (req, res) => {
     }
 });
 
-// Create/Update disease
+// ==================== CREATE/UPDATE DISEASE ====================
 router.post('/diseases', async (req, res) => {
     try {
         const disease = await Disease.create({
@@ -341,7 +283,7 @@ router.post('/diseases', async (req, res) => {
     }
 });
 
-// Delete disease
+// ==================== DELETE DISEASE ====================
 router.delete('/diseases/:id', async (req, res) => {
     try {
         const disease = await Disease.findByPk(req.params.id);
@@ -359,82 +301,37 @@ router.delete('/diseases/:id', async (req, res) => {
 // ==================== ADD NEW FARMER ====================
 router.post('/add-farmer', async (req, res) => {
     const { name, email, phone, county, password } = req.body;
-    
     if (!name || !email || !phone || !county || !password) {
         return res.status(400).json({ success: false, message: 'All fields are required' });
     }
-    
     if (password.length < 6) {
         return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
     }
-    
     try {
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             return res.status(400).json({ success: false, message: 'Email already registered' });
         }
-        
         const farmer = await User.create({
-            name,
-            email,
-            phone,
-            county,
+            name, email, phone, county,
             password_hash: password,
             role: 'farmer',
             email_verified: true,
             is_active: true
         });
-        
-        // Send welcome email via Brevo
         try {
             await sendEmailViaBrevo({
                 to: email,
                 subject: 'Welcome to ShambaCare! 🌾',
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px;">
-                        <div style="background: #1e3a5f; padding: 20px; text-align: center;">
-                            <h2 style="color: #4ade80;">ShambaCare</h2>
-                        </div>
-                        <div style="padding: 20px;">
-                            <h2>Hello ${name}!</h2>
-                            <p>Welcome to ShambaCare - your smart farming assistant!</p>
-                            <p>An admin has created an account for you.</p>
-                            <h3>Your Login Details:</h3>
-                            <ul>
-                                <li><strong>Email:</strong> ${email}</li>
-                                <li><strong>Password:</strong> ${password}</li>
-                            </ul>
-                            <a href="https://shambacare-1.vercel.app/login.html" style="background: #4ade80; color: #1e3a5f; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Click Here to Login</a>
-                            <hr>
-                            <p>Once logged in, you can:</p>
-                            <ul>
-                                <li>📸 Take photos of your crops for AI diagnosis</li>
-                                <li>📊 Track your farm's health</li>
-                                <li>🌦️ Receive weather alerts</li>
-                                <li>💬 Get support from our team</li>
-                            </ul>
-                            <p>Happy farming! 🌱</p>
-                            <p>- ShambaCare Team</p>
-                        </div>
-                    </div>
-                `
+                html: `<div style="font-family: Arial, sans-serif; max-width: 600px;"><div style="background: #1e3a5f; padding: 20px; text-align: center;"><h2 style="color: #4ade80;">ShambaCare</h2></div><div style="padding: 20px;"><h2>Hello ${name}!</h2><p>Welcome to ShambaCare - your smart farming assistant!</p><p>An admin has created an account for you.</p><h3>Your Login Details:</h3><ul><li><strong>Email:</strong> ${email}</li><li><strong>Password:</strong> ${password}</li></ul><a href="https://shambacare-1.vercel.app/login.html" style="background: #4ade80; color: #1e3a5f; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Click Here to Login</a><hr><p>Once logged in, you can:</p><ul><li>📸 Take photos of your crops for AI diagnosis</li><li>📊 Track your farm's health</li><li>🌦️ Receive weather alerts</li><li>💬 Get support from our team</li></ul><p>Happy farming! 🌱</p><p>- ShambaCare Team</p></div></div>`
             });
-            console.log(`✅ Welcome email sent to ${email}`);
         } catch (emailError) {
             console.log('Welcome email not sent:', emailError.message);
         }
-        
         res.status(201).json({
             success: true,
             message: 'Farmer added successfully',
-            user: {
-                id: farmer.id,
-                name: farmer.name,
-                email: farmer.email,
-                phone: farmer.phone,
-                county: farmer.county,
-                role: farmer.role
-            }
+            user: { id: farmer.id, name: farmer.name, email: farmer.email, phone: farmer.phone, county: farmer.county, role: farmer.role }
         });
     } catch (error) {
         console.error(error);
@@ -445,62 +342,32 @@ router.post('/add-farmer', async (req, res) => {
 // ==================== SEND BROADCAST ALERT ====================
 router.post('/send-alert', async (req, res) => {
     const { subject, message, type, region } = req.body;
-    
     if (!subject || !message) {
         return res.status(400).json({ success: false, message: 'Subject and message required' });
     }
-    
     try {
         const whereClause = { role: 'farmer', is_active: true };
         if (region && region !== 'all') {
             whereClause.county = region;
         }
-        
         const farmers = await User.findAll({ where: whereClause, attributes: ['id', 'email', 'name'] });
-        
         if (farmers.length === 0) {
             return res.json({ success: true, message: 'No active farmers found in this region' });
         }
-        
-        let emailCount = 0;
-        let failedCount = 0;
-        
+        let emailCount = 0, failedCount = 0;
         for (const farmer of farmers) {
             const result = await sendEmailViaBrevo({
                 to: farmer.email,
                 subject: `🌾 ShambaCare Alert: ${subject}`,
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                        <div style="background: #1e3a5f; padding: 20px; text-align: center;">
-                            <h2 style="color: #4ade80; margin: 0;">ShambaCare Alert</h2>
-                        </div>
-                        <div style="background: #f9fafb; padding: 20px;">
-                            <h3 style="color: #1e293b;">${subject}</h3>
-                            <p style="color: #334155; font-size: 16px; line-height: 1.5;">${message}</p>
-                            <hr style="border-color: #e5e7eb;">
-                            <p style="color: #6b7280; font-size: 12px;">Alert Type: ${type || 'General'}</p>
-                            <p style="color: #6b7280; font-size: 12px;">Region: ${region === 'all' ? 'All Counties' : region}</p>
-                        </div>
-                        <div style="background: #1e3a5f; padding: 10px; text-align: center;">
-                            <p style="color: #94a3b8; font-size: 12px;">ShambaCare - Smart Farming Assistant</p>
-                        </div>
-                    </div>
-                `
+                html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;"><div style="background: #1e3a5f; padding: 20px; text-align: center;"><h2 style="color: #4ade80; margin: 0;">ShambaCare Alert</h2></div><div style="background: #f9fafb; padding: 20px;"><h3 style="color: #1e293b;">${subject}</h3><p style="color: #334155; font-size: 16px; line-height: 1.5;">${message}</p><hr style="border-color: #e5e7eb;"><p style="color: #6b7280; font-size: 12px;">Alert Type: ${type || 'General'}</p><p style="color: #6b7280; font-size: 12px;">Region: ${region === 'all' ? 'All Counties' : region}</p></div><div style="background: #1e3a5f; padding: 10px; text-align: center;"><p style="color: #94a3b8; font-size: 12px;">ShambaCare - Smart Farming Assistant</p></div></div>`
             });
-            if (result.success) {
-                emailCount++;
-            } else {
-                failedCount++;
-                console.log(`Failed to send to ${farmer.email}: ${result.error}`);
-            }
+            if (result.success) emailCount++;
+            else failedCount++;
         }
-        
         res.json({
             success: true,
             message: `Alert sent to ${emailCount} farmers (${failedCount} failed)`,
-            emailCount,
-            failedCount,
-            totalFarmers: farmers.length
+            emailCount, failedCount, totalFarmers: farmers.length
         });
     } catch (error) {
         console.error('Alert error:', error);
@@ -523,45 +390,26 @@ router.get('/debug-farmers', async (req, res) => {
     }
 });
 
-// Get all chats (mock for now)
+// ==================== CHATS (mock) ====================
 router.get('/chats', async (req, res) => {
     res.json({ success: true, chats: [] });
 });
 
-// Admin reply to farmer chat (sends email via Brevo)
+// ==================== ADMIN REPLY TO CHAT ====================
 router.post('/reply-chat', async (req, res) => {
     const { farmer_id, message, subject } = req.body;
-    
     if (!farmer_id || !message) {
         return res.status(400).json({ success: false, message: 'Farmer ID and message required' });
     }
-    
     try {
         const farmer = await User.findByPk(farmer_id);
         if (!farmer) {
             return res.status(404).json({ success: false, message: 'Farmer not found' });
         }
-        
         await sendEmailViaBrevo({
             to: farmer.email,
             subject: subject || 'New Reply from ShambaCare Support',
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px;">
-                    <div style="background: #1e3a5f; padding: 20px; text-align: center;">
-                        <h2 style="color: #4ade80;">ShambaCare Support</h2>
-                    </div>
-                    <div style="padding: 20px;">
-                        <p>Hello ${farmer.name},</p>
-                        <p>You have a new reply from our support team:</p>
-                        <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; margin: 15px 0;">
-                            <p style="margin: 0;">"${message}"</p>
-                        </div>
-                        <a href="https://shambacare-1.vercel.app/chat.html" style="background: #4ade80; color: #1e3a5f; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Conversation</a>
-                        <hr>
-                        <p style="font-size: 12px;">ShambaCare - Smart Farming Assistant</p>
-                    </div>
-                </div>
-            `
+            html: `<div style="font-family: Arial, sans-serif; max-width: 600px;"><div style="background: #1e3a5f; padding: 20px; text-align: center;"><h2 style="color: #4ade80;">ShambaCare Support</h2></div><div style="padding: 20px;"><p>Hello ${farmer.name},</p><p>You have a new reply from our support team:</p><div style="background: #f0fdf4; padding: 15px; border-radius: 8px; margin: 15px 0;"><p style="margin: 0;">"${message}"</p></div><a href="https://shambacare-1.vercel.app/chat.html" style="background: #4ade80; color: #1e3a5f; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Conversation</a><hr><p style="font-size: 12px;">ShambaCare - Smart Farming Assistant</p></div></div>`
         });
         res.json({ success: true, message: 'Reply sent via email' });
     } catch (error) {
