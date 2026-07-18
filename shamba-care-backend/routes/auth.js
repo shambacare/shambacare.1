@@ -28,13 +28,13 @@ router.post('/signup', async (req, res) => {
     if (existingUser) {
       return res.status(400).json({ success: false, message: 'Email already registered' });
     }
-    // User model hook will hash the password automatically
+    // Pass plaintext password – the model hook will hash it
     const user = await User.create({
       name,
       email,
       phone,
       county,
-      password_hash: password, // The model hook will hash it
+      password_hash: password,
       role: 'farmer',
       email_verified: false,
       is_active: true
@@ -180,7 +180,7 @@ router.post('/verify-code', async (req, res) => {
   }
 });
 
-// ==================== RESET PASSWORD (using verified code) ====================
+// ==================== RESET PASSWORD (FIXED – no double hashing) ====================
 router.post('/reset-password', async (req, res) => {
   const { email, code, newPassword } = req.body;
   if (!email || !code || !newPassword) {
@@ -204,12 +204,9 @@ router.post('/reset-password', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Code has expired. Please request a new one.' });
     }
 
-    // Hash new password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
-
+    // ✅ Pass plaintext password – the model hook will hash it once
     await user.update({
-      password_hash: hashedPassword,
+      password_hash: newPassword,
       reset_token: null,
       reset_expires: null
     });
