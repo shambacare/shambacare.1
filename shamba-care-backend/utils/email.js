@@ -1,24 +1,8 @@
 // utils/email.js
-const Brevo = require('@getbrevo/brevo');
-
-let brevoApiInstance = null;
-
-if (process.env.BREVO_API_KEY) {
-    try {
-        const defaultClient = Brevo.ApiClient.instance;
-        const apiKey = defaultClient.authentications['apiKey'];
-        apiKey.apiKey = process.env.BREVO_API_KEY;
-        brevoApiInstance = new Brevo.TransactionalEmailsApi();
-        console.log('✅ Brevo email utility initialized');
-    } catch (error) {
-        console.error('❌ Failed to initialize Brevo:', error.message);
-    }
-} else {
-    console.warn('⚠️ BREVO_API_KEY not set. Email sending will fail.');
-}
+const axios = require('axios');
 
 /**
- * Send email via Brevo API
+ * Send email via Brevo API (direct HTTP request)
  * @param {Object} params
  * @param {string} params.to - Recipient email address
  * @param {string} params.subject - Email subject
@@ -26,28 +10,40 @@ if (process.env.BREVO_API_KEY) {
  * @returns {Promise<{success: boolean, error?: string}>}
  */
 async function sendEmail({ to, subject, html }) {
-    if (!process.env.BREVO_API_KEY || !brevoApiInstance) {
-        console.error('❌ BREVO_API_KEY not set or Brevo not initialized.');
+    if (!process.env.BREVO_API_KEY) {
+        console.error('❌ BREVO_API_KEY not set.');
         return { success: false, error: 'No API key' };
     }
     if (!to || !subject || !html) {
         return { success: false, error: 'Missing required fields' };
     }
+
     try {
-        const sendSmtpEmail = new Brevo.SendSmtpEmail();
-        sendSmtpEmail.subject = subject;
-        sendSmtpEmail.htmlContent = html;
-        sendSmtpEmail.sender = {
-            name: 'ShambaCare',
-            email: process.env.FROM_EMAIL || 'shambacare2026@gmail.com'
-        };
-        sendSmtpEmail.to = [{ email: to }];
-        await brevoApiInstance.sendTransacEmail(sendSmtpEmail);
+        const response = await axios.post(
+            'https://api.brevo.com/v3/smtp/email',
+            {
+                sender: {
+                    name: 'ShambaCare',
+                    email: process.env.FROM_EMAIL || 'shambacare2026@gmail.com'
+                },
+                to: [{ email: to }],
+                subject: subject,
+                htmlContent: html
+            },
+            {
+                headers: {
+                    'api-key': process.env.BREVO_API_KEY,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
         console.log(`✅ Email sent to ${to}`);
         return { success: true };
     } catch (error) {
-        console.error(`❌ Failed to send to ${to}:`, error.message);
-        return { success: false, error: error.message };
+        const errorMsg = error.response?.data?.message || error.message;
+        console.error(`❌ Failed to send to ${to}:`, errorMsg);
+        return { success: false, error: errorMsg };
     }
 }
 
