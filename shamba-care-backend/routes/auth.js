@@ -1,24 +1,112 @@
-// routes/auth.js – password reset with code + verify route
+// routes/auth.js – Complete authentication with code-based password reset and Google login for existing users only
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 const { sendEmail } = require('../utils/email');
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'shambacare_super_secret_key_2024';
 
-// ==================== SIGNUP (unchanged) ====================
+// ==================== HELPERS ====================
+function generateToken(userId) {
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE || '7d' });
+}
+
+// ==================== SIGNUP ====================
 router.post('/signup', async (req, res) => {
-  // ... keep your existing signup logic
+  const { name, email, phone, county, password } = req.body;
+  if (!name || !email || !phone || !county || !password) {
+    return res.status(400).json({ success: false, message: 'All fields are required' });
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+  }
+  try {
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'Email already registered' });
+    }
+    // User model hook will hash the password automatically
+    const user = await User.create({
+      name,
+      email,
+      phone,
+      county,
+      password_hash: password, // The model hook will hash it
+      role: 'farmer',
+      email_verified: false,
+      is_active: true
+    });
+    const token = generateToken(user.id);
+    await user.update({ last_login: new Date() });
+    res.status(201).json({
+      success: true,
+      message: 'Account created successfully',
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        county: user.county,
+        role: user.role,
+        allowFarmerPortal: user.role === 'admin'
+      }
+    });
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 });
 
-// ==================== LOGIN (unchanged) ====================
+// ==================== LOGIN ====================
 router.post('/login', async (req, res) => {
-  // ... keep your existing login logic
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ success: false, message: 'Email and password required' });
+  }
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+    if (!user.is_active) {
+      return res.status(401).json({ success: false, message: 'Account is deactivated' });
+    }
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+    const token = generateToken(user.id);
+    await user.update({ last_login: new Date() });
+    res.json({
+      success: true,
+      message: 'Login successful',
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        county: user.county,
+        role: user.role,
+        allowFarmerPortal: user.role === 'admin'
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 });
 
-// ==================== FORGOT PASSWORD – send code ====================
+// ==================== LOGOUT ====================
+router.post('/logout', (req, res) => {
+  res.json({ success: true, message: 'Logged out successfully' });
+});
+
+// ==================== FORGOT PASSWORD – SEND CODE ====================
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
   if (!email) {
@@ -67,7 +155,7 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-// ==================== VERIFY CODE (NEW) ====================
+// ==================== VERIFY CODE ====================
 router.post('/verify-code', async (req, res) => {
   const { email, code } = req.body;
   if (!email || !code) {
@@ -92,7 +180,7 @@ router.post('/verify-code', async (req, res) => {
   }
 });
 
-// ==================== RESET PASSWORD (after code verification) ====================
+// ==================== RESET PASSWORD (using verified code) ====================
 router.post('/reset-password', async (req, res) => {
   const { email, code, newPassword } = req.body;
   if (!email || !code || !newPassword) {
@@ -116,8 +204,7 @@ router.post('/reset-password', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Code has expired. Please request a new one.' });
     }
 
-    // Hash new password (the model hook will handle this if you set password_hash directly)
-    const bcrypt = require('bcryptjs');
+    // Hash new password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
@@ -134,9 +221,95 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
-// ==================== GOOGLE SIGN-IN (unchanged) ====================
+// ==================== GOOGLE SIGN-IN (Existing users only) ====================
 router.post('/google', async (req, res) => {
-  // ... keep your existing Google login logic
+  const { idToken } = req.body;
+  if (!idToken) {
+    return res.status(400).json({ success: false, message: 'ID token required' });
+  }
+
+  try {
+    const { OAuth2Client } = require('google-auth-library');
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+    const ticket = await client.verifyIdToken({
+      idToken: idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture, email_verified } = payload;
+
+    // ✅ Check if user exists – do NOT create new user
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'No account found for this email. Please sign up first.'
+      });
+    }
+
+    // User exists – proceed with login
+    const token = generateToken(user.id);
+    await user.update({ last_login: new Date() });
+
+    const allowFarmerPortal = user.role === 'admin';
+
+    res.json({
+      success: true,
+      message: 'Google login successful',
+      token: token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        county: user.county,
+        role: user.role,
+        profile_image: user.profile_image,
+        allowFarmerPortal: allowFarmerPortal
+      }
+    });
+  } catch (error) {
+    console.error('Google auth error:', error.message);
+    res.status(401).json({ success: false, message: 'Invalid Google token: ' + error.message });
+  }
+});
+
+// ==================== DEBUG ROUTES (optional) ====================
+router.get('/test', (req, res) => {
+  res.json({ success: true, message: 'Auth routes are working!' });
+});
+
+// Debug user by email
+router.get('/debug-user/:email', async (req, res) => {
+  try {
+    const email = req.params.email;
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.json({ exists: false, message: 'User not found' });
+    }
+    res.json({
+      exists: true,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      has_reset_token: !!user.reset_token,
+      reset_token: user.reset_token,
+      reset_expires: user.reset_expires
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Debug Google config
+router.get('/debug-google', (req, res) => {
+  res.json({
+    hasClientId: !!process.env.GOOGLE_CLIENT_ID,
+    clientIdPreview: process.env.GOOGLE_CLIENT_ID ? process.env.GOOGLE_CLIENT_ID.substring(0, 30) + '...' : 'NOT SET',
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 module.exports = router;
