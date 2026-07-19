@@ -903,27 +903,27 @@ async function loadChatMessages() {
     }
 }
 
-// Format chat date – relative time or full date for older messages
+// Robust date parser – handles space in date string and timezone offsets
+function parseDate(dateStr) {
+    if (!dateStr) return null;
+    // Replace space with T to make it ISO‑compatible
+    const normalized = dateStr.replace(' ', 'T');
+    const date = new Date(normalized);
+    if (!isNaN(date.getTime())) return date;
+    // Fallback: try the original string
+    const fallback = new Date(dateStr);
+    return !isNaN(fallback.getTime()) ? fallback : null;
+}
+
 function formatChatDate(dateStr) {
-    if (!dateStr) return 'Just now';
-    try {
-        const date = new Date(dateStr);
-        if (isNaN(date.getTime())) return 'Just now';
-        
-        const now = new Date();
-        const diff = (now - date) / 1000; // difference in seconds
-        
-        // If date is in the future or diff is negative, treat as invalid
-        if (diff < 0) return date.toLocaleString('en-US', { 
-            month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' 
-        });
-        
-        if (diff < 60) return 'Just now';
-        if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-        if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-        if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
-        
-        // For older messages, show full date
+    const date = parseDate(dateStr);
+    if (!date) return 'Just now';
+    
+    const now = new Date();
+    const diff = (now - date) / 1000; // seconds
+    
+    // If date is in the future or diff is invalid, show full date
+    if (diff < 0 || isNaN(diff)) {
         return date.toLocaleString('en-US', {
             month: 'short',
             day: 'numeric',
@@ -931,9 +931,21 @@ function formatChatDate(dateStr) {
             hour: '2-digit',
             minute: '2-digit'
         });
-    } catch (e) {
-        return 'Just now';
     }
+    
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+    
+    // Older than 7 days – show full date and time
+    return date.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 }
 
 function displayChatMessages(messages) {
@@ -1029,7 +1041,6 @@ async function sendNewMessage() {
         showToast('Network error. Please try again.', 'error');
     }
 }
-
         // ==================== FEEDBACK / REVIEWS ====================
         function getLocalReviews() {
             try {
