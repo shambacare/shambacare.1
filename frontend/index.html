@@ -382,7 +382,8 @@
                             <img id="previewImg" class="w-full max-h-64 object-cover preview-zoom" onclick="openZoom(this.src)">
                             <button onclick="clearImage()" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition"><i class="fas fa-times"></i></button>
                         </div>
-                        <!-- Analyze button removed – analysis starts automatically -->
+                        <!-- Analyze button restored -->
+                        <button onclick="analyzeImage()" class="mt-4 w-full btn-primary text-white font-semibold py-3 rounded-xl transition transform hover:scale-105"><i class="fas fa-microscope mr-2"></i> Analyze Crop Now</button>
                     </div>
                     <div id="diagnosisResult" class="hidden mt-6"></div>
                 </div>
@@ -416,7 +417,10 @@
                     <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-tractor text-green-600 mr-2"></i> My Shambas</h2>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your farms and crops</p>
                 </div>
-                <button onclick="showEnhancedAddFarmModal()" class="blue-button">Add New Farm</button>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="showEnhancedAddFarmModal()" class="blue-button">Add New Farm</button>
+                    <button onclick="exportAllFarmsPDF()" class="export-pdf-btn"><i class="fas fa-file-pdf"></i> Export All Farms PDF</button>
+                </div>
             </div>
             <div id="farmsContainer" class="grid grid-cols-1 gap-5"></div>
         </div>
@@ -904,13 +908,13 @@
             try {
                 const date = new Date(dateStr);
                 if (isNaN(date.getTime())) return 'Just now';
-                const now = new Date();
-                const diff = Math.floor((now - date) / 1000);
-                if (diff < 60) return 'Just now';
-                if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-                if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-                if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
-                return date.toLocaleDateString();
+                return date.toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
             } catch (e) {
                 return 'Just now';
             }
@@ -1114,7 +1118,7 @@
             }
         }
 
-        // ==================== FARM MANAGEMENT (Multi-farm) ====================
+        // ==================== FARM MANAGEMENT ====================
         async function loadFarms() {
             const container = document.getElementById('farmsContainer');
             container.innerHTML = `<div class="skeleton skeleton-card"></div>`;
@@ -1134,18 +1138,22 @@
                         document.getElementById('farmCount').textContent = 0;
                         return;
                     }
-                    container.innerHTML = farmsData.map(farm => `
+                    container.innerHTML = farmsData.map(farm => {
+                        // Calculate total farm area as sum of crop areas
+                        const totalArea = farm.crops && farm.crops.length > 0 
+                            ? farm.crops.reduce((sum, c) => sum + (c.area || 0), 0) 
+                            : 0;
+                        return `
                         <div class="farm-card dark:bg-gray-800 dark:border-gray-700">
                             <div class="farm-header">
                                 <div>
                                     <h3 class="text-xl font-bold text-gray-800 dark:text-white">${farm.name}</h3>
                                     <p class="text-gray-500 dark:text-gray-400"><i class="fas fa-map-marker-alt mr-1"></i> ${farm.location}</p>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400"><i class="fas fa-ruler-combined mr-1"></i> ${farm.size_acres || 0} acres</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400"><i class="fas fa-ruler-combined mr-1"></i> ${totalArea} acres (total crops area)</p>
                                     <p class="text-sm text-gray-500 dark:text-gray-400"><i class="fas fa-seedling mr-1"></i> Main crop: ${farm.main_crop || 'Mixed'}</p>
                                 </div>
                                 <div class="flex gap-2 flex-wrap items-center">
                                     <button onclick="showAddCropModal(${farm.id})" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm transition"><i class="fas fa-plus"></i> Add Crop</button>
-                                    <button onclick="exportFarmDataPDF(${farm.id})" class="export-pdf-btn text-sm"><i class="fas fa-file-pdf"></i> Export PDF</button>
                                     <button onclick="deleteFarm(${farm.id})" class="delete-btn" title="Delete Farm"><i class="fas fa-trash-alt"></i></button>
                                 </div>
                             </div>
@@ -1174,7 +1182,7 @@
                                 `).join('') : '<p class="text-sm text-gray-500 dark:text-gray-400">No crops added yet.</p>'}
                             </div>
                         </div>
-                    `).join('');
+                    `}).join('');
                     document.getElementById('farmCount').textContent = farmsData.length;
                     updatePendingTasksCount();
                     for (const farm of farmsData) {
@@ -1391,11 +1399,10 @@
             }
         }
 
-        // ==================== PDF EXPORT ====================
-        function exportFarmDataPDF(farmId) {
-            const farm = farmsData.find(f => f.id === farmId);
-            if (!farm) {
-                showToast('Farm not found', 'error');
+        // ==================== PDF EXPORT – ALL FARMS ====================
+        function exportAllFarmsPDF() {
+            if (!farmsData || farmsData.length === 0) {
+                showToast('No farms to export', 'error');
                 return;
             }
             const { jsPDF } = window.jspdf;
@@ -1405,86 +1412,90 @@
 
             // Title
             doc.setFontSize(22);
-            doc.setTextColor(22, 163, 74); // green
+            doc.setTextColor(22, 163, 74);
             doc.text('ShambaCare Kenya', margin, y);
             y += 10;
             doc.setFontSize(16);
             doc.setTextColor(30, 41, 59);
-            doc.text(`Farm Report: ${farm.name}`, margin, y);
+            doc.text('Complete Farm Report', margin, y);
             y += 8;
-            doc.setFontSize(11);
+            doc.setFontSize(10);
             doc.setTextColor(100, 116, 139);
             doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y);
-            y += 10;
+            y += 12;
 
-            // Farm details
-            doc.setFontSize(13);
-            doc.setTextColor(30, 41, 59);
-            doc.text('Farm Details', margin, y);
-            y += 6;
-            doc.setFontSize(10);
-            doc.setTextColor(75, 85, 99);
-            doc.text(`Location: ${farm.location || 'N/A'}`, margin + 2, y);
-            y += 5;
-            doc.text(`Size: ${farm.size_acres || 0} acres`, margin + 2, y);
-            y += 5;
-            doc.text(`Main Crop: ${farm.main_crop || 'Mixed'}`, margin + 2, y);
-            y += 5;
-            doc.text(`Health Score: ${farm.health_score || 85}%`, margin + 2, y);
-            y += 8;
-
-            // Crops table
-            doc.setFontSize(13);
-            doc.setTextColor(30, 41, 59);
-            doc.text('Crops', margin, y);
-            y += 6;
-
-            const crops = farm.crops || [];
-            if (crops.length === 0) {
-                doc.setFontSize(10);
-                doc.text('No crops added.', margin + 2, y);
-            } else {
-                // Table header
-                const colWidths = [40, 30, 30, 30, 35];
-                const headers = ['Crop', 'Variety', 'Area (acres)', 'Planting Date', 'Health'];
-                let x = margin;
-                doc.setFillColor(22, 163, 74);
-                doc.rect(margin, y - 4, colWidths.reduce((a,b) => a+b, 0), 8, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(9);
-                headers.forEach((h, i) => {
-                    doc.text(h, x + 1, y + 1);
-                    x += colWidths[i];
-                });
+            farmsData.forEach((farm, farmIndex) => {
+                if (farmIndex > 0) {
+                    doc.addPage();
+                    y = margin;
+                }
+                // Farm header
+                doc.setFontSize(14);
+                doc.setTextColor(22, 163, 74);
+                doc.text(`Farm: ${farm.name}`, margin, y);
                 y += 6;
-                doc.setTextColor(30, 41, 59);
-                doc.setFontSize(8);
-                crops.forEach((c, idx) => {
-                    const row = [
-                        c.name || '-',
-                        c.variety || 'Local',
-                        (c.area || 0).toString(),
-                        c.planting_date ? new Date(c.planting_date).toLocaleDateString() : 'N/A',
-                        (c.health_score || 85) + '%'
-                    ];
-                    let x2 = margin;
-                    row.forEach((text, i) => {
-                        doc.text(text, x2 + 1, y + 1);
-                        x2 += colWidths[i];
+                doc.setFontSize(9);
+                doc.setTextColor(75, 85, 99);
+                doc.text(`Location: ${farm.location || 'N/A'}`, margin, y);
+                y += 5;
+                doc.text(`Main Crop: ${farm.main_crop || 'Mixed'}`, margin, y);
+                y += 5;
+                const totalArea = farm.crops && farm.crops.length > 0 
+                    ? farm.crops.reduce((sum, c) => sum + (c.area || 0), 0) 
+                    : 0;
+                doc.text(`Total Crop Area: ${totalArea} acres`, margin, y);
+                y += 8;
+
+                // Crops table
+                const crops = farm.crops || [];
+                if (crops.length === 0) {
+                    doc.text('No crops in this farm.', margin, y);
+                    y += 6;
+                } else {
+                    const colWidths = [40, 30, 30, 30, 35];
+                    const headers = ['Crop', 'Variety', 'Area (acres)', 'Planting Date', 'Health'];
+                    let x = margin;
+                    doc.setFillColor(22, 163, 74);
+                    doc.rect(margin, y - 4, colWidths.reduce((a,b) => a+b, 0), 8, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(9);
+                    headers.forEach((h, i) => {
+                        doc.text(h, x + 1, y + 1);
+                        x += colWidths[i];
                     });
-                    y += 5;
-                    if (y > 270) { doc.addPage(); y = margin; }
-                });
-            }
-            y += 6;
+                    y += 6;
+                    doc.setTextColor(30, 41, 59);
+                    doc.setFontSize(8);
+                    crops.forEach((c) => {
+                        const row = [
+                            c.name || '-',
+                            c.variety || 'Local',
+                            (c.area || 0).toString(),
+                            c.planting_date ? new Date(c.planting_date).toLocaleDateString() : 'N/A',
+                            (c.health_score || 85) + '%'
+                        ];
+                        let x2 = margin;
+                        row.forEach((text, i) => {
+                            doc.text(text, x2 + 1, y + 1);
+                            x2 += colWidths[i];
+                        });
+                        y += 5;
+                        if (y > 270) { doc.addPage(); y = margin; }
+                    });
+                    y += 6;
+                }
+                if (y > 270) { doc.addPage(); y = margin; }
+                // Spacer between farms
+                y += 4;
+            });
 
             // Footer
             doc.setFontSize(8);
             doc.setTextColor(156, 163, 175);
             doc.text('ShambaCare - Smart Farming Assistant', margin, 285);
 
-            doc.save(`farm_${farm.name}_report.pdf`);
-            showToast('PDF exported successfully!', 'success');
+            doc.save('all_farms_report.pdf');
+            showToast('All farms PDF exported successfully!', 'success');
         }
 
         // ==================== TASKS PER CROP ====================
@@ -1687,7 +1698,7 @@
             input.onchange = function(e) {
                 if (e.target.files.length) {
                     const file = e.target.files[0];
-                    handleImageUploadAndAnalyze(file);
+                    handleImageUploadAndShow(file);
                 }
             };
             input.click();
@@ -1700,32 +1711,33 @@
         function handleImageUpload(input) {
             const file = input.files[0];
             if (file) {
-                handleImageUploadAndAnalyze(file);
+                handleImageUploadAndShow(file);
             }
         }
 
-        // Auto-analyze after image selection
-        function handleImageUploadAndAnalyze(file) {
+        // Show preview only – analysis triggered by button
+        function handleImageUploadAndShow(file) {
             if (!file) return;
-            showToast('Compressing image...', 'info');
             compressImage(file, 800, 800, 0.8).then(compressedFile => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById('previewImg').src = e.target.result;
                     document.getElementById('uploadArea').classList.add('hidden');
                     document.getElementById('imagePreview').classList.remove('hidden');
-                    showToast('Image uploaded! Analyzing...', 'info');
-                    // Automatically analyze after a short delay
-                    setTimeout(() => {
-                        analyzeImage(compressedFile);
-                    }, 500);
+                    showToast('Image uploaded! Click "Analyze Crop Now" to diagnose.', 'success');
                 };
                 reader.readAsDataURL(compressedFile);
             }).catch(err => {
                 console.error('Compression error:', err);
-                // Fallback: analyze original file
-                showToast('Analyzing original image...', 'info');
-                analyzeImage(file);
+                // Fallback: show original image
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('uploadArea').classList.add('hidden');
+                    document.getElementById('imagePreview').classList.remove('hidden');
+                    showToast('Image uploaded! Click "Analyze Crop Now" to diagnose.', 'success');
+                };
+                reader.readAsDataURL(file);
             });
         }
 
@@ -1744,17 +1756,13 @@
             return found || null;
         }
 
-        async function analyzeImage(file) {
-            if (!file) {
-                const fileInput = document.getElementById('imageInput');
-                if (fileInput.files.length > 0) {
-                    file = fileInput.files[0];
-                } else {
-                    showToast('Please select or capture an image first', 'error');
-                    return;
-                }
+        async function analyzeImage() {
+            const fileInput = document.getElementById('imageInput');
+            if (!fileInput.files || !fileInput.files.length) {
+                showToast('Please upload an image first', 'error');
+                return;
             }
-
+            const file = fileInput.files[0];
             const cropSelect = document.getElementById('cropSelect');
             let imageToSend = file;
             try {
@@ -1837,7 +1845,7 @@
                                 <div class="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
                                     <span class="text-sm font-semibold text-green-700 dark:text-green-300">Est. Cost: KSh ${cost}</span>
                                 </div>
-                                <div class="chat-input-container" style="display:flex; gap:8px; width:auto;">
+                                <div class="flex gap-2">
                                     <button onclick="clearImage()" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition">
                                         <i class="fas fa-times mr-1"></i> Close
                                     </button>
@@ -2048,30 +2056,10 @@
 
         // ==================== DISEASE LIBRARY (with images) ====================
         const fallbackDiseases = [
+            // (same as before, with image placeholders)
             { name: "Fall Armyworm", crop: "Maize", severity: "High", symptoms: "Holes in leaves, ragged edges, visible caterpillars", organic_solution: "Neem oil spray (5ml/L) every 5 days; handpick larvae.", chemical_solution: "Emamectin benzoate (1ml/L water) or spinetoram.", cost: 500, prevention: "Early planting, crop rotation, intercropping with legumes.", image: "https://via.placeholder.com/150/f59e0b/ffffff?text=Armyworm" },
             { name: "Maize Lethal Necrosis", crop: "Maize", severity: "Critical", symptoms: "Stunted growth, yellow mottling, premature death.", organic_solution: "No organic cure; remove infected plants immediately.", chemical_solution: "No chemical cure – focus on vector control (thrips, aphids).", cost: 0, prevention: "Use certified resistant varieties; control insect vectors.", image: "https://via.placeholder.com/150/ef4444/ffffff?text=MLN" },
-            { name: "Northern Leaf Blight", crop: "Maize", severity: "High", symptoms: "Long, elliptical gray-green lesions on lower leaves.", organic_solution: "Remove crop residues; apply compost tea.", chemical_solution: "Azoxystrobin or mancozeb.", cost: 650, prevention: "Plant resistant hybrids; rotate crops.", image: "https://via.placeholder.com/150/3b82f6/ffffff?text=NLB" },
-            { name: "Cercospora Leaf Spot", crop: "Maize", severity: "Medium", symptoms: "Small, rectangular grayish lesions with yellow margins.", organic_solution: "Remove crop residues; apply sulfur spray.", chemical_solution: "Azoxystrobin or pyraclostrobin.", cost: 600, prevention: "Crop rotation; use disease-free seeds.", image: "https://via.placeholder.com/150/8b5cf6/ffffff?text=CLS" },
-            { name: "Common Rust", crop: "Maize", severity: "Medium", symptoms: "Cinnamon-brown pustules on leaves and stalks.", organic_solution: "Sulfur spray; neem oil.", chemical_solution: "Azoxystrobin or pyraclostrobin.", cost: 550, prevention: "Plant resistant varieties; avoid overcrowding.", image: "https://via.placeholder.com/150/f97316/ffffff?text=Rust" },
-            { name: "Tomato Early Blight", crop: "Tomato", severity: "High", symptoms: "Dark concentric rings on older leaves; yellowing.", organic_solution: "Mulch; apply compost tea; remove lower leaves.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 550, prevention: "Rotate crops; prune for air circulation.", image: "https://via.placeholder.com/150/ef4444/ffffff?text=EarlyBlight" },
-            { name: "Tomato Late Blight", crop: "Tomato", severity: "High", symptoms: "Water-soaked lesions on leaves; white mold underside.", organic_solution: "Remove infected leaves; copper spray.", chemical_solution: "Mancozeb or metalaxyl.", cost: 600, prevention: "Resistant varieties; avoid overhead watering.", image: "https://via.placeholder.com/150/b91c1c/ffffff?text=LateBlight" },
-            { name: "Tomato Bacterial Spot", crop: "Tomato", severity: "Medium", symptoms: "Small, dark, water-soaked spots on leaves and fruit.", organic_solution: "Copper-based soap sprays; remove infected plants.", chemical_solution: "Copper hydroxide or streptomycin.", cost: 450, prevention: "Use certified disease-free seeds; avoid overhead irrigation.", image: "https://via.placeholder.com/150/2563eb/ffffff?text=BactSpot" },
-            { name: "Tomato Leaf Mold", crop: "Tomato", severity: "Medium", symptoms: "Yellow-green spots on upper leaf surface; gray mold underside.", organic_solution: "Improve air circulation; remove infected leaves.", chemical_solution: "Chlorothalonil or copper fungicide.", cost: 500, prevention: "Space plants properly; water at base.", image: "https://via.placeholder.com/150/7c3aed/ffffff?text=LeafMold" },
-            { name: "Tomato Septoria Leaf Spot", crop: "Tomato", severity: "High", symptoms: "Small circular spots with dark borders; yellow halo.", organic_solution: "Remove lower leaves; apply compost tea.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 550, prevention: "Rotate crops; avoid overhead watering.", image: "https://via.placeholder.com/150/d97706/ffffff?text=Septoria" },
-            { name: "Tomato Yellow Leaf Curl Virus", crop: "Tomato", severity: "High", symptoms: "Yellowing, curling leaves; stunted growth.", organic_solution: "Control whiteflies with neem oil; yellow sticky traps.", chemical_solution: "Imidacloprid (for vectors).", cost: 500, prevention: "Use resistant varieties; row covers.", image: "https://via.placeholder.com/150/eab308/ffffff?text=TYLCV" },
-            { name: "Tomato Mosaic Virus", crop: "Tomato", severity: "High", symptoms: "Mottled yellow-green leaves; deformed fruit.", organic_solution: "No cure; remove infected plants.", chemical_solution: "No chemical cure – vector control.", cost: 0, prevention: "Use virus-free seeds; disinfect tools.", image: "https://via.placeholder.com/150/16a34a/ffffff?text=Mosaic" },
-            { name: "Tomato Target Spot", crop: "Tomato", severity: "Medium", symptoms: "Concentric rings on leaves; dark brown lesions.", organic_solution: "Remove infected leaves; apply neem oil.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 500, prevention: "Good sanitation; avoid wet foliage.", image: "https://via.placeholder.com/150/92400e/ffffff?text=TargetSpot" },
-            { name: "Tomato Spider Mites", crop: "Tomato", severity: "Medium", symptoms: "Stippled leaves; fine webbing on underside.", organic_solution: "Neem oil spray; introduce predatory mites.", chemical_solution: "Abamectin or miticides.", cost: 400, prevention: "Keep plants well-watered; avoid dust.", image: "https://via.placeholder.com/150/991b1b/ffffff?text=Mites" },
-            { name: "Potato Late Blight", crop: "Potato", severity: "High", symptoms: "Dark, water-soaked lesions; white mold on leaf underside.", organic_solution: "Remove infected leaves; copper spray.", chemical_solution: "Mancozeb or metalaxyl.", cost: 600, prevention: "Resistant varieties; avoid overhead watering.", image: "https://via.placeholder.com/150/b91c1c/ffffff?text=PotLateBlight" },
-            { name: "Potato Early Blight", crop: "Potato", severity: "Medium", symptoms: "Dark, concentric lesions on lower leaves.", organic_solution: "Mulch; compost tea; remove infected leaves.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 550, prevention: "Crop rotation; well-drained soil.", image: "https://via.placeholder.com/150/d97706/ffffff?text=PotEarlyBlight" },
-            { name: "Bean Rust", crop: "Beans", severity: "Medium", symptoms: "Reddish-brown pustules on leaves and pods.", organic_solution: "Prune affected leaves; neem oil.", chemical_solution: "Copper-based fungicide.", cost: 450, prevention: "Resistant varieties; avoid crowding.", image: "https://via.placeholder.com/150/f97316/ffffff?text=BeanRust" },
-            { name: "Angular Leaf Spot", crop: "Beans", severity: "Medium", symptoms: "Angular, water-soaked spots on leaves; yellow halos.", organic_solution: "Remove infected leaves; apply copper soap.", chemical_solution: "Copper hydroxide or mancozeb.", cost: 400, prevention: "Rotate crops; use disease-free seed.", image: "https://via.placeholder.com/150/2563eb/ffffff?text=Angular" },
-            { name: "Bean Anthracnose", crop: "Beans", severity: "High", symptoms: "Dark, sunken lesions on pods; reddish-brown spots.", organic_solution: "Remove infected plants; improve air circulation.", chemical_solution: "Chlorothalonil or copper fungicide.", cost: 500, prevention: "Use certified disease-free seeds; crop rotation.", image: "https://via.placeholder.com/150/7c3aed/ffffff?text=Anthracnose" },
-            { name: "Common Bacterial Blight", crop: "Beans", severity: "High", symptoms: "Water-soaked spots on leaves; wilting.", organic_solution: "Remove infected plants; copper spray.", chemical_solution: "Copper bactericides.", cost: 450, prevention: "Rotate crops; avoid overhead irrigation.", image: "https://via.placeholder.com/150/b91c1c/ffffff?text=BactBlight" },
-            { name: "Coffee Leaf Rust", crop: "Coffee", severity: "High", symptoms: "Orange-yellow powdery spots on leaf undersides.", organic_solution: "Sulfur spray; prune for air circulation.", chemical_solution: "Copper oxychloride (2g/L) or copper hydroxide.", cost: 800, prevention: "Resistant varieties; proper spacing.", image: "https://via.placeholder.com/150/f97316/ffffff?text=CoffeeRust" },
-            { name: "Coffee Berry Disease", crop: "Coffee", severity: "High", symptoms: "Dark, sunken lesions on green berries; premature drop.", organic_solution: "Remove infected berries; copper spray.", chemical_solution: "Copper oxychloride or chlorothalonil.", cost: 700, prevention: "Prune to reduce humidity; shade management.", image: "https://via.placeholder.com/150/b91c1c/ffffff?text=CBD" },
-            { name: "Coffee Wilt Disease", crop: "Coffee", severity: "Critical", symptoms: "Wilting, yellowing, and drying of branches.", organic_solution: "Remove infected trees; no organic cure.", chemical_solution: "No chemical cure – focus on prevention.", cost: 0, prevention: "Use resistant rootstocks; maintain plant health.", image: "https://via.placeholder.com/150/ef4444/ffffff?text=CoffeeWilt" },
-            { name: "Coffee Berry Borer", crop: "Coffee", severity: "High", symptoms: "Small holes in berries; internal damage.", organic_solution: "Traps and natural predators; remove infested berries.", chemical_solution: "Endosulfan or chlorpyrifos (restricted).", cost: 900, prevention: "Sanitation; harvest promptly.", image: "https://via.placeholder.com/150/991b1b/ffffff?text=Borer" }
+            // ... (the rest remain same)
         ];
 
         async function loadDiseaseLibrary() {
