@@ -1,4 +1,4 @@
- const express = require('express');
+const express = require('express');
 const { Farm, Crop } = require('../models');
 const { verifyToken } = require('../middleware/auth');
 const router = express.Router();
@@ -37,12 +37,12 @@ router.get('/:id', verifyToken, async (req, res) => {
     }
 });
 
-// Create new farm
+// Create new farm – size_acres is optional (default 0)
 router.post('/', verifyToken, async (req, res) => {
     const { name, location, size_acres, main_crop, health_score } = req.body;
     
-    if (!name || !location || !size_acres) {
-        return res.status(400).json({ success: false, message: 'Name, location, and size are required' });
+    if (!name || !location) {
+        return res.status(400).json({ success: false, message: 'Name and location are required' });
     }
     
     try {
@@ -50,7 +50,7 @@ router.post('/', verifyToken, async (req, res) => {
             user_id: req.user.id,
             name,
             location,
-            size_acres,
+            size_acres: size_acres || 0,
             main_crop,
             health_score: health_score || 85
         });
