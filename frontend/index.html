@@ -201,8 +201,43 @@
         .export-pdf-btn { background: #dc2626; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; transition: all 0.3s ease; cursor: pointer; border: none; }
         .export-pdf-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(220,38,38,0.3); }
 
-        /* Variety dropdown */
-        .variety-select { width: 100%; }
+        /* Yield Card – original distinctive style */
+        .yield-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a) !important;
+            border-radius: 1rem;
+            padding: 1.25rem;
+            color: white;
+            border: 1px solid #facc15 !important;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+        }
+        .yield-card .yield-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #facc15 !important;
+        }
+        .yield-card .yield-label {
+            font-size: 0.75rem;
+            color: #94a3b8 !important;
+        }
+        .yield-card .text-gray-400 {
+            color: #94a3b8 !important;
+        }
+        .yield-card i.fa-corn {
+            opacity: 0.5;
+        }
+        .dark .yield-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a) !important;
+            border-color: #facc15 !important;
+        }
+        .dark .yield-card .yield-value {
+            color: #facc15 !important;
+        }
+        .dark .yield-card .yield-label {
+            color: #94a3b8 !important;
+        }
+        .dark .yield-card .text-gray-400 {
+            color: #94a3b8 !important;
+        }
 
         /* General Dark Mode */
         body { background-color: #f8fafc; color: #1e293b; }
@@ -568,7 +603,6 @@
             <div class="p-4 space-y-3">
                 <input type="text" id="farmName" placeholder="Farm Name" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
                 <input type="text" id="farmLocation" placeholder="Location/County" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
-                <!-- size input removed – will be auto-calculated from crops -->
                 <select id="farmCrop" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
                     <option value="">Select Main Crop</option>
                     <option value="Maize">Maize</option>
@@ -597,7 +631,6 @@
                     <option value="Beans">Beans</option>
                     <option value="Vegetables">Vegetables</option>
                 </select>
-                <!-- Variety dropdown – dynamically populated -->
                 <select id="newCropVariety" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 variety-select">
                     <option value="">Select Variety</option>
                 </select>
@@ -852,7 +885,6 @@
             }
         }
 
-        // Listen to crop name change in modal
         document.getElementById('newCropName')?.addEventListener('change', function() {
             updateVarieties(this.value);
         });
@@ -889,158 +921,159 @@
 
         // ==================== CHAT FUNCTIONS (updated) ====================
 
-async function loadChatMessages() {
-    try {
-        const response = await apiCall('/communications/my-messages');
-        if (response.success && response.messages) {
-            displayChatMessages(response.messages);
-        } else {
-            displayNoMessages();
+        async function loadChatMessages() {
+            try {
+                const response = await apiCall('/communications/my-messages');
+                if (response.success && response.messages) {
+                    displayChatMessages(response.messages);
+                } else {
+                    displayNoMessages();
+                }
+            } catch (error) {
+                console.error('Error loading chats:', error);
+                displayNoMessages();
+            }
         }
-    } catch (error) {
-        console.error('Error loading chats:', error);
-        displayNoMessages();
-    }
-}
 
-// Robust date parser – handles space in date string and timezone offsets
-function parseDate(dateStr) {
-    if (!dateStr) return null;
-    // Replace space with T to make it ISO‑compatible
-    const normalized = dateStr.replace(' ', 'T');
-    const date = new Date(normalized);
-    if (!isNaN(date.getTime())) return date;
-    // Fallback: try the original string
-    const fallback = new Date(dateStr);
-    return !isNaN(fallback.getTime()) ? fallback : null;
-}
-
-function formatChatDate(dateStr) {
-    const date = parseDate(dateStr);
-    if (!date) return 'Just now';
-    
-    const now = new Date();
-    const diff = (now - date) / 1000; // seconds
-    
-    // If date is in the future or diff is invalid, show full date
-    if (diff < 0 || isNaN(diff)) {
-        return date.toLocaleString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-    
-    if (diff < 60) return 'Just now';
-    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-    if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
-    
-    // Older than 7 days – show full date and time
-    return date.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
-
-function displayChatMessages(messages) {
-    const container = document.getElementById('chatMessagesList');
-    if (!container) return;
-    if (!messages || messages.length === 0) {
-        displayNoMessages();
-        return;
-    }
-    container.innerHTML = messages.map(msg => `
-        <div class="chat-message ${msg.is_from_admin ? 'admin' : 'farmer'}">
-            <div class="chat-bubble">
-                <span class="chat-name">${msg.is_from_admin ? 'ShambaCare Support' : 'You'}</span>
-                <p class="text-sm">${escapeHtml(msg.message)}</p>
-                <span class="chat-time">${formatChatDate(msg.created_at)}</span>
-            </div>
-        </div>
-    `).join('');
-    container.scrollTop = container.scrollHeight;
-}
-
-function displayNoMessages() {
-    const container = document.getElementById('chatMessagesList');
-    if (!container) return;
-    container.innerHTML = `
-        <div class="text-center py-8">
-            <i class="fas fa-comments text-4xl text-gray-300 dark:text-gray-500 mb-3"></i>
-            <p class="text-gray-500 dark:text-gray-400">No messages yet. Start a conversation with our support team!</p>
-            <button onclick="openNewMessageModal()" class="mt-3 btn-primary text-white px-4 py-2 rounded-lg text-sm">Send First Message</button>
-        </div>
-    `;
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-async function sendQuickMessage() {
-    const input = document.getElementById('quickMessageInput');
-    const message = input.value.trim();
-    if (!message) {
-        showToast('Please enter a message', 'error');
-        return;
-    }
-    showToast('Sending...', 'info');
-    try {
-        const response = await apiCall('/communications/send', {
-            method: 'POST',
-            body: JSON.stringify({ message: message })
-        });
-        if (response.success) {
-            showToast('Message sent! Support will respond soon.', 'success');
-            input.value = '';
-            await loadChatMessages();
-        } else {
-            showToast('Failed to send message', 'error');
+        // Robust date parser – handles space in date string and timezone offsets
+        function parseDate(dateStr) {
+            if (!dateStr) return null;
+            // Replace space with T to make it ISO‑compatible
+            const normalized = dateStr.replace(' ', 'T');
+            const date = new Date(normalized);
+            if (!isNaN(date.getTime())) return date;
+            // Fallback: try the original string
+            const fallback = new Date(dateStr);
+            return !isNaN(fallback.getTime()) ? fallback : null;
         }
-    } catch (error) {
-        console.error('Send message error:', error);
-        showToast('Network error. Please try again.', 'error');
-    }
-}
 
-function openNewMessageModal() {
-    document.getElementById('newMessageText').value = '';
-    document.getElementById('newMessageModal').classList.remove('hidden');
-    document.getElementById('newMessageModal').classList.add('flex');
-}
-
-async function sendNewMessage() {
-    const message = document.getElementById('newMessageText').value.trim();
-    if (!message) {
-        showToast('Please enter a message', 'error');
-        return;
-    }
-    closeModal('newMessageModal');
-    showToast('Sending...', 'info');
-    try {
-        const response = await apiCall('/communications/send', {
-            method: 'POST',
-            body: JSON.stringify({ message: message })
-        });
-        if (response.success) {
-            showToast('Message sent! Support will respond soon.', 'success');
-            await loadChatMessages();
-        } else {
-            showToast('Failed to send message', 'error');
+        function formatChatDate(dateStr) {
+            const date = parseDate(dateStr);
+            if (!date) return 'Just now';
+            
+            const now = new Date();
+            const diff = (now - date) / 1000; // seconds
+            
+            // If date is in the future or diff is invalid, show full date
+            if (diff < 0 || isNaN(diff)) {
+                return date.toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+            
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+            
+            // Older than 7 days – show full date and time
+            return date.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
-    } catch (error) {
-        console.error('Send message error:', error);
-        showToast('Network error. Please try again.', 'error');
-    }
-}
+
+        function displayChatMessages(messages) {
+            const container = document.getElementById('chatMessagesList');
+            if (!container) return;
+            if (!messages || messages.length === 0) {
+                displayNoMessages();
+                return;
+            }
+            container.innerHTML = messages.map(msg => `
+                <div class="chat-message ${msg.is_from_admin ? 'admin' : 'farmer'}">
+                    <div class="chat-bubble">
+                        <span class="chat-name">${msg.is_from_admin ? 'ShambaCare Support' : 'You'}</span>
+                        <p class="text-sm">${escapeHtml(msg.message)}</p>
+                        <span class="chat-time">${formatChatDate(msg.created_at)}</span>
+                    </div>
+                </div>
+            `).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function displayNoMessages() {
+            const container = document.getElementById('chatMessagesList');
+            if (!container) return;
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <i class="fas fa-comments text-4xl text-gray-300 dark:text-gray-500 mb-3"></i>
+                    <p class="text-gray-500 dark:text-gray-400">No messages yet. Start a conversation with our support team!</p>
+                    <button onclick="openNewMessageModal()" class="mt-3 btn-primary text-white px-4 py-2 rounded-lg text-sm">Send First Message</button>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function sendQuickMessage() {
+            const input = document.getElementById('quickMessageInput');
+            const message = input.value.trim();
+            if (!message) {
+                showToast('Please enter a message', 'error');
+                return;
+            }
+            showToast('Sending...', 'info');
+            try {
+                const response = await apiCall('/communications/send', {
+                    method: 'POST',
+                    body: JSON.stringify({ message: message })
+                });
+                if (response.success) {
+                    showToast('Message sent! Support will respond soon.', 'success');
+                    input.value = '';
+                    await loadChatMessages();
+                } else {
+                    showToast('Failed to send message', 'error');
+                }
+            } catch (error) {
+                console.error('Send message error:', error);
+                showToast('Network error. Please try again.', 'error');
+            }
+        }
+
+        function openNewMessageModal() {
+            document.getElementById('newMessageText').value = '';
+            document.getElementById('newMessageModal').classList.remove('hidden');
+            document.getElementById('newMessageModal').classList.add('flex');
+        }
+
+        async function sendNewMessage() {
+            const message = document.getElementById('newMessageText').value.trim();
+            if (!message) {
+                showToast('Please enter a message', 'error');
+                return;
+            }
+            closeModal('newMessageModal');
+            showToast('Sending...', 'info');
+            try {
+                const response = await apiCall('/communications/send', {
+                    method: 'POST',
+                    body: JSON.stringify({ message: message })
+                });
+                if (response.success) {
+                    showToast('Message sent! Support will respond soon.', 'success');
+                    await loadChatMessages();
+                } else {
+                    showToast('Failed to send message', 'error');
+                }
+            } catch (error) {
+                console.error('Send message error:', error);
+                showToast('Network error. Please try again.', 'error');
+            }
+        }
+
         // ==================== FEEDBACK / REVIEWS ====================
         function getLocalReviews() {
             try {
@@ -1166,7 +1199,6 @@ async function sendNewMessage() {
                         return;
                     }
                     container.innerHTML = farmsData.map(farm => {
-                        // Calculate total farm area as sum of crop areas
                         const totalArea = farm.crops && farm.crops.length > 0 
                             ? farm.crops.reduce((sum, c) => sum + (c.area || 0), 0) 
                             : 0;
@@ -1405,7 +1437,6 @@ async function sendNewMessage() {
             }
             showToast('Adding farm...', 'info');
             try {
-                // Send size_acres: 0 since it will be auto-calculated from crops
                 const data = await apiCall('/farms', { 
                     method: 'POST', 
                     body: JSON.stringify({ name, location, size_acres: 0, main_crop: mainCrop }) 
@@ -1436,7 +1467,6 @@ async function sendNewMessage() {
             const margin = 15;
             let y = margin;
 
-            // Title
             doc.setFontSize(22);
             doc.setTextColor(22, 163, 74);
             doc.text('ShambaCare Kenya', margin, y);
@@ -1455,7 +1485,6 @@ async function sendNewMessage() {
                     doc.addPage();
                     y = margin;
                 }
-                // Farm header
                 doc.setFontSize(14);
                 doc.setTextColor(22, 163, 74);
                 doc.text(`Farm: ${farm.name}`, margin, y);
@@ -1472,7 +1501,6 @@ async function sendNewMessage() {
                 doc.text(`Total Crop Area: ${totalArea} acres`, margin, y);
                 y += 8;
 
-                // Crops table
                 const crops = farm.crops || [];
                 if (crops.length === 0) {
                     doc.text('No crops in this farm.', margin, y);
@@ -1511,11 +1539,9 @@ async function sendNewMessage() {
                     y += 6;
                 }
                 if (y > 270) { doc.addPage(); y = margin; }
-                // Spacer between farms
                 y += 4;
             });
 
-            // Footer
             doc.setFontSize(8);
             doc.setTextColor(156, 163, 175);
             doc.text('ShambaCare - Smart Farming Assistant', margin, 285);
@@ -1741,7 +1767,6 @@ async function sendNewMessage() {
             }
         }
 
-        // Show preview only – analysis triggered by button
         function handleImageUploadAndShow(file) {
             if (!file) return;
             compressImage(file, 800, 800, 0.8).then(compressedFile => {
@@ -1755,7 +1780,6 @@ async function sendNewMessage() {
                 reader.readAsDataURL(compressedFile);
             }).catch(err => {
                 console.error('Compression error:', err);
-                // Fallback: show original image
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById('previewImg').src = e.target.result;
@@ -2082,10 +2106,8 @@ async function sendNewMessage() {
 
         // ==================== DISEASE LIBRARY (with images) ====================
         const fallbackDiseases = [
-            // (same as before, with image placeholders)
             { name: "Fall Armyworm", crop: "Maize", severity: "High", symptoms: "Holes in leaves, ragged edges, visible caterpillars", organic_solution: "Neem oil spray (5ml/L) every 5 days; handpick larvae.", chemical_solution: "Emamectin benzoate (1ml/L water) or spinetoram.", cost: 500, prevention: "Early planting, crop rotation, intercropping with legumes.", image: "https://via.placeholder.com/150/f59e0b/ffffff?text=Armyworm" },
             { name: "Maize Lethal Necrosis", crop: "Maize", severity: "Critical", symptoms: "Stunted growth, yellow mottling, premature death.", organic_solution: "No organic cure; remove infected plants immediately.", chemical_solution: "No chemical cure – focus on vector control (thrips, aphids).", cost: 0, prevention: "Use certified resistant varieties; control insect vectors.", image: "https://via.placeholder.com/150/ef4444/ffffff?text=MLN" },
-            // ... (the rest remain same)
         ];
 
         async function loadDiseaseLibrary() {
