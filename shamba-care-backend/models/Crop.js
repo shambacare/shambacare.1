@@ -1,4 +1,4 @@
- const { DataTypes } = require('sequelize');
+const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
 const Crop = sequelize.define('Crop', {
@@ -42,6 +42,12 @@ const Crop = sequelize.define('Crop', {
     notes: {
         type: DataTypes.TEXT,
         allowNull: true
+    },
+    // 👇 ADD THIS: area in acres
+    area: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        defaultValue: 0
     }
 }, {
     tableName: 'crops',
