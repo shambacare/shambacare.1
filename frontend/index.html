@@ -229,7 +229,7 @@
     
 </head>
 <body class="antialiased">
-    <!-- ===== HTML STRUCTURE (unchanged) ===== -->
+    <!-- ===== HTML STRUCTURE ===== -->
     <div class="background-slideshow">
         <div class="slide" style="background-image: url('coffee1.jpg')"></div>
         <div class="slide" style="background-image: url('maize1.0.jpg')"></div>
@@ -382,7 +382,6 @@
                             <img id="previewImg" class="w-full max-h-64 object-cover preview-zoom" onclick="openZoom(this.src)">
                             <button onclick="clearImage()" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition"><i class="fas fa-times"></i></button>
                         </div>
-                        <!-- Analyze button restored -->
                         <button onclick="analyzeImage()" class="mt-4 w-full btn-primary text-white font-semibold py-3 rounded-xl transition transform hover:scale-105"><i class="fas fa-microscope mr-2"></i> Analyze Crop Now</button>
                     </div>
                     <div id="diagnosisResult" class="hidden mt-6"></div>
@@ -569,7 +568,7 @@
             <div class="p-4 space-y-3">
                 <input type="text" id="farmName" placeholder="Farm Name" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
                 <input type="text" id="farmLocation" placeholder="Location/County" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
-                <input type="number" id="farmSize" placeholder="Size (acres)" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                <!-- size input removed – will be auto-calculated from crops -->
                 <select id="farmCrop" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
                     <option value="">Select Main Crop</option>
                     <option value="Maize">Maize</option>
@@ -903,18 +902,19 @@
             }
         }
 
+        // Improved date formatting – shows relative time or full date
         function formatChatDate(dateStr) {
             if (!dateStr) return 'Just now';
             try {
                 const date = new Date(dateStr);
                 if (isNaN(date.getTime())) return 'Just now';
-                return date.toLocaleString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
+                const now = new Date();
+                const diff = Math.floor((now - date) / 1000);
+                if (diff < 60) return 'Just now';
+                if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+                if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+                if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+                return date.toLocaleDateString();
             } catch (e) {
                 return 'Just now';
             }
@@ -1371,24 +1371,23 @@
         async function addFarm() {
             const name = document.getElementById('farmName').value;
             const location = document.getElementById('farmLocation').value;
-            const size = parseFloat(document.getElementById('farmSize').value);
             const mainCrop = document.getElementById('farmCrop').value;
-            if (!name || !location || !size || !mainCrop) { 
+            if (!name || !location || !mainCrop) { 
                 showToast('Please fill all fields', 'error'); 
                 return; 
             }
             showToast('Adding farm...', 'info');
             try {
+                // Send size_acres: 0 since it will be auto-calculated from crops
                 const data = await apiCall('/farms', { 
                     method: 'POST', 
-                    body: JSON.stringify({ name, location, size_acres: size, main_crop: mainCrop }) 
+                    body: JSON.stringify({ name, location, size_acres: 0, main_crop: mainCrop }) 
                 });
                 if (data.success) {
                     showToast('Farm added successfully!', 'success');
                     closeModal('addFarmModal');
                     document.getElementById('farmName').value = '';
                     document.getElementById('farmLocation').value = '';
-                    document.getElementById('farmSize').value = '';
                     document.getElementById('farmCrop').value = '';
                     loadFarms();
                 } else { 
