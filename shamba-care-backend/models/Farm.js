@@ -1,4 +1,4 @@
- const { DataTypes } = require('sequelize');
+const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
 const Farm = sequelize.define('Farm', {
@@ -25,7 +25,8 @@ const Farm = sequelize.define('Farm', {
     },
     size_acres: {
         type: DataTypes.DECIMAL(10, 2),
-        allowNull: false
+        allowNull: false,
+        defaultValue: 0    // 👈 added default so we can omit it
     },
     main_crop: {
         type: DataTypes.STRING(50),
