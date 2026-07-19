@@ -201,7 +201,7 @@
         .export-pdf-btn { background: #dc2626; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; transition: all 0.3s ease; cursor: pointer; border: none; }
         .export-pdf-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(220,38,38,0.3); }
 
-        /* Yield Card – original distinctive style */
+        /* ===== YIELD CARD – RESTORED ORIGINAL STYLE ===== */
         .yield-card {
             background: linear-gradient(135deg, #1e293b, #0f172a) !important;
             border-radius: 1rem;
@@ -348,7 +348,7 @@
         </div>
     </div>
     <!-- Main Content -->
-    <div class="container mx-auto px-4 py-6 max-w-7xl">
+    <div class="container mx-auto px-4 py-6 max-w-6xl lg:px-8">
         <!-- Home Section -->
         <div id="home" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <div class="lg:col-span-2 bg-gradient-to-r from-green-600 to-green-700 rounded-2xl p-6 text-white shadow-xl animate-fadeInUp">
@@ -417,6 +417,7 @@
                             <img id="previewImg" class="w-full max-h-64 object-cover preview-zoom" onclick="openZoom(this.src)">
                             <button onclick="clearImage()" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition"><i class="fas fa-times"></i></button>
                         </div>
+                        <!-- Analyze button restored -->
                         <button onclick="analyzeImage()" class="mt-4 w-full btn-primary text-white font-semibold py-3 rounded-xl transition transform hover:scale-105"><i class="fas fa-microscope mr-2"></i> Analyze Crop Now</button>
                     </div>
                     <div id="diagnosisResult" class="hidden mt-6"></div>
@@ -603,6 +604,7 @@
             <div class="p-4 space-y-3">
                 <input type="text" id="farmName" placeholder="Farm Name" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
                 <input type="text" id="farmLocation" placeholder="Location/County" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                <!-- size input removed – will be auto-calculated from crops -->
                 <select id="farmCrop" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
                     <option value="">Select Main Crop</option>
                     <option value="Maize">Maize</option>
@@ -631,6 +633,7 @@
                     <option value="Beans">Beans</option>
                     <option value="Vegetables">Vegetables</option>
                 </select>
+                <!-- Variety dropdown – dynamically populated -->
                 <select id="newCropVariety" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 variety-select">
                     <option value="">Select Variety</option>
                 </select>
@@ -885,6 +888,7 @@
             }
         }
 
+        // Listen to crop name change in modal
         document.getElementById('newCropName')?.addEventListener('change', function() {
             updateVarieties(this.value);
         });
@@ -919,8 +923,7 @@
             }
         }
 
-        // ==================== CHAT FUNCTIONS (updated) ====================
-
+        // ==================== CHAT FUNCTIONS ====================
         async function loadChatMessages() {
             try {
                 const response = await apiCall('/communications/my-messages');
@@ -935,27 +938,11 @@
             }
         }
 
-        // Robust date parser – handles space in date string and timezone offsets
-        function parseDate(dateStr) {
-            if (!dateStr) return null;
-            // Replace space with T to make it ISO‑compatible
-            const normalized = dateStr.replace(' ', 'T');
-            const date = new Date(normalized);
-            if (!isNaN(date.getTime())) return date;
-            // Fallback: try the original string
-            const fallback = new Date(dateStr);
-            return !isNaN(fallback.getTime()) ? fallback : null;
-        }
-
         function formatChatDate(dateStr) {
-            const date = parseDate(dateStr);
-            if (!date) return 'Just now';
-            
-            const now = new Date();
-            const diff = (now - date) / 1000; // seconds
-            
-            // If date is in the future or diff is invalid, show full date
-            if (diff < 0 || isNaN(diff)) {
+            if (!dateStr) return 'Just now';
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return 'Just now';
                 return date.toLocaleString('en-US', {
                     month: 'short',
                     day: 'numeric',
@@ -963,21 +950,9 @@
                     hour: '2-digit',
                     minute: '2-digit'
                 });
+            } catch (e) {
+                return 'Just now';
             }
-            
-            if (diff < 60) return 'Just now';
-            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-            if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
-            
-            // Older than 7 days – show full date and time
-            return date.toLocaleString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
         }
 
         function displayChatMessages(messages) {
@@ -1199,6 +1174,7 @@
                         return;
                     }
                     container.innerHTML = farmsData.map(farm => {
+                        // Calculate total farm area as sum of crop areas
                         const totalArea = farm.crops && farm.crops.length > 0 
                             ? farm.crops.reduce((sum, c) => sum + (c.area || 0), 0) 
                             : 0;
@@ -1437,6 +1413,7 @@
             }
             showToast('Adding farm...', 'info');
             try {
+                // Send size_acres: 0 since it will be auto-calculated from crops
                 const data = await apiCall('/farms', { 
                     method: 'POST', 
                     body: JSON.stringify({ name, location, size_acres: 0, main_crop: mainCrop }) 
@@ -1467,6 +1444,7 @@
             const margin = 15;
             let y = margin;
 
+            // Title
             doc.setFontSize(22);
             doc.setTextColor(22, 163, 74);
             doc.text('ShambaCare Kenya', margin, y);
@@ -1485,6 +1463,7 @@
                     doc.addPage();
                     y = margin;
                 }
+                // Farm header
                 doc.setFontSize(14);
                 doc.setTextColor(22, 163, 74);
                 doc.text(`Farm: ${farm.name}`, margin, y);
@@ -1501,6 +1480,7 @@
                 doc.text(`Total Crop Area: ${totalArea} acres`, margin, y);
                 y += 8;
 
+                // Crops table
                 const crops = farm.crops || [];
                 if (crops.length === 0) {
                     doc.text('No crops in this farm.', margin, y);
@@ -1539,9 +1519,11 @@
                     y += 6;
                 }
                 if (y > 270) { doc.addPage(); y = margin; }
+                // Spacer between farms
                 y += 4;
             });
 
+            // Footer
             doc.setFontSize(8);
             doc.setTextColor(156, 163, 175);
             doc.text('ShambaCare - Smart Farming Assistant', margin, 285);
@@ -1767,6 +1749,7 @@
             }
         }
 
+        // Show preview only – analysis triggered by button
         function handleImageUploadAndShow(file) {
             if (!file) return;
             compressImage(file, 800, 800, 0.8).then(compressedFile => {
@@ -1780,6 +1763,7 @@
                 reader.readAsDataURL(compressedFile);
             }).catch(err => {
                 console.error('Compression error:', err);
+                // Fallback: show original image
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById('previewImg').src = e.target.result;
@@ -2106,8 +2090,10 @@
 
         // ==================== DISEASE LIBRARY (with images) ====================
         const fallbackDiseases = [
+            // (same as before, with image placeholders)
             { name: "Fall Armyworm", crop: "Maize", severity: "High", symptoms: "Holes in leaves, ragged edges, visible caterpillars", organic_solution: "Neem oil spray (5ml/L) every 5 days; handpick larvae.", chemical_solution: "Emamectin benzoate (1ml/L water) or spinetoram.", cost: 500, prevention: "Early planting, crop rotation, intercropping with legumes.", image: "https://via.placeholder.com/150/f59e0b/ffffff?text=Armyworm" },
             { name: "Maize Lethal Necrosis", crop: "Maize", severity: "Critical", symptoms: "Stunted growth, yellow mottling, premature death.", organic_solution: "No organic cure; remove infected plants immediately.", chemical_solution: "No chemical cure – focus on vector control (thrips, aphids).", cost: 0, prevention: "Use certified resistant varieties; control insect vectors.", image: "https://via.placeholder.com/150/ef4444/ffffff?text=MLN" },
+            // ... (the rest remain same)
         ];
 
         async function loadDiseaseLibrary() {
