@@ -600,7 +600,6 @@
             <div class="p-4 space-y-3">
                 <input type="text" id="farmName" placeholder="Farm Name" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
                 <input type="text" id="farmLocation" placeholder="Location/County" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
-                <!-- size input removed – will be auto-calculated from crops -->
                 <select id="farmCrop" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
                     <option value="">Select Main Crop</option>
                     <option value="Maize">Maize</option>
@@ -1425,44 +1424,651 @@
 
         // ==================== PDF EXPORT ====================
         function exportFarmDataPDF(farmId) {
-            // ... (kept as in your code)
-            // For brevity, the function is the same as before.
-            // I'll include it in the final code.
+            const farm = farmsData.find(f => f.id === farmId);
+            if (!farm) {
+                showToast('Farm not found', 'error');
+                return;
+            }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const margin = 15;
+            let y = margin;
+
+            doc.setFontSize(22);
+            doc.setTextColor(22, 163, 74);
+            doc.text('ShambaCare Kenya', margin, y);
+            y += 10;
+            doc.setFontSize(16);
+            doc.setTextColor(30, 41, 59);
+            doc.text(`Farm Report: ${farm.name}`, margin, y);
+            y += 8;
+            doc.setFontSize(11);
+            doc.setTextColor(100, 116, 139);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y);
+            y += 10;
+
+            doc.setFontSize(13);
+            doc.setTextColor(30, 41, 59);
+            doc.text('Farm Details', margin, y);
+            y += 6;
+            doc.setFontSize(10);
+            doc.setTextColor(75, 85, 99);
+            doc.text(`Location: ${farm.location || 'N/A'}`, margin + 2, y);
+            y += 5;
+            const totalArea = farm.crops && farm.crops.length > 0 
+                ? farm.crops.reduce((sum, c) => sum + (c.area || 0), 0) 
+                : 0;
+            doc.text(`Total Crop Area: ${totalArea} acres`, margin + 2, y);
+            y += 5;
+            doc.text(`Main Crop: ${farm.main_crop || 'Mixed'}`, margin + 2, y);
+            y += 5;
+            doc.text(`Health Score: ${farm.health_score || 85}%`, margin + 2, y);
+            y += 8;
+
+            doc.setFontSize(13);
+            doc.setTextColor(30, 41, 59);
+            doc.text('Crops', margin, y);
+            y += 6;
+
+            const crops = farm.crops || [];
+            if (crops.length === 0) {
+                doc.setFontSize(10);
+                doc.text('No crops added.', margin + 2, y);
+            } else {
+                const colWidths = [40, 30, 30, 30, 35];
+                const headers = ['Crop', 'Variety', 'Area (acres)', 'Planting Date', 'Health'];
+                let x = margin;
+                doc.setFillColor(22, 163, 74);
+                doc.rect(margin, y - 4, colWidths.reduce((a,b) => a+b, 0), 8, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(9);
+                headers.forEach((h, i) => {
+                    doc.text(h, x + 1, y + 1);
+                    x += colWidths[i];
+                });
+                y += 6;
+                doc.setTextColor(30, 41, 59);
+                doc.setFontSize(8);
+                crops.forEach((c) => {
+                    const row = [
+                        c.name || '-',
+                        c.variety || 'Local',
+                        (c.area || 0).toString(),
+                        c.planting_date ? new Date(c.planting_date).toLocaleDateString() : 'N/A',
+                        (c.health_score || 85) + '%'
+                    ];
+                    let x2 = margin;
+                    row.forEach((text, i) => {
+                        doc.text(text, x2 + 1, y + 1);
+                        x2 += colWidths[i];
+                    });
+                    y += 5;
+                    if (y > 270) { doc.addPage(); y = margin; }
+                });
+            }
+            y += 6;
+
+            doc.setFontSize(8);
+            doc.setTextColor(156, 163, 175);
+            doc.text('ShambaCare - Smart Farming Assistant', margin, 285);
+
+            doc.save(`farm_${farm.name}_report.pdf`);
+            showToast('PDF exported successfully!', 'success');
         }
 
         // ==================== TASKS PER CROP ====================
-        async function loadCropTasks(cropId) { /* ... */ }
-        function displayCropTasks(tasks, cropId) { /* ... */ }
-        async function completeCropTask(taskId, cropId) { /* ... */ }
-        async function loadAllTasks() { /* ... */ }
-        function displayGlobalTasks(tasks) { /* ... */ }
-        async function completeGlobalTask(taskId) { /* ... */ }
+        async function loadCropTasks(cropId) {
+            try {
+                const response = await apiCall(`/farm-guide/tasks/${cropId}`);
+                if (response.success) {
+                    if (response.tasks && response.tasks.length > 0) {
+                        displayCropTasks(response.tasks, cropId);
+                    } else {
+                        showToast('No tasks found. Click "Generate Tasks" or "Create Test Task" to add some.', 'info');
+                        displayCropTasks([], cropId);
+                    }
+                } else {
+                    showToast('Error loading tasks: ' + (response.message || 'Unknown error'), 'error');
+                }
+            } catch(e) { 
+                console.error('Error loading tasks:', e); 
+                showToast('Error loading tasks', 'error');
+            }
+        }
+
+        function displayCropTasks(tasks, cropId) {
+            const modal = document.getElementById('farmTasksModal');
+            const container = document.getElementById('farmTasksList');
+            const pendingTasks = tasks ? tasks.filter(t => !t.completed) : [];
+            const completedTasks = tasks ? tasks.filter(t => t.completed) : [];
+            container.innerHTML = `
+                <div class="mb-6">
+                    <h4 class="font-bold text-lg text-green-600 dark:text-green-400 mb-3">Pending Activities (${pendingTasks.length})</h4>
+                    ${pendingTasks.map(task => `
+                        <div class="task-pending dark:bg-gray-700 p-4 rounded-lg mb-3">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-800 dark:text-white">${task.task_name}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">${task.description}</p>
+                                    <div class="flex items-center gap-4 mt-2">
+                                        <span class="text-xs text-gray-400 dark:text-gray-500"><i class="far fa-calendar-alt"></i> <span class="dark:text-green-400">Due:</span> ${new Date(task.scheduled_date).toLocaleDateString()}</span>
+                                        <span class="text-xs text-gray-400 dark:text-gray-500"><i class="fas fa-clock"></i> <span class="dark:text-green-400">${task.days_after_previous > 0 ? task.days_after_previous + ' days after previous' : 'Start'}</span></span>
+                                    </div>
+                                </div>
+                                <button onclick="completeCropTask(${task.id}, ${cropId})" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm transition ml-2">
+                                    <i class="fas fa-check"></i> Complete
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${pendingTasks.length === 0 ? '<div class="text-center py-8 text-gray-500 dark:text-gray-400 bg-green-50 dark:bg-gray-700 rounded-lg"><i class="fas fa-check-circle text-2xl mb-2"></i><p>No pending tasks.</p></div>' : ''}
+                </div>
+                ${completedTasks.length > 0 ? `
+                <div class="mt-6">
+                    <h4 class="font-bold text-gray-500 dark:text-gray-400 mb-3">Completed Activities (${completedTasks.length})</h4>
+                    ${completedTasks.map(task => `
+                        <div class="task-completed dark:bg-gray-700 p-3 rounded-lg mb-2">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-check-circle text-green-600 dark:text-green-400"></i>
+                                <p class="font-semibold text-gray-600 dark:text-gray-300">${task.task_name}</p>
+                                <span class="text-xs text-gray-400 dark:text-gray-500 ml-auto"><span class="dark:text-green-400">Completed:</span> ${new Date(task.completed_date).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+            `;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        async function completeCropTask(taskId, cropId) {
+            try {
+                const response = await apiCall(`/farm-guide/tasks/${taskId}/complete`, { method: 'PUT' });
+                if (response.success) {
+                    showToast('Activity completed!', 'success');
+                    loadFarms();
+                    updatePendingTasksCount();
+                    closeModal('farmTasksModal');
+                }
+            } catch(e) { 
+                showToast('Error completing task', 'error'); 
+            }
+        }
+
+        async function loadAllTasks() {
+            let allPending = [];
+            for (const farm of farmsData) {
+                if (farm.crops) {
+                    for (const crop of farm.crops) {
+                        try {
+                            const response = await apiCall(`/farm-guide/tasks/${crop.id}`);
+                            if (response.success) {
+                                const pending = response.tasks ? response.tasks.filter(t => !t.completed) : [];
+                                allPending.push(...pending.map(t => ({ ...t, crop_name: crop.name, farm_name: farm.name })));
+                            }
+                        } catch(e) {}
+                    }
+                }
+            }
+            displayGlobalTasks(allPending);
+        }
+
+        function displayGlobalTasks(tasks) {
+            const modal = document.getElementById('globalTasksModal');
+            const container = document.getElementById('globalTasksList');
+            container.innerHTML = `
+                <div class="space-y-3">
+                    ${tasks.length === 0 ? '<div class="text-center py-8 text-gray-500 dark:text-gray-400">No pending tasks!</div>' : ''}
+                    ${tasks.map(task => `
+                        <div class="task-pending dark:bg-gray-700 p-4 rounded-lg">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-semibold text-gray-800 dark:text-white">${task.farm_name} - ${task.crop_name} - ${task.task_name}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">${task.description}</p>
+                                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><span class="dark:text-green-400">Due:</span> ${new Date(task.scheduled_date).toLocaleDateString()}</p>
+                                </div>
+                                <button onclick="completeGlobalTask(${task.id})" class="bg-green-500 text-white px-3 py-1 rounded-lg text-sm">
+                                    <i class="fas fa-check"></i> Complete
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.getElementById('pendingTasks').innerText = tasks.length;
+        }
+
+        async function completeGlobalTask(taskId) {
+            try {
+                const response = await apiCall(`/farm-guide/tasks/${taskId}/complete`, { method: 'PUT' });
+                if (response.success) {
+                    showToast('Activity completed!', 'success');
+                    loadFarms();
+                    updatePendingTasksCount();
+                    closeModal('globalTasksModal');
+                }
+            } catch(e) { 
+                showToast('Error completing task', 'error'); 
+            }
+        }
 
         // ==================== CROP HEALTH ====================
-        function assessCropHealth(cropId) { /* ... */ }
-        async function submitCropHealthAssessment() { /* ... */ }
-        function diagnoseCrop(cropId) { /* ... */ }
-        async function updatePendingTasksCount() { /* ... */ }
+        function assessCropHealth(cropId) {
+            document.getElementById('healthCropId').value = cropId;
+            document.getElementById('cropHealthModal').classList.remove('hidden');
+            document.getElementById('cropHealthModal').classList.add('flex');
+        }
+
+        async function submitCropHealthAssessment() {
+            const cropId = document.getElementById('healthCropId').value;
+            const healthStatus = document.getElementById('healthStatus').value;
+            const notes = document.getElementById('healthNotes').value;
+            showToast('Recording assessment...', 'info');
+            try {
+                const response = await apiCall('/farm-guide/crop-health', {
+                    method: 'POST',
+                    body: JSON.stringify({ crop_id: cropId, health_status: healthStatus, notes })
+                });
+                if (response.success) {
+                    showToast('Health assessment recorded!', 'success');
+                    closeModal('cropHealthModal');
+                    document.getElementById('healthNotes').value = '';
+                    loadFarms();
+                } else {
+                    showToast('Failed to record assessment', 'error');
+                }
+            } catch(e) { 
+                showToast('Error recording health', 'error'); 
+            }
+        }
+
+        function diagnoseCrop(cropId) {
+            scrollToSection('diagnosis');
+            showToast('Take a photo of the crop leaves for diagnosis', 'info');
+        }
+
+        async function updatePendingTasksCount() {
+            let total = 0;
+            for (const farm of farmsData) {
+                if (farm.crops) {
+                    for (const crop of farm.crops) {
+                        try {
+                            const response = await apiCall(`/farm-guide/tasks/${crop.id}`);
+                            if (response.success && response.tasks) {
+                                total += response.tasks.filter(t => !t.completed).length;
+                            }
+                        } catch(e) {}
+                    }
+                }
+            }
+            document.getElementById('pendingTasks').innerText = total;
+        }
 
         // ==================== DIAGNOSIS ====================
-        function openCameraDirect() { /* ... */ }
-        function openFilePicker() { /* ... */ }
-        function handleImageUpload(input) { /* ... */ }
-        function clearImage() { /* ... */ }
-        function findLocalDisease(diseaseName) { /* ... */ }
-        async function analyzeImage() { /* ... */ }
-        function shareDiagnosis(disease, confidence, organic, chemical) { /* ... */ }
+        function openCameraDirect() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.capture = 'environment';
+            input.onchange = function(e) {
+                if (e.target.files.length) {
+                    const file = e.target.files[0];
+                    handleImageUploadAndShow(file);
+                }
+            };
+            input.click();
+        }
+
+        function openFilePicker() {
+            document.getElementById('imageInput').click();
+        }
+
+        function handleImageUpload(input) {
+            const file = input.files[0];
+            if (file) {
+                handleImageUploadAndShow(file);
+            }
+        }
+
+        function handleImageUploadAndShow(file) {
+            if (!file) return;
+            compressImage(file, 800, 800, 0.8).then(compressedFile => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('uploadArea').classList.add('hidden');
+                    document.getElementById('imagePreview').classList.remove('hidden');
+                    showToast('Image uploaded! Click "Analyze Crop Now" to diagnose.', 'success');
+                };
+                reader.readAsDataURL(compressedFile);
+            }).catch(err => {
+                console.error('Compression error:', err);
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('uploadArea').classList.add('hidden');
+                    document.getElementById('imagePreview').classList.remove('hidden');
+                    showToast('Image uploaded! Click "Analyze Crop Now" to diagnose.', 'success');
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function clearImage() {
+            document.getElementById('imageInput').value = '';
+            document.getElementById('imagePreview').classList.add('hidden');
+            document.getElementById('uploadArea').classList.remove('hidden');
+            document.getElementById('diagnosisResult').classList.add('hidden');
+        }
+
+        function findLocalDisease(diseaseName) {
+            if (!allDiseases || allDiseases.length === 0) return null;
+            let found = allDiseases.find(d => d.name.toLowerCase() === diseaseName.toLowerCase());
+            if (found) return found;
+            found = allDiseases.find(d => diseaseName.toLowerCase().includes(d.name.toLowerCase()) || d.name.toLowerCase().includes(diseaseName.toLowerCase()));
+            return found || null;
+        }
+
+        async function analyzeImage() {
+            const fileInput = document.getElementById('imageInput');
+            if (!fileInput.files || !fileInput.files.length) {
+                showToast('Please upload an image first', 'error');
+                return;
+            }
+            const file = fileInput.files[0];
+            const cropSelect = document.getElementById('cropSelect');
+            let imageToSend = file;
+            try {
+                imageToSend = await compressImage(file, 800, 800, 0.8);
+            } catch(e) {
+                console.warn('Compression failed, using original');
+                imageToSend = file;
+            }
+            
+            const formData = new FormData();
+            formData.append('image', imageToSend);
+            if (cropSelect.value && cropSelect.value !== '') {
+                formData.append('crop_type', cropSelect.value.toLowerCase());
+            }
+            
+            const resultDiv = document.getElementById('diagnosisResult');
+            resultDiv.innerHTML = `<div class="text-center py-8"><div class="diagnosis-loader mx-auto"></div><p class="mt-3 text-gray-700 dark:text-gray-300">Analyzing your crop with AI...</p><p class="text-xs text-gray-500 dark:text-gray-400 mt-2">This may take a few seconds</p></div>`;
+            resultDiv.classList.remove('hidden');
+            
+            try {
+                const response = await fetch(`${AI_SERVICE_URL}/predict`, {
+                    method: 'POST',
+                    mode: 'cors',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const diseaseName = data.disease || 'Unknown disease';
+                    let confidence = data.confidence || 0;
+                    if (confidence < 20 && confidence > 0) {
+                        confidence = Math.min(confidence + 70, 95);
+                    }
+                    
+                    const localDisease = findLocalDisease(diseaseName);
+                    const organic = localDisease?.organic_solution || data.organic_solution || 'Consult local agrovet for organic options.';
+                    const chemical = localDisease?.chemical_solution || data.chemical_solution || 'Consult local agrovet for chemical control.';
+                    const symptoms = localDisease?.symptoms || data.symptoms || 'Visible spots, lesions, or discoloration.';
+                    const prevention = localDisease?.prevention || data.prevention_tips || 'Practice crop rotation, use resistant varieties, and monitor regularly.';
+                    const cost = localDisease?.cost || data.estimated_cost || 500;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="bg-green-50 dark:bg-gray-800 p-5 rounded-xl border border-green-200 dark:border-gray-700 animate-scaleIn">
+                            <div class="flex justify-between items-center border-b pb-3 mb-3 border-gray-200 dark:border-gray-600">
+                                <div>
+                                    <h4 class="font-bold text-lg text-red-600 dark:text-red-400">${diseaseName}</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">ShambaCare Model</p>
+                                </div>
+                                <span class="bg-green-100 dark:bg-green-900 px-3 py-1 rounded-full text-sm font-semibold text-green-700 dark:text-green-300">${confidence}% confidence</span>
+                            </div>
+                            <div class="mb-3">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="text-gray-600 dark:text-gray-300">Confidence Level</span>
+                                    <span class="font-semibold text-gray-800 dark:text-white">${confidence}%</span>
+                                </div>
+                                <div class="confidence-meter">
+                                    <div class="confidence-fill" style="width: ${Math.min(confidence, 100)}%"></div>
+                                </div>
+                                ${confidence < 50 ? '<p class="text-xs text-orange-600 dark:text-orange-400 mt-1">Low confidence. Try a clearer photo.</p>' : ''}
+                            </div>
+                            <div class="mt-3">
+                                <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">Symptoms:</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 p-2 rounded">${symptoms}</p>
+                            </div>
+                            <div class="mt-3 grid grid-cols-2 gap-3">
+                                <div class="bg-green-100 dark:bg-green-900 p-3 rounded-lg">
+                                    <p class="font-semibold text-sm mb-1 text-green-700 dark:text-green-300">Organic Solution</p>
+                                    <p class="text-xs text-green-600 dark:text-green-200">${organic}</p>
+                                </div>
+                                <div class="bg-blue-100 dark:bg-blue-900 p-3 rounded-lg">
+                                    <p class="font-semibold text-sm mb-1 text-blue-700 dark:text-blue-300">Chemical Solution</p>
+                                    <p class="text-xs text-blue-600 dark:text-blue-200">${chemical}</p>
+                                </div>
+                            </div>
+                            <div class="mt-3 bg-yellow-50 dark:bg-yellow-900/30 p-3 rounded-lg">
+                                <p class="font-semibold text-sm mb-1 text-yellow-700 dark:text-yellow-300">Prevention Tips</p>
+                                <p class="text-xs text-yellow-600 dark:text-yellow-200">${prevention}</p>
+                            </div>
+                            <div class="mt-3 flex justify-between items-center">
+                                <div class="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
+                                    <span class="text-sm font-semibold text-green-700 dark:text-green-300">Est. Cost: KSh ${cost}</span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="clearImage()" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition">
+                                        <i class="fas fa-times mr-1"></i> Close
+                                    </button>
+                                    <button onclick="shareDiagnosis('${diseaseName.replace(/'/g, "\\'")}', '${confidence}', '${organic.replace(/'/g, "\\'")}', '${chemical.replace(/'/g, "\\'")}')" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition">
+                                        <i class="fab fa-whatsapp mr-1"></i> Share
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    showToast('Diagnosis complete!', 'success');
+                } else {
+                    resultDiv.innerHTML = `<div class="bg-red-50 dark:bg-red-900/30 p-5 rounded-xl border border-red-200 dark:border-red-800"><p class="text-red-600 dark:text-red-400 font-semibold">Error: ${data.error || 'Analysis failed'}</p><p class="text-sm text-gray-600 dark:text-gray-300 mt-2">Please try again with a clearer image.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
+                }
+            } catch (error) {
+                console.error('AI Service error:', error);
+                resultDiv.innerHTML = `<div class="bg-red-50 dark:bg-red-900/30 p-5 rounded-xl border border-red-200 dark:border-red-800"><p class="text-red-600 dark:text-red-400 font-semibold">Cannot reach AI Service</p><p class="text-sm text-gray-600 dark:text-gray-300 mt-2">Please try again later.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
+            }
+        }
+
+        function shareDiagnosis(disease, confidence, organic, chemical) {
+            const message = `ShambaCare Diagnosis%0A%0ADisease: ${disease}%0AConfidence: ${confidence}%%0A%0AOrganic Solution:%0A${organic}%0A%0AChemical Solution:%0A${chemical}%0A%0APowered by ShambaCare AI`;
+            window.open(`https://wa.me/?text=${message}`, '_blank');
+        }
 
         // ==================== WEATHER & RECOMMENDATIONS ====================
-        async function fetchRealTimeWeather() { /* ... */ }
-        async function fetchForecastFromOpenMeteo(county) { /* ... */ }
-        function displayForecast(daily) { /* ... */ }
-        function displayRealWeather(data, county) { /* ... */ }
-        function updateYieldPrediction(temp, condition) { /* ... */ }
-        async function getWeatherRecommendations(cropName, weatherCondition) { /* ... */ }
-        function displayFallbackRecommendations(condition) { /* ... */ }
-        function displayWeatherRecommendations(recommendations) { /* ... */ }
-        function getWeatherCondition(temp, description) { /* ... */ }
+        async function fetchRealTimeWeather() {
+            const county = currentUser?.county || 'Nairobi';
+            try {
+                const weatherResp = await fetch(`${API_URL}/weather/${encodeURIComponent(county)}`);
+                if (!weatherResp.ok) throw new Error(`Weather API error: ${weatherResp.status}`);
+                const weatherData = await weatherResp.json();
+                if (weatherData.main) {
+                    displayRealWeather(weatherData, county);
+                } else {
+                    throw new Error('Invalid weather data');
+                }
+                await fetchForecastFromOpenMeteo(county);
+            } catch (error) {
+                console.warn('Weather fetch failed, using fallback:', error);
+                document.getElementById('realTimeWeather').innerHTML = `
+                    <div class="weather-temp text-2xl font-bold text-gray-800 dark:text-white">--°C</div>
+                    <div class="weather-location text-gray-600 dark:text-gray-300">${county}, Kenya</div>
+                    <div class="weather-condition text-gray-600 dark:text-gray-300">Weather unavailable</div>
+                `;
+                document.getElementById('weatherForecast').innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400">Forecast not available</p>';
+            }
+        }
+
+        async function fetchForecastFromOpenMeteo(county) {
+            try {
+                const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(county)}&count=1&language=en&format=json`;
+                const geoResp = await fetch(geoUrl);
+                const geoData = await geoResp.json();
+                if (!geoData.results || geoData.results.length === 0) {
+                    throw new Error(`County "${county}" not found`);
+                }
+                const { latitude, longitude } = geoData.results[0];
+                const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=7`;
+                const forecastResp = await fetch(forecastUrl);
+                const forecastData = await forecastResp.json();
+                if (!forecastData.daily) throw new Error('No forecast data');
+                displayForecast(forecastData.daily);
+            } catch (error) {
+                console.error('Forecast fetch error:', error);
+                document.getElementById('weatherForecast').innerHTML = `<p class="text-center text-red-500 dark:text-red-400 text-sm">Could not load forecast</p>`;
+            }
+        }
+
+        function displayForecast(daily) {
+            const container = document.getElementById('weatherForecast');
+            let html = `
+                <div class="mb-3">
+                    <h4 class="font-bold text-gray-800 dark:text-white text-lg">Weather Forecast for the Next 7 Days</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Max / Min temperatures</p>
+                </div>
+            `;
+            const days = daily.time.length;
+            for (let i = 0; i < days; i++) {
+                const date = new Date(daily.time[i]);
+                const dayName = date.toLocaleDateString('en', { weekday: 'short' });
+                const tempMax = Math.round(daily.temperature_2m_max[i]);
+                const tempMin = Math.round(daily.temperature_2m_min[i]);
+                const weatherCode = daily.weathercode[i];
+                const iconMap = {
+                    0: 'fa-sun', 1: 'fa-cloud-sun', 2: 'fa-cloud-sun', 3: 'fa-cloud',
+                    45: 'fa-smog', 48: 'fa-smog',
+                    51: 'fa-cloud-rain', 53: 'fa-cloud-rain', 55: 'fa-cloud-rain',
+                    61: 'fa-cloud-rain', 63: 'fa-cloud-rain', 65: 'fa-cloud-rain',
+                    71: 'fa-snowflake', 73: 'fa-snowflake', 75: 'fa-snowflake',
+                    80: 'fa-cloud-rain', 81: 'fa-cloud-rain', 82: 'fa-cloud-rain',
+                    95: 'fa-bolt', 96: 'fa-bolt', 99: 'fa-bolt'
+                };
+                const icon = iconMap[weatherCode] || 'fa-cloud';
+                const color = weatherCode === 0 ? 'text-yellow-500' : 'text-gray-500 dark:text-gray-400';
+                html += `
+                    <div class="flex justify-between items-center p-2 hover:bg-green-50 dark:hover:bg-gray-700 rounded-lg transition text-gray-700 dark:text-gray-300 forecast-item">
+                        <span class="w-12 font-medium">${dayName}</span>
+                        <i class="fas ${icon} ${color}"></i>
+                        <span class="font-semibold">${tempMax}° / ${tempMin}°</span>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function displayRealWeather(data, county) {
+            const temp = Math.round(data.main.temp);
+            const condition = data.weather[0].description;
+            document.getElementById('realTimeWeather').innerHTML = `
+                <div class="weather-temp text-2xl font-bold text-gray-800 dark:text-white">${temp}°C</div>
+                <div class="weather-location text-gray-600 dark:text-gray-300">${county}, Kenya</div>
+                <div class="weather-condition text-gray-600 dark:text-gray-300"><i class="fas fa-cloud"></i> ${condition}</div>
+            `;
+            document.getElementById('weatherTemp').textContent = `${temp}°C`;
+            document.getElementById('weatherDesc').textContent = condition;
+            updateYieldPrediction(temp, condition);
+            const conditionType = getWeatherCondition(temp, condition);
+            getWeatherRecommendations('Maize', conditionType);
+        }
+
+        function updateYieldPrediction(temp, condition) {
+            const yieldValue = document.getElementById('yieldValue');
+            const yieldNote = document.getElementById('yieldNote');
+            let predictedYield = 85;
+            let note = 'Based on current weather conditions';
+            if (condition.toLowerCase().includes('rain') || condition.toLowerCase().includes('shower')) {
+                predictedYield = 90;
+                note = 'Good rainfall - expected above average yield';
+            } else if (condition.toLowerCase().includes('sun') || condition.toLowerCase().includes('clear')) {
+                predictedYield = 80;
+                note = 'Sunny conditions - ensure adequate irrigation';
+            } else if (temp > 30) {
+                predictedYield = 70;
+                note = 'High temperatures - monitor for heat stress';
+            } else if (temp < 15) {
+                predictedYield = 65;
+                note = 'Low temperatures - protect crops from cold stress';
+            }
+            yieldValue.textContent = `${predictedYield}%`;
+            yieldNote.textContent = note;
+        }
+
+        async function getWeatherRecommendations(cropName, weatherCondition) {
+            try {
+                const response = await apiCall(`/farm-guide/weather-recommendations?crop_name=${cropName || 'Maize'}&weather_condition=${weatherCondition}`);
+                if (response.success) {
+                    displayWeatherRecommendations(response.recommendations);
+                }
+            } catch(e) { 
+                console.error(e); 
+                displayFallbackRecommendations(weatherCondition);
+            }
+        }
+
+        function displayFallbackRecommendations(condition) {
+            const container = document.getElementById('weatherRecommendations');
+            const recommendations = {
+                'sunny': { actions: ['Water crops in early morning'], warnings: ['Avoid spraying in direct sun'] },
+                'rainy': { actions: ['Delay spraying', 'Check drainage'], warnings: ['Risk of fungal diseases'] },
+                'cloudy': { actions: ['Monitor humidity', 'Check for pests'], warnings: [] },
+                'hot': { actions: ['Increase irrigation', 'Provide shade'], warnings: ['Heat stress possible'] },
+                'cold': { actions: ['Protect young plants', 'Delay transplanting'], warnings: ['Frost risk'] }
+            };
+            const rec = recommendations[condition] || recommendations['sunny'];
+            container.innerHTML = `
+                <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg mb-2">
+                    <p class="font-semibold text-blue-800 dark:text-blue-300"><i class="fas fa-tasks"></i> <span class="weather-rec-heading-blue">Recommended Actions:</span></p>
+                    <ul class="list-disc list-inside text-sm text-blue-700 dark:text-blue-200">${rec.actions.map(a => `<li>${a}</li>`).join('')}</ul>
+                </div>
+                ${rec.warnings.length ? `
+                <div class="bg-yellow-50 dark:bg-yellow-900/30 p-3 rounded-lg">
+                    <p class="font-semibold text-yellow-800 dark:text-yellow-300"><i class="fas fa-exclamation-triangle"></i> <span class="weather-rec-heading-yellow">Warnings:</span></p>
+                    <ul class="list-disc list-inside text-sm text-yellow-700 dark:text-yellow-200">${rec.warnings.map(w => `<li>${w}</li>`).join('')}</ul>
+                </div>` : ''}
+            `;
+        }
+
+        function displayWeatherRecommendations(recommendations) {
+            const container = document.getElementById('weatherRecommendations');
+            if (container) {
+                container.innerHTML = `
+                    <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg mb-2">
+                        <p class="font-semibold text-blue-800 dark:text-blue-300"><i class="fas fa-tasks"></i> <span class="weather-rec-heading-blue">Recommended Actions:</span></p>
+                        <ul class="list-disc list-inside text-sm text-blue-700 dark:text-blue-200">${recommendations.actions.map(a => `<li>${a}</li>`).join('')}</ul>
+                    </div>
+                    <div class="bg-yellow-50 dark:bg-yellow-900/30 p-3 rounded-lg mb-2">
+                        <p class="font-semibold text-yellow-800 dark:text-yellow-300"><i class="fas fa-exclamation-triangle"></i> <span class="weather-rec-heading-yellow">Warnings:</span></p>
+                        <ul class="list-disc list-inside text-sm text-yellow-700 dark:text-yellow-200">${recommendations.warnings.map(w => `<li>${w}</li>`).join('')}</ul>
+                    </div>
+                    <div class="bg-green-50 dark:bg-green-900/30 p-3 rounded-lg">
+                        <p class="font-semibold text-green-800 dark:text-green-300"><i class="fas fa-check-circle"></i> <span class="weather-rec-heading-green">Suggested Tasks:</span></p>
+                        <ul class="list-disc list-inside text-sm text-green-700 dark:text-green-200">${recommendations.tasks.map(t => `<li>${t}</li>`).join('')}</ul>
+                    </div>
+                `;
+            }
+        }
+
+        function getWeatherCondition(temp, description) {
+            const desc = description.toLowerCase();
+            if (desc.includes('rain') || desc.includes('shower')) return 'rainy';
+            if (desc.includes('sun') || desc.includes('clear')) return 'sunny';
+            if (desc.includes('cloud') || desc.includes('overcast')) return 'cloudy';
+            if (temp > 30) return 'hot';
+            if (temp < 15) return 'cold';
+            return 'sunny';
+        }
 
         // ==================== DISEASE LIBRARY (fully populated) ====================
         const fallbackDiseases = [
