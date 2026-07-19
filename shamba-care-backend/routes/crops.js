@@ -1,4 +1,4 @@
- const express = require('express');
+const express = require('express');
 const { Crop, Farm } = require('../models');
 const { verifyToken } = require('../middleware/auth');
 const router = express.Router();
@@ -49,9 +49,9 @@ router.get('/farm/:farmId', verifyToken, async (req, res) => {
     }
 });
 
-// Create new crop
+// Create new crop – accepts 'area'
 router.post('/', verifyToken, async (req, res) => {
-    const { farm_id, name, variety, planting_date, stage, health_score, status, notes } = req.body;
+    const { farm_id, name, variety, planting_date, stage, health_score, status, notes, area } = req.body;
     
     if (!farm_id || !name) {
         return res.status(400).json({ success: false, message: 'Farm ID and crop name are required' });
@@ -75,7 +75,8 @@ router.post('/', verifyToken, async (req, res) => {
             stage: stage || 'Vegetative',
             health_score: health_score || 85,
             status: status || 'Good',
-            notes
+            notes,
+            area: area || 0
         });
         
         res.status(201).json({ success: true, crop });
@@ -85,7 +86,7 @@ router.post('/', verifyToken, async (req, res) => {
     }
 });
 
-// Update crop
+// Update crop – accepts area as well
 router.put('/:id', verifyToken, async (req, res) => {
     try {
         const crop = await Crop.findByPk(req.params.id, {
