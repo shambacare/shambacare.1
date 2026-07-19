@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- ============================================================ -->
-    <!-- VERSION 2.2 – FIXED LAYOUT FOR LARGE SCREENS + DISEASE BUTTON -->
-    <!-- ============================================================ -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>ShambaCare Kenya - Smart Crop Monitoring & Disease Diagnosis</title>
@@ -65,8 +62,7 @@
         .stat-number { font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, #22c55e 0%, #0ea5e9 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
         @media (max-width: 640px) { .container { padding-left: 1rem; padding-right: 1rem; overflow-x: hidden; } button, .clickable { min-height: 44px; } }
-        @media (min-width: 1024px) { .container { max-width: 72rem; } } /* 6xl */
-        @media (min-width: 1280px) { .container { max-width: 80rem; padding-left: 3rem; padding-right: 3rem; } }
+        @media (min-width: 1024px) { .container { max-width: 1280px; } }
         
         .btn-primary { background: linear-gradient(135deg, #16a34a 0%, #0284c7 100%); transition: all 0.3s ease; border: none; cursor: pointer; color: white !important; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(22,163,74,0.4); }
@@ -137,11 +133,6 @@
         @media (max-width: 640px) {
             .farm-card, .crop-item { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
             .farm-card .flex, .crop-item .flex { width: 100%; justify-content: center; }
-        }
-        /* Large screen spacing */
-        @media (min-width: 1280px) {
-            .farm-card { padding: 1.5rem; }
-            .crop-item { padding: 1rem; }
         }
 
         /* Chat Section */
@@ -269,12 +260,6 @@
         .dark .export-btn { background: #10b981; color: #ffffff; }
 
         .zoom-modal img { max-width: 90%; max-height: 90%; object-fit: contain; }
-
-        /* View all toggle button */
-        .view-all-toggle { background: transparent; border: none; color: #3b82f6; font-weight: 600; cursor: pointer; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: all 0.2s; }
-        .view-all-toggle:hover { background: #eff6ff; color: #2563eb; }
-        .dark .view-all-toggle { color: #60a5fa; }
-        .dark .view-all-toggle:hover { background: #1e293b; color: #93c5fd; }
     </style>
     
 </head>
@@ -363,7 +348,7 @@
         </div>
     </div>
     <!-- Main Content -->
-    <div class="container mx-auto px-4 py-6 max-w-6xl lg:px-8">
+    <div class="container mx-auto px-4 py-6 max-w-7xl">
         <!-- Home Section -->
         <div id="home" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <div class="lg:col-span-2 bg-gradient-to-r from-green-600 to-green-700 rounded-2xl p-6 text-white shadow-xl animate-fadeInUp">
@@ -2123,7 +2108,6 @@
         const fallbackDiseases = [
             { name: "Fall Armyworm", crop: "Maize", severity: "High", symptoms: "Holes in leaves, ragged edges, visible caterpillars", organic_solution: "Neem oil spray (5ml/L) every 5 days; handpick larvae.", chemical_solution: "Emamectin benzoate (1ml/L water) or spinetoram.", cost: 500, prevention: "Early planting, crop rotation, intercropping with legumes.", image: "https://via.placeholder.com/150/f59e0b/ffffff?text=Armyworm" },
             { name: "Maize Lethal Necrosis", crop: "Maize", severity: "Critical", symptoms: "Stunted growth, yellow mottling, premature death.", organic_solution: "No organic cure; remove infected plants immediately.", chemical_solution: "No chemical cure – focus on vector control (thrips, aphids).", cost: 0, prevention: "Use certified resistant varieties; control insect vectors.", image: "https://via.placeholder.com/150/ef4444/ffffff?text=MLN" },
-            // ... additional diseases (the full list is in the code)
         ];
 
         async function loadDiseaseLibrary() {
