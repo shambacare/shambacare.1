@@ -26,6 +26,7 @@
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -134,41 +135,39 @@
             .farm-card .flex, .crop-item .flex { width: 100%; justify-content: center; }
         }
 
-        /* Chat Section – updated bubble sizing for compact display */
+        /* Chat Section */
         .chat-panel { background: #f8fafc; border-radius: 1rem; border: 1px solid #e2e8f0; }
         .dark .chat-panel { background: #0f172a; border-color: #334155; }
         .chat-bubble { 
-            padding: 8px 12px;            /* reduced padding */
+            padding: 8px 12px;            
             border-radius: 18px; 
-            max-width: 80%;               /* wider to avoid excessive height */
+            max-width: 80%;               
             word-wrap: break-word;
             overflow-wrap: break-word;
-            white-space: normal;          /* no extra line breaks from pre-wrap */
-            font-size: 0.875rem;          /* consistent font size */
-            line-height: 1.4;             /* comfortable reading */
+            white-space: normal;          
+            font-size: 0.875rem;          
+            line-height: 1.4;             
         }
         .chat-message { 
             display: flex; 
-            margin-bottom: 8px;           /* tighter spacing */
+            margin-bottom: 8px;           
             animation: fadeInUp 0.3s ease-out; 
             align-items: flex-end;
         }
         .chat-message.farmer { justify-content: flex-end; }
         .chat-message.admin { justify-content: flex-start; }
-        /* Farmer messages – bluish */
         .chat-message.farmer .chat-bubble { 
             background: #3b82f6; 
             color: #ffffff; 
             border-bottom-right-radius: 4px; 
         }
-        /* Admin messages – green (support team) */
         .chat-message.admin .chat-bubble { 
-            background:  #16a34a; 
+            background: #16a34a; 
             color: #ffffff; 
             border-bottom-left-radius: 4px; 
         }
         .dark .chat-message.admin .chat-bubble { 
-            background:  #16a34a; 
+            background: #16a34a; 
             color: #ffffff; 
         }
         .chat-name { 
@@ -194,16 +193,17 @@
             .chat-send-btn { width: 100%; justify-content: center; padding: 12px; }
         }
 
-        /* Disease Library & Tasks Typography */
-        .disease-detail-label { font-weight: 700; font-style: italic; }
-        .dark .disease-detail-label, .dark .task-label { color: #4ade80; font-weight: 700; }
+        /* Disease Library images */
+        .disease-image { width: 100%; height: 120px; object-fit: cover; border-radius: 0.5rem; margin-bottom: 0.5rem; background: #e5e7eb; }
+        .dark .disease-image { background: #334155; }
 
-        /* Yield & Weather */
-        .yield-value { font-size: 2.5rem; font-weight: 800; color: #16a34a; }
-        .dark .yield-value { color: #4ade80; }
-        .yield-card { background: #ffffff !important; border: 1px solid #e5e7eb !important; border-radius: 1rem; padding: 1.25rem; }
-        .dark .yield-card { background: #1e293b !important; border-color: #facc15 !important; }
-        
+        /* Export PDF button */
+        .export-pdf-btn { background: #dc2626; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; transition: all 0.3s ease; cursor: pointer; border: none; }
+        .export-pdf-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(220,38,38,0.3); }
+
+        /* Variety dropdown */
+        .variety-select { width: 100%; }
+
         /* General Dark Mode */
         body { background-color: #f8fafc; color: #1e293b; }
         .dark body { background-color: #06140e; color: #f1f5f9; }
@@ -211,8 +211,6 @@
         .dark .text-gray-800, .dark .text-gray-900 { color: #f1f5f9 !important; }
         .dark .text-gray-600, .dark .text-gray-700 { color: #cbd5e1 !important; }
         .dark .border-gray-200, .dark .border-gray-300 { border-color: #334155 !important; }
-        
-        /* Diagnosis Section Dark Mode Fix */
         .dark #diagnosis { background: #1e293b !important; border-radius: 1.5rem; border: 1px solid #334155 !important; }
         .dark #diagnosis h1, .dark #diagnosis h2, .dark #diagnosis p { color: #f1f5f9 !important; }
         
@@ -222,12 +220,10 @@
         
         nav { background: rgba(0,0,0,0.5) !important; backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.2); }
 
-        /* Export button dark mode fix */
         .export-btn { background: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; transition: all 0.3s ease; cursor: pointer; border: none; }
         .export-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16,185,129,0.3); }
         .dark .export-btn { background: #10b981; color: #ffffff; }
 
-        /* Zoom modal - remove alt text */
         .zoom-modal img { max-width: 90%; max-height: 90%; object-fit: contain; }
     </style>
     
@@ -254,15 +250,15 @@
                     <div><h1 class="text-xl font-bold text-white">ShambaCare<span class="gradient-text"> Kenya</span></h1><p class="text-xs text-white/80">Smart Farming Assistant • Tuma Picha, Pata Matokeo</p></div>
                 </div>
                 <div class="desktop-nav">
-                    <a href="#" onclick="scrollToSection('home')" class="nav-link">Home</a>
-                    <a href="#" onclick="scrollToSection('diagnosis')" class="nav-link">Diagnosis</a>
-                    <a href="#" onclick="scrollToSection('shambas')" class="nav-link">My Shambas</a>
-                    <a href="#" onclick="scrollToSection('crops')" class="nav-link">Crops</a>
-                    <a href="#" onclick="scrollToSection('library')" class="nav-link">Disease Library</a>
-                    <a href="#" onclick="scrollToSection('reviews')" class="nav-link">Reviews</a>
-                    <a href="#" onclick="scrollToSection('contact')" class="nav-link">Contact</a>
-                    <a href="#" onclick="openProfileModal()" class="nav-link"><i class="fas fa-user-circle mr-1"></i> Profile</a>
-                    <a href="#" onclick="handleLogout()" class="nav-link text-red-400"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
+                    <a href="#" onclick="scrollToSection('home'); return false;" class="nav-link">Home</a>
+                    <a href="#" onclick="scrollToSection('diagnosis'); return false;" class="nav-link">Diagnosis</a>
+                    <a href="#" onclick="scrollToSection('shambas'); return false;" class="nav-link">My Shambas</a>
+                    <a href="#" onclick="scrollToSection('crops'); return false;" class="nav-link">Crops</a>
+                    <a href="#" onclick="scrollToSection('library'); return false;" class="nav-link">Disease Library</a>
+                    <a href="#" onclick="scrollToSection('reviews'); return false;" class="nav-link">Reviews</a>
+                    <a href="#" onclick="scrollToSection('contact'); return false;" class="nav-link">Contact</a>
+                    <a href="#" onclick="openProfileModal(); return false;" class="nav-link"><i class="fas fa-user-circle mr-1"></i> Profile</a>
+                    <a href="#" onclick="handleLogout(); return false;" class="nav-link text-red-400"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
                 </div>
                 <div class="flex items-center space-x-3">
                     <button onclick="toggleTheme()" class="bg-white/10 hover:bg-white/20 p-2 rounded-lg transition"><i id="themeIcon" class="fas fa-moon text-white"></i></button>
@@ -284,15 +280,15 @@
     <div id="mobileMenuPanel" class="mobile-menu-panel dark:bg-gray-900 dark:text-white">
         <div class="flex justify-between items-center p-4 border-b dark:border-gray-700"><span class="font-bold"><i class="fas fa-leaf text-green-600 mr-2"></i>Menu</span><button id="closeMobileMenu"><i class="fas fa-times text-xl"></i></button></div>
         <div class="flex flex-col p-4 space-y-3">
-            <a href="#" onclick="scrollToSection('home');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-home w-6 text-green-600"></i> Home</a>
-            <a href="#" onclick="scrollToSection('diagnosis');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-microscope w-6 text-green-600"></i> Diagnosis</a>
-            <a href="#" onclick="scrollToSection('shambas');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-tractor w-6 text-green-600"></i> My Shambas</a>
-            <a href="#" onclick="scrollToSection('crops');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-seedling w-6 text-green-600"></i> Crops</a>
-            <a href="#" onclick="scrollToSection('library');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-book w-6 text-green-600"></i> Disease Library</a>
-            <a href="#" onclick="scrollToSection('reviews');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-star w-6 text-yellow-500"></i> Reviews</a>
-            <a href="#" onclick="scrollToSection('contact');closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-envelope w-6 text-green-600"></i> Contact</a>
+            <a href="#" onclick="scrollToSection('home');closeMobileMenu(); return false;" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-home w-6 text-green-600"></i> Home</a>
+            <a href="#" onclick="scrollToSection('diagnosis');closeMobileMenu(); return false;" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-microscope w-6 text-green-600"></i> Diagnosis</a>
+            <a href="#" onclick="scrollToSection('shambas');closeMobileMenu(); return false;" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-tractor w-6 text-green-600"></i> My Shambas</a>
+            <a href="#" onclick="scrollToSection('crops');closeMobileMenu(); return false;" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-seedling w-6 text-green-600"></i> Crops</a>
+            <a href="#" onclick="scrollToSection('library');closeMobileMenu(); return false;" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-book w-6 text-green-600"></i> Disease Library</a>
+            <a href="#" onclick="scrollToSection('reviews');closeMobileMenu(); return false;" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-star w-6 text-yellow-500"></i> Reviews</a>
+            <a href="#" onclick="scrollToSection('contact');closeMobileMenu(); return false;" class="py-2 px-3 rounded-lg hover:bg-green-50 dark:hover:bg-gray-800 flex items-center"><i class="fas fa-envelope w-6 text-green-600"></i> Contact</a>
             <div class="border-t my-2 pt-3"></div>
-            <a href="#" onclick="handleLogout();closeMobileMenu();" class="py-2 px-3 rounded-lg hover:bg-red-50 dark:hover:bg-red-900 flex items-center text-red-600"><i class="fas fa-sign-out-alt w-6"></i> Sign Out</a>
+            <a href="#" onclick="handleLogout();closeMobileMenu(); return false;" class="py-2 px-3 rounded-lg hover:bg-red-50 dark:hover:bg-red-900 flex items-center text-red-600"><i class="fas fa-sign-out-alt w-6"></i> Sign Out</a>
         </div>
     </div>
     <!-- Profile Modal -->
@@ -386,7 +382,7 @@
                             <img id="previewImg" class="w-full max-h-64 object-cover preview-zoom" onclick="openZoom(this.src)">
                             <button onclick="clearImage()" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition"><i class="fas fa-times"></i></button>
                         </div>
-                        <button onclick="analyzeImage()" class="mt-4 w-full btn-primary text-white font-semibold py-3 rounded-xl transition transform hover:scale-105"><i class="fas fa-microscope mr-2"></i> Analyze Crop Now</button>
+                        <!-- Analyze button removed – analysis starts automatically -->
                     </div>
                     <div id="diagnosisResult" class="hidden mt-6"></div>
                 </div>
@@ -598,8 +594,12 @@
                     <option value="Beans">Beans</option>
                     <option value="Vegetables">Vegetables</option>
                 </select>
+                <!-- Variety dropdown – dynamically populated -->
+                <select id="newCropVariety" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 variety-select">
+                    <option value="">Select Variety</option>
+                </select>
                 <input type="date" id="newCropPlantingDate" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600" placeholder="Planting Date">
-                <input type="number" id="newCropArea" placeholder="Area (acres)" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                <input type="number" id="newCropArea" placeholder="Area (acres)" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600" step="0.1">
                 <button onclick="addCropToFarm()" class="w-full btn-primary text-white py-3 rounded-lg"><i class="fas fa-check-circle mr-2"></i> Add Crop</button>
             </div>
         </div>
@@ -666,6 +666,16 @@
         let reviewsData = [];
         let showAllReviews = false;
         let showAllDiseases = false;
+
+        // Variety options per crop
+        const varietyOptions = {
+            'Maize': ['H614', 'DK8031', 'SC403', 'SC513', 'Local'],
+            'Coffee': ['SL28', 'SL34', 'Ruiru 11', 'Batian', 'K7'],
+            'Tomato': ['Cal J', 'Money Maker', 'Marglobe', 'Roma', 'Tengeru 97'],
+            'Potato': ['Shangi', 'Dutch Robijn', 'Tigoni', 'Starter', 'Unica'],
+            'Beans': ['Rose Coco', 'Mwitemania', 'KK8', 'Gloria', 'Wairimu'],
+            'Vegetables': ['Sukuma Wiki', 'Cabbage', 'Spinach', 'Kale', 'Dhania'],
+        };
 
         // ==================== IMAGE COMPRESSION / ZOOM ====================
         function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.8) {
@@ -825,6 +835,25 @@
             });
         }
 
+        // ==================== VARIETY DROPDOWN ====================
+        function updateVarieties(cropName) {
+            const varietySelect = document.getElementById('newCropVariety');
+            varietySelect.innerHTML = '<option value="">Select Variety</option>';
+            if (cropName && varietyOptions[cropName]) {
+                varietyOptions[cropName].forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v;
+                    opt.textContent = v;
+                    varietySelect.appendChild(opt);
+                });
+            }
+        }
+
+        // Listen to crop name change in modal
+        document.getElementById('newCropName')?.addEventListener('change', function() {
+            updateVarieties(this.value);
+        });
+
         // ==================== API CALLS ====================
         async function apiCall(endpoint, options = {}) {
             if (!currentToken) {
@@ -870,7 +899,6 @@
             }
         }
 
-        // Helper function to format date safely
         function formatChatDate(dateStr) {
             if (!dateStr) return 'Just now';
             try {
@@ -1117,7 +1145,7 @@
                                 </div>
                                 <div class="flex gap-2 flex-wrap items-center">
                                     <button onclick="showAddCropModal(${farm.id})" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm transition"><i class="fas fa-plus"></i> Add Crop</button>
-                                    <button onclick="exportFarmData(${farm.id})" class="export-btn text-sm"><i class="fas fa-file-export"></i> Export</button>
+                                    <button onclick="exportFarmDataPDF(${farm.id})" class="export-pdf-btn text-sm"><i class="fas fa-file-pdf"></i> Export PDF</button>
                                     <button onclick="deleteFarm(${farm.id})" class="delete-btn" title="Delete Farm"><i class="fas fa-trash-alt"></i></button>
                                 </div>
                             </div>
@@ -1225,6 +1253,7 @@
             const select = document.getElementById('newCropFarmId');
             select.innerHTML = farmsData.map(f => `<option value="${f.id}" ${f.id === farmId ? 'selected' : ''}>${f.name}</option>`).join('');
             document.getElementById('newCropName').value = '';
+            document.getElementById('newCropVariety').innerHTML = '<option value="">Select Variety</option>';
             document.getElementById('newCropPlantingDate').value = '';
             document.getElementById('newCropArea').value = '';
             document.getElementById('addCropModal').classList.remove('hidden');
@@ -1234,6 +1263,7 @@
         async function addCropToFarm() {
             const farmId = parseInt(document.getElementById('newCropFarmId').value);
             const cropName = document.getElementById('newCropName').value;
+            const variety = document.getElementById('newCropVariety').value;
             const plantingDate = document.getElementById('newCropPlantingDate').value;
             const area = parseFloat(document.getElementById('newCropArea').value);
 
@@ -1248,6 +1278,7 @@
                     body: JSON.stringify({
                         farm_id: farmId,
                         name: cropName,
+                        variety: variety || null,
                         planting_date: plantingDate,
                         area: area
                     })
@@ -1358,6 +1389,102 @@
             } catch(e) { 
                 showToast('Network error', 'error'); 
             }
+        }
+
+        // ==================== PDF EXPORT ====================
+        function exportFarmDataPDF(farmId) {
+            const farm = farmsData.find(f => f.id === farmId);
+            if (!farm) {
+                showToast('Farm not found', 'error');
+                return;
+            }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const margin = 15;
+            let y = margin;
+
+            // Title
+            doc.setFontSize(22);
+            doc.setTextColor(22, 163, 74); // green
+            doc.text('ShambaCare Kenya', margin, y);
+            y += 10;
+            doc.setFontSize(16);
+            doc.setTextColor(30, 41, 59);
+            doc.text(`Farm Report: ${farm.name}`, margin, y);
+            y += 8;
+            doc.setFontSize(11);
+            doc.setTextColor(100, 116, 139);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y);
+            y += 10;
+
+            // Farm details
+            doc.setFontSize(13);
+            doc.setTextColor(30, 41, 59);
+            doc.text('Farm Details', margin, y);
+            y += 6;
+            doc.setFontSize(10);
+            doc.setTextColor(75, 85, 99);
+            doc.text(`Location: ${farm.location || 'N/A'}`, margin + 2, y);
+            y += 5;
+            doc.text(`Size: ${farm.size_acres || 0} acres`, margin + 2, y);
+            y += 5;
+            doc.text(`Main Crop: ${farm.main_crop || 'Mixed'}`, margin + 2, y);
+            y += 5;
+            doc.text(`Health Score: ${farm.health_score || 85}%`, margin + 2, y);
+            y += 8;
+
+            // Crops table
+            doc.setFontSize(13);
+            doc.setTextColor(30, 41, 59);
+            doc.text('Crops', margin, y);
+            y += 6;
+
+            const crops = farm.crops || [];
+            if (crops.length === 0) {
+                doc.setFontSize(10);
+                doc.text('No crops added.', margin + 2, y);
+            } else {
+                // Table header
+                const colWidths = [40, 30, 30, 30, 35];
+                const headers = ['Crop', 'Variety', 'Area (acres)', 'Planting Date', 'Health'];
+                let x = margin;
+                doc.setFillColor(22, 163, 74);
+                doc.rect(margin, y - 4, colWidths.reduce((a,b) => a+b, 0), 8, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(9);
+                headers.forEach((h, i) => {
+                    doc.text(h, x + 1, y + 1);
+                    x += colWidths[i];
+                });
+                y += 6;
+                doc.setTextColor(30, 41, 59);
+                doc.setFontSize(8);
+                crops.forEach((c, idx) => {
+                    const row = [
+                        c.name || '-',
+                        c.variety || 'Local',
+                        (c.area || 0).toString(),
+                        c.planting_date ? new Date(c.planting_date).toLocaleDateString() : 'N/A',
+                        (c.health_score || 85) + '%'
+                    ];
+                    let x2 = margin;
+                    row.forEach((text, i) => {
+                        doc.text(text, x2 + 1, y + 1);
+                        x2 += colWidths[i];
+                    });
+                    y += 5;
+                    if (y > 270) { doc.addPage(); y = margin; }
+                });
+            }
+            y += 6;
+
+            // Footer
+            doc.setFontSize(8);
+            doc.setTextColor(156, 163, 175);
+            doc.text('ShambaCare - Smart Farming Assistant', margin, 285);
+
+            doc.save(`farm_${farm.name}_report.pdf`);
+            showToast('PDF exported successfully!', 'success');
         }
 
         // ==================== TASKS PER CROP ====================
@@ -1551,33 +1678,6 @@
             document.getElementById('pendingTasks').innerText = total;
         }
 
-        // ==================== EXPORT ====================
-        function exportFarmData(farmId) {
-            const farm = farmsData.find(f => f.id === farmId);
-            if (!farm) {
-                showToast('Farm not found', 'error');
-                return;
-            }
-            let csv = `Farm Name,Location,Size (acres),Main Crop\n`;
-            csv += `${farm.name},${farm.location},${farm.size_acres},${farm.main_crop || 'Mixed'}\n\n`;
-            csv += `Crop,Variety,Area (acres),Health Score,Planting Date\n`;
-            if (farm.crops && farm.crops.length) {
-                farm.crops.forEach(c => {
-                    csv += `${c.name},${c.variety || ''},${c.area || 0},${c.health_score || 85},${c.planting_date || 'N/A'}\n`;
-                });
-            } else {
-                csv += 'No crops\n';
-            }
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${farm.name}_data.csv`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-            showToast('Farm data exported!', 'success');
-        }
-
         // ==================== DIAGNOSIS ====================
         function openCameraDirect() {
             const input = document.createElement('input');
@@ -1586,7 +1686,8 @@
             input.capture = 'environment';
             input.onchange = function(e) {
                 if (e.target.files.length) {
-                    handleImageUpload(e.target);
+                    const file = e.target.files[0];
+                    handleImageUploadAndAnalyze(file);
                 }
             };
             input.click();
@@ -1599,27 +1700,33 @@
         function handleImageUpload(input) {
             const file = input.files[0];
             if (file) {
-                showToast('Compressing image...', 'info');
-                compressImage(file, 800, 800, 0.8).then(compressedFile => {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        document.getElementById('previewImg').src = e.target.result;
-                        document.getElementById('uploadArea').classList.add('hidden');
-                        document.getElementById('imagePreview').classList.remove('hidden');
-                        showToast('Image uploaded successfully!', 'success');
-                    };
-                    reader.readAsDataURL(compressedFile);
-                }).catch(err => {
-                    console.error('Compression error:', err);
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        document.getElementById('previewImg').src = e.target.result;
-                        document.getElementById('uploadArea').classList.add('hidden');
-                        document.getElementById('imagePreview').classList.remove('hidden');
-                    };
-                    reader.readAsDataURL(file);
-                });
+                handleImageUploadAndAnalyze(file);
             }
+        }
+
+        // Auto-analyze after image selection
+        function handleImageUploadAndAnalyze(file) {
+            if (!file) return;
+            showToast('Compressing image...', 'info');
+            compressImage(file, 800, 800, 0.8).then(compressedFile => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('uploadArea').classList.add('hidden');
+                    document.getElementById('imagePreview').classList.remove('hidden');
+                    showToast('Image uploaded! Analyzing...', 'info');
+                    // Automatically analyze after a short delay
+                    setTimeout(() => {
+                        analyzeImage(compressedFile);
+                    }, 500);
+                };
+                reader.readAsDataURL(compressedFile);
+            }).catch(err => {
+                console.error('Compression error:', err);
+                // Fallback: analyze original file
+                showToast('Analyzing original image...', 'info');
+                analyzeImage(file);
+            });
         }
 
         function clearImage() {
@@ -1637,15 +1744,18 @@
             return found || null;
         }
 
-        async function analyzeImage() {
-            const fileInput = document.getElementById('imageInput');
-            const cropSelect = document.getElementById('cropSelect');
-            let file = fileInput.files[0];
+        async function analyzeImage(file) {
             if (!file) {
-                showToast('Please select or capture an image first', 'error');
-                return;
+                const fileInput = document.getElementById('imageInput');
+                if (fileInput.files.length > 0) {
+                    file = fileInput.files[0];
+                } else {
+                    showToast('Please select or capture an image first', 'error');
+                    return;
+                }
             }
-            
+
+            const cropSelect = document.getElementById('cropSelect');
             let imageToSend = file;
             try {
                 imageToSend = await compressImage(file, 800, 800, 0.8);
@@ -1936,32 +2046,32 @@
             return 'sunny';
         }
 
-        // ==================== DISEASE LIBRARY ====================
+        // ==================== DISEASE LIBRARY (with images) ====================
         const fallbackDiseases = [
-            { name: "Fall Armyworm", crop: "Maize", severity: "High", symptoms: "Holes in leaves, ragged edges, visible caterpillars", organic_solution: "Neem oil spray (5ml/L) every 5 days; handpick larvae.", chemical_solution: "Emamectin benzoate (1ml/L water) or spinetoram.", cost: 500, prevention: "Early planting, crop rotation, intercropping with legumes." },
-            { name: "Maize Lethal Necrosis", crop: "Maize", severity: "Critical", symptoms: "Stunted growth, yellow mottling, premature death.", organic_solution: "No organic cure; remove infected plants immediately.", chemical_solution: "No chemical cure – focus on vector control (thrips, aphids).", cost: 0, prevention: "Use certified resistant varieties; control insect vectors." },
-            { name: "Northern Leaf Blight", crop: "Maize", severity: "High", symptoms: "Long, elliptical gray-green lesions on lower leaves.", organic_solution: "Remove crop residues; apply compost tea.", chemical_solution: "Azoxystrobin or mancozeb.", cost: 650, prevention: "Plant resistant hybrids; rotate crops." },
-            { name: "Cercospora Leaf Spot", crop: "Maize", severity: "Medium", symptoms: "Small, rectangular grayish lesions with yellow margins.", organic_solution: "Remove crop residues; apply sulfur spray.", chemical_solution: "Azoxystrobin or pyraclostrobin.", cost: 600, prevention: "Crop rotation; use disease-free seeds." },
-            { name: "Common Rust", crop: "Maize", severity: "Medium", symptoms: "Cinnamon-brown pustules on leaves and stalks.", organic_solution: "Sulfur spray; neem oil.", chemical_solution: "Azoxystrobin or pyraclostrobin.", cost: 550, prevention: "Plant resistant varieties; avoid overcrowding." },
-            { name: "Tomato Early Blight", crop: "Tomato", severity: "High", symptoms: "Dark concentric rings on older leaves; yellowing.", organic_solution: "Mulch; apply compost tea; remove lower leaves.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 550, prevention: "Rotate crops; prune for air circulation." },
-            { name: "Tomato Late Blight", crop: "Tomato", severity: "High", symptoms: "Water-soaked lesions on leaves; white mold underside.", organic_solution: "Remove infected leaves; copper spray.", chemical_solution: "Mancozeb or metalaxyl.", cost: 600, prevention: "Resistant varieties; avoid overhead watering." },
-            { name: "Tomato Bacterial Spot", crop: "Tomato", severity: "Medium", symptoms: "Small, dark, water-soaked spots on leaves and fruit.", organic_solution: "Copper-based soap sprays; remove infected plants.", chemical_solution: "Copper hydroxide or streptomycin.", cost: 450, prevention: "Use certified disease-free seeds; avoid overhead irrigation." },
-            { name: "Tomato Leaf Mold", crop: "Tomato", severity: "Medium", symptoms: "Yellow-green spots on upper leaf surface; gray mold underside.", organic_solution: "Improve air circulation; remove infected leaves.", chemical_solution: "Chlorothalonil or copper fungicide.", cost: 500, prevention: "Space plants properly; water at base." },
-            { name: "Tomato Septoria Leaf Spot", crop: "Tomato", severity: "High", symptoms: "Small circular spots with dark borders; yellow halo.", organic_solution: "Remove lower leaves; apply compost tea.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 550, prevention: "Rotate crops; avoid overhead watering." },
-            { name: "Tomato Yellow Leaf Curl Virus", crop: "Tomato", severity: "High", symptoms: "Yellowing, curling leaves; stunted growth.", organic_solution: "Control whiteflies with neem oil; yellow sticky traps.", chemical_solution: "Imidacloprid (for vectors).", cost: 500, prevention: "Use resistant varieties; row covers." },
-            { name: "Tomato Mosaic Virus", crop: "Tomato", severity: "High", symptoms: "Mottled yellow-green leaves; deformed fruit.", organic_solution: "No cure; remove infected plants.", chemical_solution: "No chemical cure – vector control.", cost: 0, prevention: "Use virus-free seeds; disinfect tools." },
-            { name: "Tomato Target Spot", crop: "Tomato", severity: "Medium", symptoms: "Concentric rings on leaves; dark brown lesions.", organic_solution: "Remove infected leaves; apply neem oil.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 500, prevention: "Good sanitation; avoid wet foliage." },
-            { name: "Tomato Spider Mites", crop: "Tomato", severity: "Medium", symptoms: "Stippled leaves; fine webbing on underside.", organic_solution: "Neem oil spray; introduce predatory mites.", chemical_solution: "Abamectin or miticides.", cost: 400, prevention: "Keep plants well-watered; avoid dust." },
-            { name: "Potato Late Blight", crop: "Potato", severity: "High", symptoms: "Dark, water-soaked lesions; white mold on leaf underside.", organic_solution: "Remove infected leaves; copper spray.", chemical_solution: "Mancozeb or metalaxyl.", cost: 600, prevention: "Resistant varieties; avoid overhead watering." },
-            { name: "Potato Early Blight", crop: "Potato", severity: "Medium", symptoms: "Dark, concentric lesions on lower leaves.", organic_solution: "Mulch; compost tea; remove infected leaves.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 550, prevention: "Crop rotation; well-drained soil." },
-            { name: "Bean Rust", crop: "Beans", severity: "Medium", symptoms: "Reddish-brown pustules on leaves and pods.", organic_solution: "Prune affected leaves; neem oil.", chemical_solution: "Copper-based fungicide.", cost: 450, prevention: "Resistant varieties; avoid crowding." },
-            { name: "Angular Leaf Spot", crop: "Beans", severity: "Medium", symptoms: "Angular, water-soaked spots on leaves; yellow halos.", organic_solution: "Remove infected leaves; apply copper soap.", chemical_solution: "Copper hydroxide or mancozeb.", cost: 400, prevention: "Rotate crops; use disease-free seed." },
-            { name: "Bean Anthracnose", crop: "Beans", severity: "High", symptoms: "Dark, sunken lesions on pods; reddish-brown spots.", organic_solution: "Remove infected plants; improve air circulation.", chemical_solution: "Chlorothalonil or copper fungicide.", cost: 500, prevention: "Use certified disease-free seeds; crop rotation." },
-            { name: "Common Bacterial Blight", crop: "Beans", severity: "High", symptoms: "Water-soaked spots on leaves; wilting.", organic_solution: "Remove infected plants; copper spray.", chemical_solution: "Copper bactericides.", cost: 450, prevention: "Rotate crops; avoid overhead irrigation." },
-            { name: "Coffee Leaf Rust", crop: "Coffee", severity: "High", symptoms: "Orange-yellow powdery spots on leaf undersides.", organic_solution: "Sulfur spray; prune for air circulation.", chemical_solution: "Copper oxychloride (2g/L) or copper hydroxide.", cost: 800, prevention: "Resistant varieties; proper spacing." },
-            { name: "Coffee Berry Disease", crop: "Coffee", severity: "High", symptoms: "Dark, sunken lesions on green berries; premature drop.", organic_solution: "Remove infected berries; copper spray.", chemical_solution: "Copper oxychloride or chlorothalonil.", cost: 700, prevention: "Prune to reduce humidity; shade management." },
-            { name: "Coffee Wilt Disease", crop: "Coffee", severity: "Critical", symptoms: "Wilting, yellowing, and drying of branches.", organic_solution: "Remove infected trees; no organic cure.", chemical_solution: "No chemical cure – focus on prevention.", cost: 0, prevention: "Use resistant rootstocks; maintain plant health." },
-            { name: "Coffee Berry Borer", crop: "Coffee", severity: "High", symptoms: "Small holes in berries; internal damage.", organic_solution: "Traps and natural predators; remove infested berries.", chemical_solution: "Endosulfan or chlorpyrifos (restricted).", cost: 900, prevention: "Sanitation; harvest promptly." }
+            { name: "Fall Armyworm", crop: "Maize", severity: "High", symptoms: "Holes in leaves, ragged edges, visible caterpillars", organic_solution: "Neem oil spray (5ml/L) every 5 days; handpick larvae.", chemical_solution: "Emamectin benzoate (1ml/L water) or spinetoram.", cost: 500, prevention: "Early planting, crop rotation, intercropping with legumes.", image: "https://via.placeholder.com/150/f59e0b/ffffff?text=Armyworm" },
+            { name: "Maize Lethal Necrosis", crop: "Maize", severity: "Critical", symptoms: "Stunted growth, yellow mottling, premature death.", organic_solution: "No organic cure; remove infected plants immediately.", chemical_solution: "No chemical cure – focus on vector control (thrips, aphids).", cost: 0, prevention: "Use certified resistant varieties; control insect vectors.", image: "https://via.placeholder.com/150/ef4444/ffffff?text=MLN" },
+            { name: "Northern Leaf Blight", crop: "Maize", severity: "High", symptoms: "Long, elliptical gray-green lesions on lower leaves.", organic_solution: "Remove crop residues; apply compost tea.", chemical_solution: "Azoxystrobin or mancozeb.", cost: 650, prevention: "Plant resistant hybrids; rotate crops.", image: "https://via.placeholder.com/150/3b82f6/ffffff?text=NLB" },
+            { name: "Cercospora Leaf Spot", crop: "Maize", severity: "Medium", symptoms: "Small, rectangular grayish lesions with yellow margins.", organic_solution: "Remove crop residues; apply sulfur spray.", chemical_solution: "Azoxystrobin or pyraclostrobin.", cost: 600, prevention: "Crop rotation; use disease-free seeds.", image: "https://via.placeholder.com/150/8b5cf6/ffffff?text=CLS" },
+            { name: "Common Rust", crop: "Maize", severity: "Medium", symptoms: "Cinnamon-brown pustules on leaves and stalks.", organic_solution: "Sulfur spray; neem oil.", chemical_solution: "Azoxystrobin or pyraclostrobin.", cost: 550, prevention: "Plant resistant varieties; avoid overcrowding.", image: "https://via.placeholder.com/150/f97316/ffffff?text=Rust" },
+            { name: "Tomato Early Blight", crop: "Tomato", severity: "High", symptoms: "Dark concentric rings on older leaves; yellowing.", organic_solution: "Mulch; apply compost tea; remove lower leaves.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 550, prevention: "Rotate crops; prune for air circulation.", image: "https://via.placeholder.com/150/ef4444/ffffff?text=EarlyBlight" },
+            { name: "Tomato Late Blight", crop: "Tomato", severity: "High", symptoms: "Water-soaked lesions on leaves; white mold underside.", organic_solution: "Remove infected leaves; copper spray.", chemical_solution: "Mancozeb or metalaxyl.", cost: 600, prevention: "Resistant varieties; avoid overhead watering.", image: "https://via.placeholder.com/150/b91c1c/ffffff?text=LateBlight" },
+            { name: "Tomato Bacterial Spot", crop: "Tomato", severity: "Medium", symptoms: "Small, dark, water-soaked spots on leaves and fruit.", organic_solution: "Copper-based soap sprays; remove infected plants.", chemical_solution: "Copper hydroxide or streptomycin.", cost: 450, prevention: "Use certified disease-free seeds; avoid overhead irrigation.", image: "https://via.placeholder.com/150/2563eb/ffffff?text=BactSpot" },
+            { name: "Tomato Leaf Mold", crop: "Tomato", severity: "Medium", symptoms: "Yellow-green spots on upper leaf surface; gray mold underside.", organic_solution: "Improve air circulation; remove infected leaves.", chemical_solution: "Chlorothalonil or copper fungicide.", cost: 500, prevention: "Space plants properly; water at base.", image: "https://via.placeholder.com/150/7c3aed/ffffff?text=LeafMold" },
+            { name: "Tomato Septoria Leaf Spot", crop: "Tomato", severity: "High", symptoms: "Small circular spots with dark borders; yellow halo.", organic_solution: "Remove lower leaves; apply compost tea.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 550, prevention: "Rotate crops; avoid overhead watering.", image: "https://via.placeholder.com/150/d97706/ffffff?text=Septoria" },
+            { name: "Tomato Yellow Leaf Curl Virus", crop: "Tomato", severity: "High", symptoms: "Yellowing, curling leaves; stunted growth.", organic_solution: "Control whiteflies with neem oil; yellow sticky traps.", chemical_solution: "Imidacloprid (for vectors).", cost: 500, prevention: "Use resistant varieties; row covers.", image: "https://via.placeholder.com/150/eab308/ffffff?text=TYLCV" },
+            { name: "Tomato Mosaic Virus", crop: "Tomato", severity: "High", symptoms: "Mottled yellow-green leaves; deformed fruit.", organic_solution: "No cure; remove infected plants.", chemical_solution: "No chemical cure – vector control.", cost: 0, prevention: "Use virus-free seeds; disinfect tools.", image: "https://via.placeholder.com/150/16a34a/ffffff?text=Mosaic" },
+            { name: "Tomato Target Spot", crop: "Tomato", severity: "Medium", symptoms: "Concentric rings on leaves; dark brown lesions.", organic_solution: "Remove infected leaves; apply neem oil.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 500, prevention: "Good sanitation; avoid wet foliage.", image: "https://via.placeholder.com/150/92400e/ffffff?text=TargetSpot" },
+            { name: "Tomato Spider Mites", crop: "Tomato", severity: "Medium", symptoms: "Stippled leaves; fine webbing on underside.", organic_solution: "Neem oil spray; introduce predatory mites.", chemical_solution: "Abamectin or miticides.", cost: 400, prevention: "Keep plants well-watered; avoid dust.", image: "https://via.placeholder.com/150/991b1b/ffffff?text=Mites" },
+            { name: "Potato Late Blight", crop: "Potato", severity: "High", symptoms: "Dark, water-soaked lesions; white mold on leaf underside.", organic_solution: "Remove infected leaves; copper spray.", chemical_solution: "Mancozeb or metalaxyl.", cost: 600, prevention: "Resistant varieties; avoid overhead watering.", image: "https://via.placeholder.com/150/b91c1c/ffffff?text=PotLateBlight" },
+            { name: "Potato Early Blight", crop: "Potato", severity: "Medium", symptoms: "Dark, concentric lesions on lower leaves.", organic_solution: "Mulch; compost tea; remove infected leaves.", chemical_solution: "Chlorothalonil or mancozeb.", cost: 550, prevention: "Crop rotation; well-drained soil.", image: "https://via.placeholder.com/150/d97706/ffffff?text=PotEarlyBlight" },
+            { name: "Bean Rust", crop: "Beans", severity: "Medium", symptoms: "Reddish-brown pustules on leaves and pods.", organic_solution: "Prune affected leaves; neem oil.", chemical_solution: "Copper-based fungicide.", cost: 450, prevention: "Resistant varieties; avoid crowding.", image: "https://via.placeholder.com/150/f97316/ffffff?text=BeanRust" },
+            { name: "Angular Leaf Spot", crop: "Beans", severity: "Medium", symptoms: "Angular, water-soaked spots on leaves; yellow halos.", organic_solution: "Remove infected leaves; apply copper soap.", chemical_solution: "Copper hydroxide or mancozeb.", cost: 400, prevention: "Rotate crops; use disease-free seed.", image: "https://via.placeholder.com/150/2563eb/ffffff?text=Angular" },
+            { name: "Bean Anthracnose", crop: "Beans", severity: "High", symptoms: "Dark, sunken lesions on pods; reddish-brown spots.", organic_solution: "Remove infected plants; improve air circulation.", chemical_solution: "Chlorothalonil or copper fungicide.", cost: 500, prevention: "Use certified disease-free seeds; crop rotation.", image: "https://via.placeholder.com/150/7c3aed/ffffff?text=Anthracnose" },
+            { name: "Common Bacterial Blight", crop: "Beans", severity: "High", symptoms: "Water-soaked spots on leaves; wilting.", organic_solution: "Remove infected plants; copper spray.", chemical_solution: "Copper bactericides.", cost: 450, prevention: "Rotate crops; avoid overhead irrigation.", image: "https://via.placeholder.com/150/b91c1c/ffffff?text=BactBlight" },
+            { name: "Coffee Leaf Rust", crop: "Coffee", severity: "High", symptoms: "Orange-yellow powdery spots on leaf undersides.", organic_solution: "Sulfur spray; prune for air circulation.", chemical_solution: "Copper oxychloride (2g/L) or copper hydroxide.", cost: 800, prevention: "Resistant varieties; proper spacing.", image: "https://via.placeholder.com/150/f97316/ffffff?text=CoffeeRust" },
+            { name: "Coffee Berry Disease", crop: "Coffee", severity: "High", symptoms: "Dark, sunken lesions on green berries; premature drop.", organic_solution: "Remove infected berries; copper spray.", chemical_solution: "Copper oxychloride or chlorothalonil.", cost: 700, prevention: "Prune to reduce humidity; shade management.", image: "https://via.placeholder.com/150/b91c1c/ffffff?text=CBD" },
+            { name: "Coffee Wilt Disease", crop: "Coffee", severity: "Critical", symptoms: "Wilting, yellowing, and drying of branches.", organic_solution: "Remove infected trees; no organic cure.", chemical_solution: "No chemical cure – focus on prevention.", cost: 0, prevention: "Use resistant rootstocks; maintain plant health.", image: "https://via.placeholder.com/150/ef4444/ffffff?text=CoffeeWilt" },
+            { name: "Coffee Berry Borer", crop: "Coffee", severity: "High", symptoms: "Small holes in berries; internal damage.", organic_solution: "Traps and natural predators; remove infested berries.", chemical_solution: "Endosulfan or chlorpyrifos (restricted).", cost: 900, prevention: "Sanitation; harvest promptly.", image: "https://via.placeholder.com/150/991b1b/ffffff?text=Borer" }
         ];
 
         async function loadDiseaseLibrary() {
@@ -1979,7 +2089,8 @@
                         organic_solution: d.organic_solution || d.solution || 'Consult local agrovet',
                         chemical_solution: d.chemical_solution || d.solution || 'Consult local agrovet',
                         cost: d.estimated_cost_kes || d.cost || 0,
-                        prevention: d.prevention || 'Practice good farming practices.'
+                        prevention: d.prevention || 'Practice good farming practices.',
+                        image: d.image || 'https://via.placeholder.com/150/4ade80/ffffff?text=Disease'
                     }));
                     allDiseases = fetched.filter(d => {
                         const cropLower = (d.crop || '').toLowerCase();
@@ -2011,6 +2122,7 @@
             const displayDiseases = diseases.slice(0, displayCount);
             container.innerHTML = displayDiseases.map(d => `
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 card-hover border border-green-100 dark:border-gray-700 transition-all hover:shadow-lg cursor-pointer disease-card" onclick="showDiseaseDetail('${d.name.replace(/'/g, "\\'")}', '${d.crop.replace(/'/g, "\\'")}', '${d.severity}', '${(d.symptoms || '').replace(/'/g, "\\'")}', '${(d.organic_solution || d.solution || '').replace(/'/g, "\\'")}', '${(d.chemical_solution || '').replace(/'/g, "\\'")}', ${d.cost || 0})">
+                    <img src="${d.image || 'https://via.placeholder.com/150/4ade80/ffffff?text=Disease'}" alt="${d.name}" class="disease-image" onerror="this.src='https://via.placeholder.com/150/4ade80/ffffff?text=Disease'">
                     <div class="flex items-center gap-2 mb-2">
                         <h4 class="font-bold text-gray-800 dark:text-white">${d.name}</h4>
                     </div>
@@ -2038,12 +2150,15 @@
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
             modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+            const disease = allDiseases.find(d => d.name === name) || {};
+            const imageUrl = disease.image || 'https://via.placeholder.com/150/4ade80/ffffff?text=Disease';
             modal.innerHTML = `
                 <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 animate-scaleIn" onclick="event.stopPropagation()">
                     <div class="flex justify-between items-start mb-4">
                         <h3 class="text-xl font-bold text-gray-800 dark:text-white">${name}</h3>
                         <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"><i class="fas fa-times text-xl"></i></button>
                     </div>
+                    <img src="${imageUrl}" alt="${name}" class="w-full h-48 object-cover rounded-lg mb-3" onerror="this.src='https://via.placeholder.com/150/4ade80/ffffff?text=Disease'">
                     <div class="space-y-3 text-gray-700 dark:text-gray-300">
                         <p><span class="font-semibold text-gray-800 dark:text-white disease-detail-label">Affected Crop:</span> ${crop}</p>
                         <p><span class="font-semibold text-gray-800 dark:text-white disease-detail-label">Severity:</span> <span class="px-2 py-0.5 rounded-full text-xs font-bold ${severity === 'High' ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' : severity === 'Critical' ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300' : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300'}">${severity}</span></p>
