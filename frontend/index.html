@@ -1917,9 +1917,57 @@
             } catch (e) { showToast('Network error', 'error'); }
         }
 
-        // ==================== PDF EXPORT – ALL FARMS ====================
-        function exportAllFarmsPDF() {
+        // ==================== PDF EXPORT – ALL FARMS with TASKS ====================
+        async function exportAllFarmsPDF() {
             if (!farmsData || farmsData.length === 0) { showToast('No farms to export.', 'error'); return; }
+
+            // First, fetch tasks for all crops across all farms
+            const cropTasksMap = {}; // key: cropId, value: tasks array
+            const farmCropMap = {}; // key: cropId, value: farm name
+            const cropNameMap = {}; // key: cropId, value: crop name
+
+            for (const farm of farmsData) {
+                if (farm.crops) {
+                    for (const crop of farm.crops) {
+                        const cropId = crop.id;
+                        cropNameMap[cropId] = crop.name;
+                        farmCropMap[cropId] = farm.name;
+                        try {
+                            const response = await apiCall(`/farm-guide/tasks/${cropId}`);
+                            if (response.success && response.tasks) {
+                                cropTasksMap[cropId] = response.tasks;
+                            } else {
+                                cropTasksMap[cropId] = [];
+                            }
+                        } catch (e) {
+                            cropTasksMap[cropId] = [];
+                        }
+                    }
+                }
+            }
+
+            // Build consolidated tasks by crop name
+            const tasksByCrop = {}; // key: crop name, value: array of unique task objects (deduplicated by task_name)
+            for (const [cropId, tasks] of Object.entries(cropTasksMap)) {
+                const cropName = cropNameMap[cropId] || 'Unknown';
+                if (!tasksByCrop[cropName]) {
+                    tasksByCrop[cropName] = [];
+                }
+                // Add tasks, but avoid duplicates by task_name (and maybe description)
+                for (const task of tasks) {
+                    const existing = tasksByCrop[cropName].find(t => t.task_name === task.task_name);
+                    if (!existing) {
+                        tasksByCrop[cropName].push({
+                            task_name: task.task_name,
+                            description: task.description || '',
+                            scheduled_date: task.scheduled_date,
+                            completed: task.completed || false
+                        });
+                    }
+                }
+            }
+
+            // Now generate PDF
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             const margin = 15;
@@ -1938,6 +1986,7 @@
             doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y);
             y += 10;
 
+            // ---- Farms & Crops section ----
             farmsData.forEach((farm, farmIndex) => {
                 doc.setFontSize(14);
                 doc.setTextColor(30, 41, 59);
@@ -1994,6 +2043,81 @@
                 if (y > 270) { doc.addPage();
                     y = margin; }
             });
+
+            // ---- Consolidated Tasks by Crop (new section) ----
+            const taskEntries = Object.entries(tasksByCrop).filter(([cropName, tasks]) => tasks.length > 0);
+            if (taskEntries.length > 0) {
+                doc.addPage();
+                y = margin;
+                doc.setFontSize(16);
+                doc.setTextColor(30, 41, 59);
+                doc.text('All Tasks by Crop (Consolidated)', margin, y);
+                y += 6;
+                doc.setFontSize(9);
+                doc.setTextColor(100, 116, 139);
+                doc.text('Tasks are listed once per crop, regardless of how many farms grow that crop.', margin, y);
+                y += 6;
+
+                for (const [cropName, tasks] of taskEntries) {
+                    // Crop header
+                    doc.setFontSize(12);
+                    doc.setTextColor(22, 163, 74);
+                    doc.text(`🌾 ${cropName}`, margin, y);
+                    y += 4;
+                    doc.setFontSize(9);
+                    doc.setTextColor(75, 85, 99);
+                    // List farms that have this crop
+                    const farmsWithCrop = farmsData.filter(f => f.crops && f.crops.some(c => c.name === cropName))
+                        .map(f => f.name).join(', ');
+                    doc.text(`Grown in: ${farmsWithCrop || 'N/A'}`, margin + 2, y);
+                    y += 4;
+
+                    // Tasks table
+                    if (tasks.length > 0) {
+                        const colWidths = [60, 50, 40];
+                        const headers = ['Task', 'Description', 'Scheduled'];
+                        let x = margin;
+                        doc.setFillColor(240, 240, 240);
+                        doc.rect(margin, y - 4, colWidths.reduce((a, b) => a + b, 0), 8, 'F');
+                        doc.setTextColor(30, 41, 59);
+                        doc.setFontSize(8);
+                        headers.forEach((h, i) => { doc.text(h, x + 1, y + 1);
+                            x += colWidths[i]; });
+                        y += 6;
+                        doc.setTextColor(50, 50, 50);
+                        doc.setFontSize(7);
+                        tasks.forEach((task) => {
+                            const row = [
+                                task.task_name || '-',
+                                (task.description || '').substring(0, 30),
+                                task.scheduled_date ? new Date(task.scheduled_date)
+                                .toLocaleDateString() : 'N/A'
+                            ];
+                            let x2 = margin;
+                            row.forEach((text, i) => { doc.text(text, x2 + 1, y + 1);
+                                x2 += colWidths[i]; });
+                            y += 4;
+                            if (y > 270) { doc.addPage();
+                                y = margin; }
+                        });
+                        y += 4;
+                    } else {
+                        doc.setFontSize(8);
+                        doc.text('No tasks.', margin + 2, y);
+                        y += 4;
+                    }
+                    y += 4;
+                    if (y > 270) { doc.addPage();
+                        y = margin; }
+                }
+            } else {
+                // No tasks found
+                doc.addPage();
+                y = margin;
+                doc.setFontSize(14);
+                doc.setTextColor(100, 116, 139);
+                doc.text('No tasks have been created for any crop.', margin, y);
+            }
 
             doc.setFontSize(8);
             doc.setTextColor(156, 163, 175);
