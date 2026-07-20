@@ -62,8 +62,7 @@
         .stat-number { font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, #22c55e 0%, #0ea5e9 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
         @media (max-width: 640px) { .container { padding-left: 1rem; padding-right: 1rem; overflow-x: hidden; } button, .clickable { min-height: 44px; } }
-        @media (min-width: 1024px) { .container { max-width: 72rem; } }
-        @media (min-width: 1280px) { .container { max-width: 80rem; padding-left: 3rem; padding-right: 3rem; } }
+        /* On large screens, we use a narrower container – already set via max-w-4xl in classes */
         
         .btn-primary { background: linear-gradient(135deg, #16a34a 0%, #0284c7 100%); transition: all 0.3s ease; border: none; cursor: pointer; color: white !important; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(22,163,74,0.4); }
@@ -279,7 +278,7 @@
     </div>
     <!-- Navigation -->
     <nav class="backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-white/20">
-        <div class="container mx-auto px-4 py-3">
+        <div class="container mx-auto px-4 py-3 max-w-4xl">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <i class="fas fa-leaf text-3xl text-green-400 float-animation"></i>
@@ -348,8 +347,8 @@
             </div>
         </div>
     </div>
-    <!-- Main Content -->
-    <div class="container mx-auto px-4 py-6 max-w-6xl lg:px-8">
+    <!-- Main Content – narrowed and centered on large screens -->
+    <div class="container mx-auto px-4 py-6 max-w-4xl lg:px-6">
         <!-- Home Section -->
         <div id="home" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <div class="lg:col-span-2 bg-gradient-to-r from-green-600 to-green-700 rounded-2xl p-6 text-white shadow-xl animate-fadeInUp">
@@ -452,9 +451,12 @@
                     <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-tractor text-green-600 mr-2"></i> My Shambas</h2>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your farms and crops</p>
                 </div>
-                <button onclick="showEnhancedAddFarmModal()" class="blue-button">Add New Farm</button>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="exportAllFarmsPDF()" class="export-pdf-btn"><i class="fas fa-file-pdf mr-1"></i> Export All PDF</button>
+                    <button onclick="showEnhancedAddFarmModal()" class="blue-button"><i class="fas fa-plus"></i> Add New Farm</button>
+                </div>
             </div>
-            <div id="farmsContainer" class="grid grid-cols-1 gap-5"></div>
+            <div id="farmsContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-5"></div>
         </div>
         <!-- Crops Section -->
         <div id="crops" class="mb-8">
@@ -1156,7 +1158,7 @@
                     farmsData = data.farms;
                     if (farmsData.length === 0) {
                         container.innerHTML = `
-                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 text-center card-hover">
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 text-center card-hover col-span-2">
                                 <i class="fas fa-tractor text-5xl text-green-400 mb-4"></i>
                                 <h3 class="text-xl font-bold text-gray-800 dark:text-white">You don't have any farms yet</h3>
                                 <p class="text-gray-600 dark:text-gray-300 mt-2">Create your first farm to start tracking your crops.</p>
@@ -1172,14 +1174,14 @@
                             : 0;
                         return `
                         <div class="farm-card dark:bg-gray-800 dark:border-gray-700">
-                            <div class="farm-header">
+                            <div class="farm-header flex flex-wrap justify-between items-start">
                                 <div>
                                     <h3 class="text-xl font-bold text-gray-800 dark:text-white">${farm.name}</h3>
                                     <p class="text-gray-500 dark:text-gray-400"><i class="fas fa-map-marker-alt mr-1"></i> ${farm.location}</p>
                                     <p class="text-sm text-gray-500 dark:text-gray-400"><i class="fas fa-ruler-combined mr-1"></i> ${totalArea} acres (total crops area)</p>
                                     <p class="text-sm text-gray-500 dark:text-gray-400"><i class="fas fa-seedling mr-1"></i> Main crop: ${farm.main_crop || 'Mixed'}</p>
                                 </div>
-                                <div class="flex gap-2 flex-wrap items-center">
+                                <div class="flex gap-2 flex-wrap items-center mt-2 sm:mt-0">
                                     <button onclick="showAddCropModal(${farm.id})" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm transition"><i class="fas fa-plus"></i> Add Crop</button>
                                     <button onclick="deleteFarm(${farm.id})" class="delete-btn" title="Delete Farm"><i class="fas fa-trash-alt"></i></button>
                                 </div>
@@ -1187,7 +1189,7 @@
                             <div id="cropsForFarm_${farm.id}" class="mt-3 space-y-2">
                                 ${farm.crops && farm.crops.length > 0 ? farm.crops.map(crop => `
                                     <div class="crop-item dark:bg-gray-700">
-                                        <div class="flex justify-between items-start">
+                                        <div class="flex justify-between items-start flex-wrap">
                                             <div>
                                                 <h4 class="font-bold text-gray-800 dark:text-white">${crop.name} <span class="text-sm font-normal text-gray-500 dark:text-gray-400">${crop.variety || 'Local'}</span></h4>
                                                 <p class="text-xs text-gray-400 dark:text-gray-500">Area: ${crop.area || 0} acres • Planted: ${crop.planting_date ? new Date(crop.planting_date).toLocaleDateString() : 'N/A'}</p>
@@ -1196,7 +1198,7 @@
                                                     <span class="px-2 py-0.5 rounded-full text-xs ${(crop.health_score || 85) >= 80 ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' : (crop.health_score || 85) >= 60 ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300' : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'}">${crop.status || 'Active'}</span>
                                                 </div>
                                             </div>
-                                            <div class="flex gap-2 flex-wrap items-center">
+                                            <div class="flex gap-2 flex-wrap items-center mt-2 sm:mt-0">
                                                 <button onclick="loadCropTasks(${crop.id})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-xs transition"><i class="fas fa-tasks"></i> Tasks</button>
                                                 <button onclick="assessCropHealth(${crop.id})" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-xs transition"><i class="fas fa-stethoscope"></i> Health</button>
                                                 <button onclick="diagnoseCrop(${crop.id})" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-lg text-xs transition"><i class="fas fa-microscope"></i> Diagnose</button>
@@ -1422,11 +1424,10 @@
             }
         }
 
-        // ==================== PDF EXPORT ====================
-        function exportFarmDataPDF(farmId) {
-            const farm = farmsData.find(f => f.id === farmId);
-            if (!farm) {
-                showToast('Farm not found', 'error');
+        // ==================== PDF EXPORT – ALL FARMS ====================
+        function exportAllFarmsPDF() {
+            if (!farmsData || farmsData.length === 0) {
+                showToast('No farms to export.', 'error');
                 return;
             }
             const { jsPDF } = window.jspdf;
@@ -1440,80 +1441,87 @@
             y += 10;
             doc.setFontSize(16);
             doc.setTextColor(30, 41, 59);
-            doc.text(`Farm Report: ${farm.name}`, margin, y);
+            doc.text('Complete Farm Report', margin, y);
             y += 8;
-            doc.setFontSize(11);
+            doc.setFontSize(10);
             doc.setTextColor(100, 116, 139);
             doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y);
             y += 10;
 
-            doc.setFontSize(13);
-            doc.setTextColor(30, 41, 59);
-            doc.text('Farm Details', margin, y);
-            y += 6;
-            doc.setFontSize(10);
-            doc.setTextColor(75, 85, 99);
-            doc.text(`Location: ${farm.location || 'N/A'}`, margin + 2, y);
-            y += 5;
-            const totalArea = farm.crops && farm.crops.length > 0 
-                ? farm.crops.reduce((sum, c) => sum + (c.area || 0), 0) 
-                : 0;
-            doc.text(`Total Crop Area: ${totalArea} acres`, margin + 2, y);
-            y += 5;
-            doc.text(`Main Crop: ${farm.main_crop || 'Mixed'}`, margin + 2, y);
-            y += 5;
-            doc.text(`Health Score: ${farm.health_score || 85}%`, margin + 2, y);
-            y += 8;
-
-            doc.setFontSize(13);
-            doc.setTextColor(30, 41, 59);
-            doc.text('Crops', margin, y);
-            y += 6;
-
-            const crops = farm.crops || [];
-            if (crops.length === 0) {
-                doc.setFontSize(10);
-                doc.text('No crops added.', margin + 2, y);
-            } else {
-                const colWidths = [40, 30, 30, 30, 35];
-                const headers = ['Crop', 'Variety', 'Area (acres)', 'Planting Date', 'Health'];
-                let x = margin;
-                doc.setFillColor(22, 163, 74);
-                doc.rect(margin, y - 4, colWidths.reduce((a,b) => a+b, 0), 8, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(9);
-                headers.forEach((h, i) => {
-                    doc.text(h, x + 1, y + 1);
-                    x += colWidths[i];
-                });
-                y += 6;
+            farmsData.forEach((farm, farmIndex) => {
+                // Farm header
+                doc.setFontSize(14);
                 doc.setTextColor(30, 41, 59);
-                doc.setFontSize(8);
-                crops.forEach((c) => {
-                    const row = [
-                        c.name || '-',
-                        c.variety || 'Local',
-                        (c.area || 0).toString(),
-                        c.planting_date ? new Date(c.planting_date).toLocaleDateString() : 'N/A',
-                        (c.health_score || 85) + '%'
-                    ];
-                    let x2 = margin;
-                    row.forEach((text, i) => {
-                        doc.text(text, x2 + 1, y + 1);
-                        x2 += colWidths[i];
+                doc.text(`Farm: ${farm.name}`, margin, y);
+                y += 5;
+                doc.setFontSize(10);
+                doc.setTextColor(75, 85, 99);
+                doc.text(`Location: ${farm.location || 'N/A'}`, margin + 2, y);
+                y += 4;
+                const totalArea = farm.crops && farm.crops.length > 0 
+                    ? farm.crops.reduce((sum, c) => sum + (c.area || 0), 0) 
+                    : 0;
+                doc.text(`Total Crop Area: ${totalArea} acres`, margin + 2, y);
+                y += 4;
+                doc.text(`Main Crop: ${farm.main_crop || 'Mixed'}`, margin + 2, y);
+                y += 4;
+                doc.text(`Overall Health: ${farm.health_score || 85}%`, margin + 2, y);
+                y += 6;
+
+                // Crops table
+                const crops = farm.crops || [];
+                if (crops.length > 0) {
+                    const colWidths = [40, 30, 30, 35];
+                    const headers = ['Crop', 'Variety', 'Area (acres)', 'Health'];
+                    let x = margin;
+                    doc.setFillColor(22, 163, 74);
+                    doc.rect(margin, y - 4, colWidths.reduce((a,b) => a+b, 0), 8, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(9);
+                    headers.forEach((h, i) => {
+                        doc.text(h, x + 1, y + 1);
+                        x += colWidths[i];
                     });
-                    y += 5;
-                    if (y > 270) { doc.addPage(); y = margin; }
-                });
-            }
-            y += 6;
+                    y += 6;
+                    doc.setTextColor(30, 41, 59);
+                    doc.setFontSize(8);
+                    crops.forEach((c) => {
+                        const row = [
+                            c.name || '-',
+                            c.variety || 'Local',
+                            (c.area || 0).toString(),
+                            (c.health_score || 85) + '%'
+                        ];
+                        let x2 = margin;
+                        row.forEach((text, i) => {
+                            doc.text(text, x2 + 1, y + 1);
+                            x2 += colWidths[i];
+                        });
+                        y += 5;
+                        if (y > 270) { doc.addPage(); y = margin; }
+                    });
+                    y += 4;
+                } else {
+                    doc.setFontSize(10);
+                    doc.text('No crops recorded.', margin + 2, y);
+                    y += 6;
+                }
+
+                if (farmIndex < farmsData.length - 1) {
+                    y += 6;
+                    doc.setDrawColor(200, 200, 200);
+                    doc.line(margin, y, 195, y);
+                    y += 6;
+                }
+                if (y > 270) { doc.addPage(); y = margin; }
+            });
 
             doc.setFontSize(8);
             doc.setTextColor(156, 163, 175);
             doc.text('ShambaCare - Smart Farming Assistant', margin, 285);
 
-            doc.save(`farm_${farm.name}_report.pdf`);
-            showToast('PDF exported successfully!', 'success');
+            doc.save('shambacare_all_farms_report.pdf');
+            showToast('All farms PDF exported successfully!', 'success');
         }
 
         // ==================== TASKS PER CROP ====================
@@ -2070,7 +2078,7 @@
             return 'sunny';
         }
 
-        // ==================== DISEASE LIBRARY (fully populated) ====================
+        // ==================== DISEASE LIBRARY ====================
         const fallbackDiseases = [
             { name: "Fall Armyworm", crop: "Maize", severity: "High", symptoms: "Holes in leaves, ragged edges, visible caterpillars", organic_solution: "Neem oil spray (5ml/L) every 5 days; handpick larvae.", chemical_solution: "Emamectin benzoate (1ml/L water) or spinetoram.", cost: 500, prevention: "Early planting, crop rotation, intercropping with legumes.", image: "https://via.placeholder.com/150/f59e0b/ffffff?text=Armyworm" },
             { name: "Maize Lethal Necrosis", crop: "Maize", severity: "Critical", symptoms: "Stunted growth, yellow mottling, premature death.", organic_solution: "No organic cure; remove infected plants immediately.", chemical_solution: "No chemical cure – focus on vector control (thrips, aphids).", cost: 0, prevention: "Use certified resistant varieties; control insect vectors.", image: "https://via.placeholder.com/150/ef4444/ffffff?text=MLN" },
