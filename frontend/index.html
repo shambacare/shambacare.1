@@ -397,9 +397,6 @@
         }
 
         /* ── SECTION HEADERS ── */
-        /* The .section-header-container stays full-width by default, but on large screens
-                   we wrap it in a centering div. The style below is for the container itself.
-                   We'll apply max-width & centering via a wrapper in HTML. */
         .section-header-container {
             background: white;
             border-radius: 1rem;
@@ -424,32 +421,22 @@
             color: #f1f5f9 !important;
         }
 
-        /* The wrapper that narrows & centers the section header on large screens */
-        .section-header-wrapper {
+        /* ── Disease library header override – centered ── */
+        #library .section-header-container {
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        #library .section-header-container>div {
+            text-align: center;
+        }
+        #library .section-header-container .relative {
             width: 100%;
+            max-width: 320px;
         }
-        @media (min-width: 1024px) {
-            .section-header-wrapper {
-                display: flex;
-                justify-content: center;
-            }
-            .section-header-wrapper .section-header-container {
-                max-width: 66.666%;
-                /* 2/3 of the screen */;
-                width: 100%;
-            }
-        }
-        @media (min-width: 1280px) {
-            .section-header-wrapper .section-header-container {
-                max-width: 55%;
-                /* slightly narrower on very large screens */;
-            }
-        }
-        /* On mobile, full width */
-        @media (max-width: 1023px) {
-            .section-header-wrapper .section-header-container {
-                max-width: 100%;
-            }
+        #library .section-header-container input {
+            width: 100%;
         }
 
         /* ── blue button ── */
@@ -972,7 +959,8 @@
     </div>
 
     <!-- ===== MAIN CONTENT ===== -->
-    <div class="container mx-auto px-4 py-6">
+    <!-- Added responsive padding: px-4 default, lg:px-6 (1.5x), xl:px-8 -->
+    <div class="container mx-auto px-4 lg:px-6 xl:px-8 py-6">
 
         <!-- HOME -->
         <div id="home" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -1076,44 +1064,36 @@
 
         <!-- ===== MY SHAMBAS ===== -->
         <div id="shambas" class="mb-8">
-            <!-- SECTION HEADER – wrapped to be centered & narrower on large screens -->
-            <div class="section-header-wrapper">
-                <div class="section-header-container dark:bg-gray-800 dark:border-gray-700">
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-tractor text-green-600 mr-2"></i> My Shambas</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your farms and crops</p>
-                    </div>
-                    <div class="flex gap-2 flex-wrap">
-                        <button onclick="exportAllFarmsPDF()" class="export-pdf-btn"><i class="fas fa-file-pdf mr-1"></i> Export All PDF</button>
-                        <button onclick="showEnhancedAddFarmModal()" class="blue-button"><i class="fas fa-plus"></i> Add New Farm</button>
-                    </div>
+            <div class="section-header-container dark:bg-gray-800 dark:border-gray-700">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-tractor text-green-600 mr-2"></i> My Shambas</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your farms and crops</p>
+                </div>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="exportAllFarmsPDF()" class="export-pdf-btn"><i class="fas fa-file-pdf mr-1"></i> Export All PDF</button>
+                    <button onclick="showEnhancedAddFarmModal()" class="blue-button"><i class="fas fa-plus"></i> Add New Farm</button>
                 </div>
             </div>
-            <!-- Farms grid – 2 columns on large screens, unchanged -->
             <div id="farmsContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-5"></div>
         </div>
 
         <!-- ===== CROPS ===== -->
         <div id="crops" class="mb-8">
-            <div class="section-header-wrapper">
-                <div class="section-header-container dark:bg-gray-800 dark:border-gray-700">
-                    <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-seedling text-green-600 mr-2"></i> Active Crops Health Status</h2>
-                    <span class="blue-button" style="cursor: default;"><i class="fas fa-calendar"></i> Last updated today</span>
-                </div>
+            <div class="section-header-container dark:bg-gray-800 dark:border-gray-700">
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-seedling text-green-600 mr-2"></i> Active Crops Health Status</h2>
+                <span class="blue-button" style="cursor: default;"><i class="fas fa-calendar"></i> Last updated today</span>
             </div>
             <div id="cropsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
         </div>
 
         <!-- ===== REVIEWS ===== -->
         <div id="reviews" class="mb-8">
-            <div class="section-header-wrapper">
-                <div class="section-header-container dark:bg-gray-800 dark:border-gray-700">
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-star text-yellow-500 mr-2"></i> Farmer Ratings & Reviews</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">See what fellow farmers say about ShambaCare</p>
-                    </div>
-                    <button onclick="scrollToSection('contact')" class="blue-button"><i class="fas fa-pen"></i> Leave a Review</button>
+            <div class="section-header-container dark:bg-gray-800 dark:border-gray-700">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-star text-yellow-500 mr-2"></i> Farmer Ratings & Reviews</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">See what fellow farmers say about ShambaCare</p>
                 </div>
+                <button onclick="scrollToSection('contact')" class="blue-button"><i class="fas fa-pen"></i> Leave a Review</button>
             </div>
             <div id="reviewsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             <div id="reviewsViewAllWrapper" class="text-center mt-4 hidden">
@@ -1122,17 +1102,16 @@
         </div>
 
         <!-- ===== DISEASE LIBRARY ===== -->
+        <!-- Header centered via CSS override -->
         <div id="library" class="mb-8">
-            <div class="section-header-wrapper">
-                <div class="section-header-container dark:bg-gray-800 dark:border-gray-700">
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-book text-green-600 mr-2"></i> Common Crop Issues in Kenya</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Search and learn about crop diseases, symptoms, and treatments</p>
-                    </div>
-                    <div class="relative">
-                        <input type="text" id="diseaseSearchInput" placeholder="Search by disease or crop..." class="pl-10 pr-4 py-2 border rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white dark:border-gray-600">
-                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                    </div>
+            <div class="section-header-container dark:bg-gray-800 dark:border-gray-700">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white"><i class="fas fa-book text-green-600 mr-2"></i> Common Crop Issues in Kenya</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Search and learn about crop diseases, symptoms, and treatments</p>
+                </div>
+                <div class="relative">
+                    <input type="text" id="diseaseSearchInput" placeholder="Search by disease or crop..." class="pl-10 pr-4 py-2 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                 </div>
             </div>
             <div id="diseaseLibraryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
@@ -1143,14 +1122,12 @@
 
         <!-- ===== CONTACT ===== -->
         <div id="contact" class="mb-8">
-            <div class="section-header-wrapper">
-                <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 text-center mb-8 w-full">
-                    <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Let's <span class="gradient-text">Connect</span></h1>
-                    <p class="text-gray-600 dark:text-gray-300">Send us your feedback or reach out for support</p>
-                </div>
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Let's <span class="gradient-text">Connect</span></h1>
+                <p class="text-gray-600 dark:text-gray-300">Send us your feedback or reach out for support</p>
             </div>
 
-            <!-- Contact Methods – full width -->
+            <!-- Contact Methods -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                 <div class="bg-white dark:bg-gray-800 dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center card-hover dark:border-gray-700">
                     <i class="fas fa-phone-alt text-green-600 text-3xl mb-3"></i>
@@ -1178,8 +1155,9 @@
                 </div>
             </div>
 
-            <!-- Chat + Feedback Form – full width -->
+            <!-- Chat + Feedback Form -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                <!-- Chat Support -->
                 <div class="bg-white dark:bg-gray-800 dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden card-hover dark:border-gray-700">
                     <div class="bg-gradient-to-r from-green-600 to-green-700 p-5">
                         <h2 class="text-xl font-bold text-white"><i class="fas fa-comments mr-2"></i> Chat with Support</h2>
@@ -1196,6 +1174,7 @@
                         <p class="text-xs text-gray-400 dark:text-gray-400 mt-2"><i class="fas fa-clock"></i> Our support team typically responds within 24 hours</p>
                     </div>
                 </div>
+                <!-- Review Form -->
                 <div class="bg-white dark:bg-gray-800 dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden card-hover dark:border-gray-700">
                     <div class="bg-gradient-to-r from-green-600 to-green-700 p-5">
                         <h2 class="text-xl font-bold text-white"><i class="fas fa-star mr-2"></i> Leave a Review</h2>
@@ -1533,15 +1512,7 @@
         }
 
         // ==================== CHAT FUNCTIONS ====================
-        async function loadChatMessages() {
-            try {
-                const response = await apiCall('/communications/my-messages');
-                if (response.success && response.messages) { displayChatMessages(response.messages); } else {
-                    displayNoMessages(); }
-            } catch (error) { console.error('Error loading chats:', error);
-                displayNoMessages(); }
-        }
-
+        // ---- Relative time formatter (copied from provided file) ----
         function formatChatDate(dateStr) {
             if (!dateStr) return 'Just now';
             try {
@@ -1554,13 +1525,32 @@
                 if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
                 if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
                 return date.toLocaleDateString();
-            } catch (e) { return 'Just now'; }
+            } catch (e) {
+                return 'Just now';
+            }
+        }
+
+        async function loadChatMessages() {
+            try {
+                const response = await apiCall('/communications/my-messages');
+                if (response.success && response.messages) {
+                    displayChatMessages(response.messages);
+                } else {
+                    displayNoMessages();
+                }
+            } catch (error) {
+                console.error('Error loading chats:', error);
+                displayNoMessages();
+            }
         }
 
         function displayChatMessages(messages) {
             const container = document.getElementById('chatMessagesList');
             if (!container) return;
-            if (!messages || messages.length === 0) { displayNoMessages(); return; }
+            if (!messages || messages.length === 0) {
+                displayNoMessages();
+                return;
+            }
             container.innerHTML = messages.map(msg => `
                     <div class="chat-message ${msg.is_from_admin ? 'admin' : 'farmer'}">
                         <div class="chat-bubble">
@@ -2686,7 +2676,8 @@
                 wrapper.classList.add('hidden');
                 return;
             }
-            const displayCount = showAllDiseases ? diseases.length : Math.min(3, diseases.length);
+            // Show 4 initially on large screens, else 3 (we always show 4 as the grid is designed for 4 cols)
+            const displayCount = showAllDiseases ? diseases.length : Math.min(4, diseases.length);
             const displayDiseases = diseases.slice(0, displayCount);
             container.innerHTML = displayDiseases.map(d => `
                     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 card-hover border border-green-100 dark:border-gray-700 transition-all hover:shadow-lg cursor-pointer disease-card" onclick="showDiseaseDetail('${d.name.replace(/'/g, "\\'")}', '${d.crop.replace(/'/g, "\\'")}', '${d.severity}', '${(d.symptoms || '').replace(/'/g, "\\'")}', '${(d.organic_solution || d.solution || '').replace(/'/g, "\\'")}', '${(d.chemical_solution || '').replace(/'/g, "\\'")}', ${d.cost || 0})">
@@ -2699,7 +2690,7 @@
                         <p class="text-xs text-gray-600 dark:text-gray-300 mt-2 line-clamp-2">💡 ${(d.solution || '').substring(0, 80)}${(d.solution || '').length > 80 ? '...' : ''}</p>
                     </div>
                 `).join('');
-            if (diseases.length > 3) {
+            if (diseases.length > 4) {
                 wrapper.classList.remove('hidden');
                 wrapper.querySelector('button').innerHTML = showAllDiseases ?
                     '<i class="fas fa-chevron-up mr-2"></i> Show Less' :
