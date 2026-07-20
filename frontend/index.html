@@ -1917,14 +1917,14 @@
             } catch (e) { showToast('Network error', 'error'); }
         }
 
-        // ==================== PDF EXPORT – ALL FARMS with TASKS (IMPROVED LAYOUT) ====================
+        // ==================== PDF EXPORT – ALL FARMS with TASKS (UPDATED LAYOUT) ====================
         async function exportAllFarmsPDF() {
             if (!farmsData || farmsData.length === 0) { showToast('No farms to export.', 'error'); return; }
 
-            // First, fetch tasks for all crops across all farms
-            const cropTasksMap = {}; // key: cropId, value: tasks array
-            const cropNameMap = {}; // key: cropId, value: crop name
-            const cropFarmMap = {}; // key: cropId, value: farm name
+            // Fetch tasks for all crops
+            const cropTasksMap = {};
+            const cropNameMap = {};
+            const cropFarmMap = {};
 
             for (const farm of farmsData) {
                 if (farm.crops) {
@@ -1946,9 +1946,9 @@
                 }
             }
 
-            // Build consolidated tasks by crop name (deduplicated by task_name)
-            const tasksByCrop = {}; // key: crop name, value: array of unique task objects
-            const farmsByCrop = {}; // key: crop name, value: array of farm names
+            // Consolidate tasks by crop name (deduplicate by task_name)
+            const tasksByCrop = {};
+            const farmsByCrop = {};
 
             for (const [cropId, tasks] of Object.entries(cropTasksMap)) {
                 const cropName = cropNameMap[cropId] || 'Unknown';
@@ -1961,7 +1961,6 @@
                 if (!farmsByCrop[cropName].includes(farmName)) {
                     farmsByCrop[cropName].push(farmName);
                 }
-                // Add tasks, avoid duplicates by task_name
                 for (const task of tasks) {
                     const existing = tasksByCrop[cropName].find(t => t.task_name === task.task_name);
                     if (!existing) {
@@ -1975,7 +1974,7 @@
                 }
             }
 
-            // Now generate PDF
+            // Generate PDF
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             const margin = 15;
@@ -2053,24 +2052,21 @@
                     y = margin; }
             });
 
-            // ── TASKS SECTION – CONTINUES ON SAME PAGE (no forced page break) ──
-            // Add a separator line before tasks section
+            // ── TASKS SECTION (continues on same page, larger fonts, no "Grown in" line) ──
             doc.setDrawColor(22, 163, 74);
             doc.setLineWidth(0.5);
             doc.line(margin, y, 195, y);
             y += 8;
 
-            // Main title for tasks section
-            doc.setFontSize(18);
+            doc.setFontSize(20);
             doc.setTextColor(22, 163, 74);
             doc.text('All Tasks by Crop', margin, y);
             y += 6;
-            doc.setFontSize(10);
+            doc.setFontSize(11);
             doc.setTextColor(100, 116, 139);
             doc.text('Tasks are listed once per crop, regardless of how many farms grow that crop.', margin, y);
-            y += 8;
+            y += 10;
 
-            // ── Iterate over each crop and list its tasks ──
             const cropNames = Object.keys(tasksByCrop).sort();
             if (cropNames.length === 0) {
                 doc.setFontSize(12);
@@ -2080,93 +2076,109 @@
             } else {
                 for (const cropName of cropNames) {
                     const tasks = tasksByCrop[cropName] || [];
-                    const farmsForCrop = farmsByCrop[cropName] || [];
+                    // Remove farmsByCrop display – we omit the "Grown in" line entirely
 
-                    // Check if we need a new page
                     if (y > 250) { doc.addPage();
                         y = margin; }
 
-                    // Crop name as header with icon
-                    doc.setFontSize(16);
+                    // Crop name header (no emoji, clean text)
+                    doc.setFontSize(18);
                     doc.setTextColor(22, 163, 74);
-                    doc.text(`🌾 ${cropName}`, margin, y);
-                    y += 5;
-
-                    // Farms that grow this crop
-                    doc.setFontSize(9);
-                    doc.setTextColor(75, 85, 99);
-                    const farmListStr = farmsForCrop.length > 0 ? farmsForCrop.join(', ') : 'N/A';
-                    doc.text(`Grown in: ${farmListStr}`, margin + 2, y);
+                    doc.text(`${cropName}`, margin, y);
                     y += 5;
 
                     if (tasks.length > 0) {
-                        // ── Tasks table ──
-                        const colWidths = [55, 60, 45];
+                        // Increase font sizes for task table
+                        const colWidths = [55, 70, 45];
                         const headers = ['Task', 'Description', 'Scheduled'];
 
-                        // Header row
                         let x = margin;
                         doc.setFillColor(240, 245, 235);
                         doc.rect(margin, y - 4, colWidths.reduce((a, b) => a + b, 0), 8, 'F');
                         doc.setTextColor(30, 41, 59);
-                        doc.setFontSize(10);
+                        doc.setFontSize(12);
                         headers.forEach((h, i) => { doc.text(h, x + 2, y + 1);
                             x += colWidths[i]; });
                         y += 6;
 
-                        // Task rows
                         doc.setTextColor(50, 50, 50);
-                        doc.setFontSize(9);
+                        doc.setFontSize(11);
                         for (const task of tasks) {
                             // Check page break
-                            if (y > 270) { doc.addPage();
+                            if (y > 270) {
+                                doc.addPage();
                                 y = margin;
                                 // Re-draw header on new page
                                 doc.setFillColor(240, 245, 235);
                                 let x2 = margin;
                                 doc.rect(margin, y - 4, colWidths.reduce((a, b) => a + b, 0), 8, 'F');
                                 doc.setTextColor(30, 41, 59);
-                                doc.setFontSize(10);
+                                doc.setFontSize(12);
                                 headers.forEach((h, i) => { doc.text(h, x2 + 2, y + 1);
                                     x2 += colWidths[i]; });
                                 y += 6;
                                 doc.setTextColor(50, 50, 50);
-                                doc.setFontSize(9);
+                                doc.setFontSize(11);
                             }
 
-                            const row = [
-                                task.task_name || '-',
-                                (task.description || '').substring(0, 35),
-                                task.scheduled_date ? new Date(task.scheduled_date).toLocaleDateString() : 'N/A'
-                            ];
-                            let x3 = margin;
-                            row.forEach((text, i) => {
-                                // Truncate description if too long
-                                let displayText = text;
-                                if (i === 1 && displayText.length > 30) {
-                                    displayText = displayText.substring(0, 28) + '…';
+                            // Show full description – no truncation, let it wrap naturally
+                            // jsPDF doesn't auto-wrap, so we split long descriptions into multiple lines
+                            const maxWidth = colWidths[1] - 4;
+                            const taskName = task.task_name || '-';
+                            const description = task.description || '';
+                            const scheduled = task.scheduled_date ? new Date(task.scheduled_date).toLocaleDateString() :
+                                'N/A';
+
+                            // Draw task name
+                            doc.text(taskName, margin + 2, y + 1);
+                            // Draw scheduled date
+                            doc.text(scheduled, margin + colWidths[0] + colWidths[1] + 2, y + 1);
+
+                            // Handle description wrapping
+                            const lines = doc.splitTextToSize(description, maxWidth);
+                            // Draw description lines, adjusting y for each line
+                            const descX = margin + colWidths[0] + 2;
+                            lines.forEach((line, idx) => {
+                                if (idx === 0) {
+                                    doc.text(line, descX, y + 1);
+                                } else {
+                                    y += 4; // line height
+                                    if (y > 270) { doc.addPage();
+                                        y = margin;
+                                        // Re-draw header on new page (simplified)
+                                        doc.setFillColor(240, 245, 235);
+                                        let x3 = margin;
+                                        doc.rect(margin, y - 4, colWidths.reduce((a, b) => a + b, 0), 8,
+                                        'F');
+                                        doc.setTextColor(30, 41, 59);
+                                        doc.setFontSize(12);
+                                        headers.forEach((h, i) => { doc.text(h, x3 + 2, y + 1);
+                                            x3 += colWidths[i]; });
+                                        y += 6;
+                                        doc.setTextColor(50, 50, 50);
+                                        doc.setFontSize(11);
+                                    }
+                                    doc.text(line, descX, y + 1);
                                 }
-                                doc.text(displayText, x3 + 2, y + 1);
-                                x3 += colWidths[i];
                             });
-                            y += 5;
+
+                            // Increment y for next row (base height + extra lines)
+                            y += 5 + (lines.length - 1) * 4;
                         }
                         y += 4;
                     } else {
-                        doc.setFontSize(9);
+                        doc.setFontSize(10);
                         doc.setTextColor(100, 116, 139);
                         doc.text('No tasks for this crop.', margin + 2, y);
                         y += 4;
                     }
 
-                    // Spacer between crops
                     y += 6;
                     if (y > 270) { doc.addPage();
                         y = margin; }
                 }
             }
 
-            // ── FOOTER ──
             doc.setFontSize(8);
             doc.setTextColor(156, 163, 175);
             doc.text('ShambaCare - Smart Farming Assistant', margin, 285);
