@@ -1917,177 +1917,167 @@
             } catch (e) { showToast('Network error', 'error'); }
         }
 
-        // ==================== PDF EXPORT – ALL FARMS (SIMPLIFIED TASKS) ====================
-        async function exportAllFarmsPDF() {
-            if (!farmsData || farmsData.length === 0) { showToast('No farms to export.', 'error'); return; }
+        // ==================== PDF EXPORT – ALL FARMS (FIXED FONT) ====================
+async function exportAllFarmsPDF() {
+    if (!farmsData || farmsData.length === 0) { showToast('No farms to export.', 'error'); return; }
 
-            // Build a map of crop name -> array of unique task objects (deduplicated by task_name)
-            const tasksByCrop = {}; // key: crop name, value: array of { task_name, description, scheduled_date }
-            // Also track which farms have this crop for info (optional)
-            const cropFarms = {}; // key: crop name, array of farm names
+    // Build a map of crop name -> array of unique task objects
+    const tasksByCrop = {};
+    const cropFarms = {};
 
-            for (const farm of farmsData) {
-                if (farm.crops) {
-                    for (const crop of farm.crops) {
-                        const cropName = crop.name;
-                        // Record farm for this crop
-                        if (!cropFarms[cropName]) cropFarms[cropName] = [];
-                        if (!cropFarms[cropName].includes(farm.name)) {
-                            cropFarms[cropName].push(farm.name);
-                        }
-                        // Fetch tasks for this crop
-                        try {
-                            const response = await apiCall(`/farm-guide/tasks/${crop.id}`);
-                            if (response.success && response.tasks) {
-                                if (!tasksByCrop[cropName]) tasksByCrop[cropName] = [];
-                                for (const task of response.tasks) {
-                                    // Avoid duplicates by task_name (and description)
-                                    const existing = tasksByCrop[cropName].find(t => t.task_name === task.task_name);
-                                    if (!existing) {
-                                        tasksByCrop[cropName].push({
-                                            task_name: task.task_name,
-                                            description: task.description || '',
-                                            scheduled_date: task.scheduled_date,
-                                            completed: task.completed || false
-                                        });
-                                    }
-                                }
+    for (const farm of farmsData) {
+        if (farm.crops) {
+            for (const crop of farm.crops) {
+                const cropName = crop.name;
+                if (!cropFarms[cropName]) cropFarms[cropName] = [];
+                if (!cropFarms[cropName].includes(farm.name)) {
+                    cropFarms[cropName].push(farm.name);
+                }
+                try {
+                    const response = await apiCall(`/farm-guide/tasks/${crop.id}`);
+                    if (response.success && response.tasks) {
+                        if (!tasksByCrop[cropName]) tasksByCrop[cropName] = [];
+                        for (const task of response.tasks) {
+                            const existing = tasksByCrop[cropName].find(t => t.task_name === task.task_name);
+                            if (!existing) {
+                                tasksByCrop[cropName].push({
+                                    task_name: task.task_name,
+                                    description: task.description || '',
+                                    scheduled_date: task.scheduled_date,
+                                    completed: task.completed || false
+                                });
                             }
-                        } catch (e) {
-                            // skip if tasks fail
                         }
                     }
-                }
+                } catch (e) { /* skip */ }
             }
+        }
+    }
 
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4');
-            const margin = 15;
-            let y = margin;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const margin = 15;
+    let y = margin;
 
-            // ---- Header ----
-            doc.setFontSize(22);
-            doc.setTextColor(22, 163, 74);
-            doc.text('ShambaCare Kenya', margin, y);
-            y += 10;
-            doc.setFontSize(16);
+    // ---- Header ----
+    doc.setFont('helvetica');
+    doc.setFontSize(22);
+    doc.setTextColor(22, 163, 74);
+    doc.text('ShambaCare Kenya', margin, y);
+    y += 10;
+    doc.setFontSize(16);
+    doc.setTextColor(30, 41, 59);
+    doc.text('Complete Farm Report', margin, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y);
+    y += 10;
+
+    // ---- Farms & Crops tables ----
+    farmsData.forEach((farm, farmIndex) => {
+        doc.setFontSize(14);
+        doc.setTextColor(30, 41, 59);
+        doc.text(`Farm: ${farm.name}`, margin, y);
+        y += 5;
+        doc.setFontSize(10);
+        doc.setTextColor(75, 85, 99);
+        doc.text(`Location: ${farm.location || 'N/A'}`, margin + 2, y);
+        y += 4;
+        const totalArea = farm.crops && farm.crops.length > 0 ? farm.crops.reduce((sum, c) => sum + (c.area || 0), 0) : 0;
+        doc.text(`Total Crop Area: ${totalArea} acres`, margin + 2, y);
+        y += 4;
+        doc.text(`Main Crop: ${farm.main_crop || 'Mixed'}`, margin + 2, y);
+        y += 4;
+        doc.text(`Overall Health: ${farm.health_score || 85}%`, margin + 2, y);
+        y += 6;
+
+        const crops = farm.crops || [];
+        if (crops.length > 0) {
+            const colWidths = [40, 30, 30, 35];
+            const headers = ['Crop', 'Variety', 'Area (acres)', 'Health'];
+            let x = margin;
+            doc.setFillColor(22, 163, 74);
+            doc.rect(margin, y - 4, colWidths.reduce((a, b) => a + b, 0), 8, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(9);
+            headers.forEach((h, i) => { doc.text(h, x + 1, y + 1); x += colWidths[i]; });
+            y += 6;
             doc.setTextColor(30, 41, 59);
-            doc.text('Complete Farm Report', margin, y);
-            y += 8;
-            doc.setFontSize(10);
-            doc.setTextColor(100, 116, 139);
-            doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y);
-            y += 10;
-
-            // ---- Farms & Crops tables ----
-            farmsData.forEach((farm, farmIndex) => {
-                doc.setFontSize(14);
-                doc.setTextColor(30, 41, 59);
-                doc.text(`Farm: ${farm.name}`, margin, y);
+            doc.setFontSize(8);
+            crops.forEach((c) => {
+                const row = [c.name || '-', c.variety || 'Local', (c.area || 0).toString(), (c.health_score || 85) + '%'];
+                let x2 = margin;
+                row.forEach((text, i) => { doc.text(text, x2 + 1, y + 1); x2 += colWidths[i]; });
                 y += 5;
-                doc.setFontSize(10);
-                doc.setTextColor(75, 85, 99);
-                doc.text(`Location: ${farm.location || 'N/A'}`, margin + 2, y);
-                y += 4;
-                const totalArea = farm.crops && farm.crops.length > 0 ? farm.crops.reduce((sum, c) => sum + (c.area || 0), 0) : 0;
-                doc.text(`Total Crop Area: ${totalArea} acres`, margin + 2, y);
-                y += 4;
-                doc.text(`Main Crop: ${farm.main_crop || 'Mixed'}`, margin + 2, y);
-                y += 4;
-                doc.text(`Overall Health: ${farm.health_score || 85}%`, margin + 2, y);
-                y += 6;
-
-                const crops = farm.crops || [];
-                if (crops.length > 0) {
-                    const colWidths = [40, 30, 30, 35];
-                    const headers = ['Crop', 'Variety', 'Area (acres)', 'Health'];
-                    let x = margin;
-                    doc.setFillColor(22, 163, 74);
-                    doc.rect(margin, y - 4, colWidths.reduce((a, b) => a + b, 0), 8, 'F');
-                    doc.setTextColor(255, 255, 255);
-                    doc.setFontSize(9);
-                    headers.forEach((h, i) => { doc.text(h, x + 1, y + 1); x += colWidths[i]; });
-                    y += 6;
-                    doc.setTextColor(30, 41, 59);
-                    doc.setFontSize(8);
-                    crops.forEach((c) => {
-                        const row = [c.name || '-', c.variety || 'Local', (c.area || 0).toString(), (c.health_score || 85) + '%'];
-                        let x2 = margin;
-                        row.forEach((text, i) => { doc.text(text, x2 + 1, y + 1); x2 += colWidths[i]; });
-                        y += 5;
-                        if (y > 270) { doc.addPage(); y = margin; }
-                    });
-                    y += 4;
-                } else {
-                    doc.setFontSize(10);
-                    doc.text('No crops recorded.', margin + 2, y);
-                    y += 6;
-                }
-
-                if (farmIndex < farmsData.length - 1) { y += 6; doc.setDrawColor(200, 200, 200); doc.line(margin, y, 195, y); y += 6; }
                 if (y > 270) { doc.addPage(); y = margin; }
             });
+            y += 4;
+        } else {
+            doc.setFontSize(10);
+            doc.text('No crops recorded.', margin + 2, y);
+            y += 6;
+        }
 
-            // ---- All Crops Tasks (simplified) ----
-            // Filter out crops without tasks
-            const cropEntries = Object.entries(tasksByCrop).filter(([cropName, tasks]) => tasks.length > 0);
-            if (cropEntries.length > 0) {
-                doc.addPage();
-                y = margin;
+        if (farmIndex < farmsData.length - 1) { y += 6; doc.setDrawColor(200, 200, 200); doc.line(margin, y, 195, y); y += 6; }
+        if (y > 270) { doc.addPage(); y = margin; }
+    });
 
-                // Title
-                doc.setFontSize(18);
-                doc.setTextColor(22, 163, 74);
-                doc.text('🌾 All Crops Tasks', margin, y);
-                y += 8;
+    // ---- All Crops Tasks (simplified, no emojis) ----
+    const cropEntries = Object.entries(tasksByCrop).filter(([cropName, tasks]) => tasks.length > 0);
+    if (cropEntries.length > 0) {
+        doc.addPage();
+        y = margin;
 
-                // For each crop, list crop name and tasks
-                for (const [cropName, tasks] of cropEntries) {
-                    // Crop name
-                    doc.setFontSize(14);
-                    doc.setTextColor(30, 41, 59);
-                    doc.text(`● ${cropName}`, margin, y);
-                    y += 6;
+        // Title – plain text, no emoji
+        doc.setFontSize(18);
+        doc.setTextColor(22, 163, 74);
+        doc.text('All Crops Tasks', margin, y);
+        y += 8;
 
-                    // Tasks list (bulleted)
+        for (const [cropName, tasks] of cropEntries) {
+            doc.setFontSize(14);
+            doc.setTextColor(30, 41, 59);
+            doc.text(`● ${cropName}`, margin, y);
+            y += 6;
+
+            doc.setFontSize(10);
+            doc.setTextColor(50, 50, 50);
+            tasks.forEach((task, idx) => {
+                const dueDate = task.scheduled_date ? new Date(task.scheduled_date).toLocaleDateString() : 'N/A';
+                const status = task.completed ? '[DONE]' : '[PENDING]';
+                const line = `   ${idx+1}. ${task.task_name} (Due: ${dueDate}) ${status}`;
+                doc.text(line, margin + 2, y);
+                y += 5;
+                if (task.description) {
+                    doc.setFontSize(8);
+                    doc.setTextColor(100, 116, 139);
+                    const desc = task.description.substring(0, 60) + (task.description.length > 60 ? '...' : '');
+                    doc.text(`       ${desc}`, margin + 2, y);
+                    y += 4;
                     doc.setFontSize(10);
                     doc.setTextColor(50, 50, 50);
-                    tasks.forEach((task, idx) => {
-                        const dueDate = task.scheduled_date ? new Date(task.scheduled_date).toLocaleDateString() : 'N/A';
-                        const status = task.completed ? '✅' : '⏳';
-                        // Indent tasks
-                        const line = `   ${idx+1}. ${task.task_name} (Due: ${dueDate}) ${status}`;
-                        doc.text(line, margin + 2, y);
-                        y += 5;
-                        // If description exists, add it as a sub-line
-                        if (task.description) {
-                            doc.setFontSize(8);
-                            doc.setTextColor(100, 116, 139);
-                            doc.text(`       ${task.description.substring(0, 60)}${task.description.length > 60 ? '...' : ''}`, margin + 2, y);
-                            y += 4;
-                            doc.setFontSize(10);
-                            doc.setTextColor(50, 50, 50);
-                        }
-                        if (y > 270) { doc.addPage(); y = margin; }
-                    });
-                    y += 3; // spacing between crops
-                    if (y > 270) { doc.addPage(); y = margin; }
                 }
-            } else {
-                doc.addPage();
-                y = margin;
-                doc.setFontSize(14);
-                doc.setTextColor(100, 116, 139);
-                doc.text('No tasks have been created for any crop.', margin, y);
-            }
-
-            // Footer
-            doc.setFontSize(8);
-            doc.setTextColor(156, 163, 175);
-            doc.text('ShambaCare - Smart Farming Assistant', margin, 285);
-            doc.save('shambacare_all_farms_report.pdf');
-            showToast('All farms PDF exported successfully!', 'success');
+                if (y > 270) { doc.addPage(); y = margin; }
+            });
+            y += 3;
+            if (y > 270) { doc.addPage(); y = margin; }
         }
+    } else {
+        doc.addPage();
+        y = margin;
+        doc.setFontSize(14);
+        doc.setTextColor(100, 116, 139);
+        doc.text('No tasks have been created for any crop.', margin, y);
+    }
+
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(156, 163, 175);
+    doc.text('ShambaCare - Smart Farming Assistant', margin, 285);
+    doc.save('shambacare_all_farms_report.pdf');
+    showToast('All farms PDF exported successfully!', 'success');
+}
 
         // ==================== TASKS ====================
         async function loadCropTasks(cropId) {
