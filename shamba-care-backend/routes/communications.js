@@ -20,12 +20,11 @@ router.post('/send', verifyToken, async (req, res) => {
             farmer_id: farmerId,
             message: message.trim(),
             is_from_admin: false,
-            is_read: false
+            is_read: false,
+            created_at: new Date() // ✅ FORCE timestamp
         });
 
-        // Reload with raw: true
         const fresh = await ChatMessage.findByPk(chatMessage.id, { raw: true });
-        console.log('🔥 Fresh message from DB:', fresh); // <- DEBUG
 
         res.json({
             success: true,
@@ -55,8 +54,6 @@ router.get('/my-messages', verifyToken, async (req, res) => {
             order: [['created_at', 'ASC']],
             raw: true
         });
-
-        console.log('🔥 Raw messages from DB:', messages); // <- DEBUG
 
         const formattedMessages = messages.map(msg => ({
             id: msg.id,
@@ -183,7 +180,8 @@ router.post('/admin/reply', verifyToken, isAdmin, async (req, res) => {
             admin_id: adminId,
             message: message.trim(),
             is_from_admin: true,
-            is_read: false
+            is_read: false,
+            created_at: new Date() // ✅ FORCE timestamp
         });
 
         const freshReply = await ChatMessage.findByPk(reply.id, { raw: true });
