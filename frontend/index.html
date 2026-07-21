@@ -2400,7 +2400,7 @@ async function sendNewMessage() {
             document.getElementById('pendingTasks').innerText = total;
         }
 
-        // ==================== DIAGNOSIS ====================
+       // ==================== DIAGNOSIS ====================
 function openCameraDirect() {
     const input = document.createElement('input');
     input.type = 'file';
@@ -2510,6 +2510,11 @@ async function analyzeImage() {
                 confidence = Math.min(confidence + 70, 95);
             }
 
+            // ---- Crop name: prefer AI response, then dropdown, then fallback ----
+            const aiCrop = data.crop_name || data.crop || data.crop_type || '';
+            const dropdownCrop = cropSelect.value && cropSelect.value !== '' ? cropSelect.value : '';
+            const cropName = aiCrop || dropdownCrop || 'Unknown';
+
             const localDisease = findLocalDisease(diseaseName);
             const organic = localDisease?.organic_solution || data.organic_solution ||
                 'Consult local agrovet for organic options.';
@@ -2522,20 +2527,17 @@ async function analyzeImage() {
             const cost = localDisease?.cost || data.estimated_cost || 500;
 
             // ---- Save ONLY essential fields to backend ----
-            const cropName = cropSelect.value || 'Unknown';
             try {
                 const saveResponse = await apiCall('/diagnoses/analyze', {
                     method: 'POST',
                     body: JSON.stringify({
-                        crop_name: cropName,
+                        crop_name: cropName,   // Now uses AI-detected crop
                         disease_name: diseaseName,
                         confidence_score: confidence,
-                        // The backend will set status to 'Pending' by default
-                        // No image_url, solutions, symptoms, etc. to avoid DB errors
                     })
                 });
                 if (saveResponse.success) {
-                    console.log('✅ Diagnosis saved to database (minimal)');
+                    console.log('✅ Diagnosis saved to database (crop: ' + cropName + ')');
                 } else {
                     console.warn('⚠️ Failed to save diagnosis:', saveResponse.message);
                 }
