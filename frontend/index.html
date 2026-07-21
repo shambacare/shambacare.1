@@ -2401,172 +2401,207 @@ async function sendNewMessage() {
         }
 
         // ==================== DIAGNOSIS ====================
-        function openCameraDirect() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.capture = 'environment';
-            input.onchange = function(e) { if (e.target.files.length) { const file = e.target.files[0];
-                    handleImageUploadAndShow(file); } };
-            input.click();
-        }
+function openCameraDirect() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment';
+    input.onchange = function(e) { if (e.target.files.length) { const file = e.target.files[0];
+            handleImageUploadAndShow(file); } };
+    input.click();
+}
 
-        function openFilePicker() { document.getElementById('imageInput').click(); }
+function openFilePicker() { document.getElementById('imageInput').click(); }
 
-        function handleImageUpload(input) { const file = input.files[0]; if (file) { handleImageUploadAndShow(file); } }
+function handleImageUpload(input) { const file = input.files[0]; if (file) { handleImageUploadAndShow(file); } }
 
-        function handleImageUploadAndShow(file) {
-            if (!file) return;
-            compressImage(file, 800, 800, 0.8).then(compressedFile => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('previewImg').src = e.target.result;
-                    document.getElementById('uploadArea').classList.add('hidden');
-                    document.getElementById('imagePreview').classList.remove('hidden');
-                    showToast('Image uploaded! Click "Analyze Crop Now" to diagnose.', 'success');
-                };
-                reader.readAsDataURL(compressedFile);
-            }).catch(err => {
-                console.error('Compression error:', err);
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('previewImg').src = e.target.result;
-                    document.getElementById('uploadArea').classList.add('hidden');
-                    document.getElementById('imagePreview').classList.remove('hidden');
-                    showToast('Image uploaded! Click "Analyze Crop Now" to diagnose.', 'success');
-                };
-                reader.readAsDataURL(file);
-            });
-        }
+function handleImageUploadAndShow(file) {
+    if (!file) return;
+    compressImage(file, 800, 800, 0.8).then(compressedFile => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('previewImg').src = e.target.result;
+            document.getElementById('uploadArea').classList.add('hidden');
+            document.getElementById('imagePreview').classList.remove('hidden');
+            showToast('Image uploaded! Click "Analyze Crop Now" to diagnose.', 'success');
+        };
+        reader.readAsDataURL(compressedFile);
+    }).catch(err => {
+        console.error('Compression error:', err);
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('previewImg').src = e.target.result;
+            document.getElementById('uploadArea').classList.add('hidden');
+            document.getElementById('imagePreview').classList.remove('hidden');
+            showToast('Image uploaded! Click "Analyze Crop Now" to diagnose.', 'success');
+        };
+        reader.readAsDataURL(file);
+    });
+}
 
-        function clearImage() {
-            document.getElementById('imageInput').value = '';
-            document.getElementById('imagePreview').classList.add('hidden');
-            document.getElementById('uploadArea').classList.remove('hidden');
-            document.getElementById('diagnosisResult').classList.add('hidden');
-        }
+function clearImage() {
+    document.getElementById('imageInput').value = '';
+    document.getElementById('imagePreview').classList.add('hidden');
+    document.getElementById('uploadArea').classList.remove('hidden');
+    document.getElementById('diagnosisResult').classList.add('hidden');
+}
 
-        function findLocalDisease(diseaseName) {
-            if (!allDiseases || allDiseases.length === 0) return null;
-            let found = allDiseases.find(d => d.name.toLowerCase() === diseaseName.toLowerCase());
-            if (found) return found;
-            found = allDiseases.find(d => diseaseName.toLowerCase().includes(d.name.toLowerCase()) || d.name
-                .toLowerCase().includes(diseaseName.toLowerCase()));
-            return found || null;
-        }
+function findLocalDisease(diseaseName) {
+    if (!allDiseases || allDiseases.length === 0) return null;
+    let found = allDiseases.find(d => d.name.toLowerCase() === diseaseName.toLowerCase());
+    if (found) return found;
+    found = allDiseases.find(d => diseaseName.toLowerCase().includes(d.name.toLowerCase()) || d.name
+        .toLowerCase().includes(diseaseName.toLowerCase()));
+    return found || null;
+}
 
-        async function analyzeImage() {
-            const fileInput = document.getElementById('imageInput');
-            if (!fileInput.files || !fileInput.files.length) { showToast('Please upload an image first',
-                'error'); return; }
-            const file = fileInput.files[0];
-            const cropSelect = document.getElementById('cropSelect');
-            let imageToSend = file;
-            try { imageToSend = await compressImage(file, 800, 800, 0.8); } catch (e) { console.warn(
-                    'Compression failed, using original');
-                imageToSend = file; }
+async function analyzeImage() {
+    const fileInput = document.getElementById('imageInput');
+    if (!fileInput.files || !fileInput.files.length) {
+        showToast('Please upload an image first', 'error');
+        return;
+    }
+    const file = fileInput.files[0];
+    const cropSelect = document.getElementById('cropSelect');
+    let imageToSend = file;
+    try {
+        imageToSend = await compressImage(file, 800, 800, 0.8);
+    } catch (e) {
+        console.warn('Compression failed, using original');
+        imageToSend = file;
+    }
 
-            const formData = new FormData();
-            formData.append('image', imageToSend);
-            if (cropSelect.value && cropSelect.value !== '') { formData.append('crop_type', cropSelect.value
-                .toLowerCase()); }
+    const formData = new FormData();
+    formData.append('image', imageToSend);
+    if (cropSelect.value && cropSelect.value !== '') {
+        formData.append('crop_type', cropSelect.value.toLowerCase());
+    }
 
-            const resultDiv = document.getElementById('diagnosisResult');
-            resultDiv.innerHTML =
-                `<div class="text-center py-8"><div class="diagnosis-loader mx-auto"></div><p class="mt-3 text-gray-700 dark:text-gray-300">Analyzing your crop with AI...</p><p class="text-xs text-gray-500 dark:text-gray-400 mt-2">This may take a few seconds</p></div>`;
-            resultDiv.classList.remove('hidden');
+    const resultDiv = document.getElementById('diagnosisResult');
+    resultDiv.innerHTML =
+        `<div class="text-center py-8"><div class="diagnosis-loader mx-auto"></div><p class="mt-3 text-gray-700 dark:text-gray-300">Analyzing your crop with AI...</p><p class="text-xs text-gray-500 dark:text-gray-400 mt-2">This may take a few seconds</p></div>`;
+    resultDiv.classList.remove('hidden');
 
-            try {
-                const response = await fetch(`${AI_SERVICE_URL}/predict`, { method: 'POST', mode: 'cors',
-                    body: formData });
-                const data = await response.json();
+    try {
+        const response = await fetch(`${AI_SERVICE_URL}/predict`, { method: 'POST', mode: 'cors', body: formData });
+        const data = await response.json();
 
-                if (data.success) {
-                    const diseaseName = data.disease || 'Unknown disease';
-                    let confidence = data.confidence || 0;
-                    if (confidence < 20 && confidence > 0) { confidence = Math.min(confidence + 70, 95); }
-
-                    const localDisease = findLocalDisease(diseaseName);
-                    const organic = localDisease?.organic_solution || data.organic_solution ||
-                        'Consult local agrovet for organic options.';
-                    const chemical = localDisease?.chemical_solution || data.chemical_solution ||
-                        'Consult local agrovet for chemical control.';
-                    const symptoms = localDisease?.symptoms || data.symptoms ||
-                        'Visible spots, lesions, or discoloration.';
-                    const prevention = localDisease?.prevention || data.prevention_tips ||
-                        'Practice crop rotation, use resistant varieties, and monitor regularly.';
-                    const cost = localDisease?.cost || data.estimated_cost || 500;
-
-                    resultDiv.innerHTML = `
-                            <div class="bg-green-50 dark:bg-gray-800 p-5 rounded-xl border border-green-200 dark:border-gray-700 animate-scaleIn">
-                                <div class="flex justify-between items-center border-b pb-3 mb-3 border-gray-200 dark:border-gray-600">
-                                    <div>
-                                        <h4 class="font-bold text-lg text-red-600 dark:text-red-400">${diseaseName}</h4>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">ShambaCare Model</p>
-                                    </div>
-                                    <span class="bg-green-100 dark:bg-green-900 px-3 py-1 rounded-full text-sm font-semibold text-green-700 dark:text-green-300">${confidence}% confidence</span>
-                                </div>
-                                <div class="mb-3">
-                                    <div class="flex justify-between text-xs mb-1">
-                                        <span class="text-gray-600 dark:text-gray-300">Confidence Level</span>
-                                        <span class="font-semibold text-gray-800 dark:text-white">${confidence}%</span>
-                                    </div>
-                                    <div class="confidence-meter">
-                                        <div class="confidence-fill" style="width: ${Math.min(confidence, 100)}%"></div>
-                                    </div>
-                                    ${confidence < 50 ? '<p class="text-xs text-orange-600 dark:text-orange-400 mt-1">Low confidence. Try a clearer photo.</p>' : ''}
-                                </div>
-                                <div class="mt-3">
-                                    <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">Symptoms:</p>
-                                    <p class="text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 p-2 rounded">${symptoms}</p>
-                                </div>
-                                <div class="mt-3 grid grid-cols-2 gap-3">
-                                    <div class="bg-green-100 dark:bg-green-900 p-3 rounded-lg">
-                                        <p class="font-semibold text-sm mb-1 text-green-700 dark:text-green-300">Organic Solution</p>
-                                        <p class="text-xs text-green-600 dark:text-green-200">${organic}</p>
-                                    </div>
-                                    <div class="bg-blue-100 dark:bg-blue-900 p-3 rounded-lg">
-                                        <p class="font-semibold text-sm mb-1 text-blue-700 dark:text-blue-300">Chemical Solution</p>
-                                        <p class="text-xs text-blue-600 dark:text-blue-200">${chemical}</p>
-                                    </div>
-                                </div>
-                                <div class="mt-3 bg-yellow-50 dark:bg-yellow-900/30 p-3 rounded-lg">
-                                    <p class="font-semibold text-sm mb-1 text-yellow-700 dark:text-yellow-300">Prevention Tips</p>
-                                    <p class="text-xs text-yellow-600 dark:text-yellow-200">${prevention}</p>
-                                </div>
-                                <div class="mt-3 flex justify-between items-center">
-                                    <div class="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-                                        <span class="text-sm font-semibold text-green-700 dark:text-green-300">Est. Cost: KSh ${cost}</span>
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <button onclick="clearImage()" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition">
-                                            <i class="fas fa-times mr-1"></i> Close
-                                        </button>
-                                        <button onclick="shareDiagnosis('${diseaseName.replace(/'/g, "\\'")}', '${confidence}', '${organic.replace(/'/g, "\\'")}', '${chemical.replace(/'/g, "\\'")}')" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition">
-                                            <i class="fab fa-whatsapp mr-1"></i> Share
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    showToast('Diagnosis complete!', 'success');
-                } else {
-                    resultDiv.innerHTML =
-                        `<div class="bg-red-50 dark:bg-red-900/30 p-5 rounded-xl border border-red-200 dark:border-red-800"><p class="text-red-600 dark:text-red-400 font-semibold">Error: ${data.error || 'Analysis failed'}</p><p class="text-sm text-gray-600 dark:text-gray-300 mt-2">Please try again with a clearer image.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
-                }
-            } catch (error) {
-                console.error('AI Service error:', error);
-                resultDiv.innerHTML =
-                    `<div class="bg-red-50 dark:bg-red-900/30 p-5 rounded-xl border border-red-200 dark:border-red-800"><p class="text-red-600 dark:text-red-400 font-semibold">Cannot reach AI Service</p><p class="text-sm text-gray-600 dark:text-gray-300 mt-2">Please try again later.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
+        if (data.success) {
+            const diseaseName = data.disease || 'Unknown disease';
+            let confidence = data.confidence || 0;
+            if (confidence < 20 && confidence > 0) {
+                confidence = Math.min(confidence + 70, 95);
             }
-        }
 
-        function shareDiagnosis(disease, confidence, organic, chemical) {
-            const message =
-                `ShambaCare Diagnosis%0A%0ADisease: ${disease}%0AConfidence: ${confidence}%%0A%0AOrganic Solution:%0A${organic}%0A%0AChemical Solution:%0A${chemical}%0A%0APowered by ShambaCare AI`;
-            window.open(`https://wa.me/?text=${message}`, '_blank');
-        }
+            const localDisease = findLocalDisease(diseaseName);
+            const organic = localDisease?.organic_solution || data.organic_solution ||
+                'Consult local agrovet for organic options.';
+            const chemical = localDisease?.chemical_solution || data.chemical_solution ||
+                'Consult local agrovet for chemical control.';
+            const symptoms = localDisease?.symptoms || data.symptoms ||
+                'Visible spots, lesions, or discoloration.';
+            const prevention = localDisease?.prevention || data.prevention_tips ||
+                'Practice crop rotation, use resistant varieties, and monitor regularly.';
+            const cost = localDisease?.cost || data.estimated_cost || 500;
 
+            // ---- Save diagnosis to backend ----
+            const cropName = cropSelect.value || 'Unknown';
+            const imageUrl = document.getElementById('previewImg')?.src || '';
+            try {
+                const saveResponse = await apiCall('/diagnoses/analyze', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        crop_name: cropName,
+                        disease_name: diseaseName,
+                        confidence_score: confidence,
+                        organic_solution: organic,
+                        chemical_solution: chemical,
+                        symptoms: symptoms,
+                        prevention_tips: prevention,
+                        estimated_cost: cost,
+                        image_url: imageUrl
+                    })
+                });
+                if (saveResponse.success) {
+                    console.log('✅ Diagnosis saved to database');
+                } else {
+                    console.warn('⚠️ Failed to save diagnosis:', saveResponse.message);
+                }
+            } catch (saveError) {
+                console.error('Error saving diagnosis:', saveError);
+                // Don't show error to user – still display results
+            }
+
+            // ---- Display results ----
+            resultDiv.innerHTML = `
+                <div class="bg-green-50 dark:bg-gray-800 p-5 rounded-xl border border-green-200 dark:border-gray-700 animate-scaleIn">
+                    <div class="flex justify-between items-center border-b pb-3 mb-3 border-gray-200 dark:border-gray-600">
+                        <div>
+                            <h4 class="font-bold text-lg text-red-600 dark:text-red-400">${diseaseName}</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">ShambaCare Model</p>
+                        </div>
+                        <span class="bg-green-100 dark:bg-green-900 px-3 py-1 rounded-full text-sm font-semibold text-green-700 dark:text-green-300">${confidence}% confidence</span>
+                    </div>
+                    <div class="mb-3">
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-gray-600 dark:text-gray-300">Confidence Level</span>
+                            <span class="font-semibold text-gray-800 dark:text-white">${confidence}%</span>
+                        </div>
+                        <div class="confidence-meter">
+                            <div class="confidence-fill" style="width: ${Math.min(confidence, 100)}%"></div>
+                        </div>
+                        ${confidence < 50 ? '<p class="text-xs text-orange-600 dark:text-orange-400 mt-1">Low confidence. Try a clearer photo.</p>' : ''}
+                    </div>
+                    <div class="mt-3">
+                        <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">Symptoms:</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 p-2 rounded">${symptoms}</p>
+                    </div>
+                    <div class="mt-3 grid grid-cols-2 gap-3">
+                        <div class="bg-green-100 dark:bg-green-900 p-3 rounded-lg">
+                            <p class="font-semibold text-sm mb-1 text-green-700 dark:text-green-300">Organic Solution</p>
+                            <p class="text-xs text-green-600 dark:text-green-200">${organic}</p>
+                        </div>
+                        <div class="bg-blue-100 dark:bg-blue-900 p-3 rounded-lg">
+                            <p class="font-semibold text-sm mb-1 text-blue-700 dark:text-blue-300">Chemical Solution</p>
+                            <p class="text-xs text-blue-600 dark:text-blue-200">${chemical}</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 bg-yellow-50 dark:bg-yellow-900/30 p-3 rounded-lg">
+                        <p class="font-semibold text-sm mb-1 text-yellow-700 dark:text-yellow-300">Prevention Tips</p>
+                        <p class="text-xs text-yellow-600 dark:text-yellow-200">${prevention}</p>
+                    </div>
+                    <div class="mt-3 flex justify-between items-center">
+                        <div class="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
+                            <span class="text-sm font-semibold text-green-700 dark:text-green-300">Est. Cost: KSh ${cost}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="clearImage()" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition">
+                                <i class="fas fa-times mr-1"></i> Close
+                            </button>
+                            <button onclick="shareDiagnosis('${diseaseName.replace(/'/g, "\\'")}', '${confidence}', '${organic.replace(/'/g, "\\'")}', '${chemical.replace(/'/g, "\\'")}')" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition">
+                                <i class="fab fa-whatsapp mr-1"></i> Share
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            showToast('Diagnosis complete!', 'success');
+        } else {
+            resultDiv.innerHTML =
+                `<div class="bg-red-50 dark:bg-red-900/30 p-5 rounded-xl border border-red-200 dark:border-red-800"><p class="text-red-600 dark:text-red-400 font-semibold">Error: ${data.error || 'Analysis failed'}</p><p class="text-sm text-gray-600 dark:text-gray-300 mt-2">Please try again with a clearer image.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
+        }
+    } catch (error) {
+        console.error('AI Service error:', error);
+        resultDiv.innerHTML =
+            `<div class="bg-red-50 dark:bg-red-900/30 p-5 rounded-xl border border-red-200 dark:border-red-800"><p class="text-red-600 dark:text-red-400 font-semibold">Cannot reach AI Service</p><p class="text-sm text-gray-600 dark:text-gray-300 mt-2">Please try again later.</p><button onclick="clearImage()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Try Again</button></div>`;
+    }
+}
+
+function shareDiagnosis(disease, confidence, organic, chemical) {
+    const message =
+        `ShambaCare Diagnosis%0A%0ADisease: ${disease}%0AConfidence: ${confidence}%%0A%0AOrganic Solution:%0A${organic}%0A%0AChemical Solution:%0A${chemical}%0A%0APowered by ShambaCare AI`;
+    window.open(`https://wa.me/?text=${message}`, '_blank');
+}
         // ==================== WEATHER & RECOMMENDATIONS ====================
         async function fetchRealTimeWeather() {
             const county = currentUser?.county || 'Nairobi';
