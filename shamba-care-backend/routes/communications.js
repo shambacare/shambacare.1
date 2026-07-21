@@ -24,20 +24,20 @@ router.post('/send', verifyToken, async (req, res) => {
             is_read: false
         });
 
-        console.log('✅ Message saved with ID:', chatMessage.id);
+        // Reload with raw: true to bypass any model transformations
+        const fresh = await ChatMessage.findByPk(chatMessage.id, { raw: true });
 
-        // Return the full message with ISO date
         res.json({
             success: true,
             message: 'Message sent successfully',
             chatMessage: {
-                id: chatMessage.id,
-                farmer_id: chatMessage.farmer_id,
-                admin_id: chatMessage.admin_id,
-                message: chatMessage.message,
-                is_from_admin: chatMessage.is_from_admin,
-                is_read: chatMessage.is_read,
-                created_at: chatMessage.created_at ? chatMessage.created_at.toISOString() : null
+                id: fresh.id,
+                farmer_id: fresh.farmer_id,
+                admin_id: fresh.admin_id,
+                message: fresh.message,
+                is_from_admin: fresh.is_from_admin,
+                is_read: fresh.is_read,
+                created_at: fresh.created_at ? new Date(fresh.created_at).toISOString() : null
             }
         });
     } catch (error) {
@@ -46,18 +46,19 @@ router.post('/send', verifyToken, async (req, res) => {
     }
 });
 
-// Get farmer's own messages (with created_at explicitly included)
+// Get farmer's own messages
 router.get('/my-messages', verifyToken, async (req, res) => {
     const farmerId = req.user.id;
 
     try {
+        // Use raw: true to get plain objects with database values
         const messages = await ChatMessage.findAll({
             where: { farmer_id: farmerId },
-            order: [['created_at', 'ASC']]
-            // No attributes limit – we want all fields
+            order: [['created_at', 'ASC']],
+            raw: true
         });
 
-        // Format each message to ensure created_at is an ISO string
+        // Format each message manually
         const formattedMessages = messages.map(msg => ({
             id: msg.id,
             farmer_id: msg.farmer_id,
@@ -65,7 +66,7 @@ router.get('/my-messages', verifyToken, async (req, res) => {
             message: msg.message,
             is_from_admin: msg.is_from_admin,
             is_read: msg.is_read,
-            created_at: msg.created_at ? msg.created_at.toISOString() : null
+            created_at: msg.created_at ? new Date(msg.created_at).toISOString() : null
         }));
 
         res.json({ success: true, messages: formattedMessages });
@@ -82,7 +83,7 @@ router.get('/admin/inbox', verifyToken, isAdmin, async (req, res) => {
     console.log('📋 Admin fetching inbox...');
 
     try {
-        // Get all distinct farmer IDs who have messages
+        // Get distinct farmer IDs
         const farmersWithMessages = await ChatMessage.findAll({
             attributes: ['farmer_id'],
             group: ['farmer_id'],
@@ -96,15 +97,17 @@ router.get('/admin/inbox', verifyToken, isAdmin, async (req, res) => {
         for (const item of farmersWithMessages) {
             const farmerId = item.farmer_id;
             const farmer = await User.findByPk(farmerId, {
-                attributes: ['id', 'name', 'email', 'phone']
+                attributes: ['id', 'name', 'email', 'phone'],
+                raw: true
             });
 
             if (!farmer) continue;
 
-            // Get last message
+            // Get last message (raw)
             const lastMessage = await ChatMessage.findOne({
                 where: { farmer_id: farmerId },
-                order: [['created_at', 'DESC']]
+                order: [['created_at', 'DESC']],
+                raw: true
             });
 
             // Count unread messages
@@ -138,7 +141,7 @@ router.get('/admin/inbox', verifyToken, isAdmin, async (req, res) => {
     }
 });
 
-// Get conversation with specific farmer (with created_at explicitly included)
+// Get conversation with specific farmer
 router.get('/admin/conversation/:farmerId', verifyToken, isAdmin, async (req, res) => {
     const { farmerId } = req.params;
 
@@ -147,7 +150,8 @@ router.get('/admin/conversation/:farmerId', verifyToken, isAdmin, async (req, re
     try {
         const messages = await ChatMessage.findAll({
             where: { farmer_id: farmerId },
-            order: [['created_at', 'ASC']]
+            order: [['created_at', 'ASC']],
+            raw: true
         });
 
         console.log(`Found ${messages.length} messages`);
@@ -158,7 +162,7 @@ router.get('/admin/conversation/:farmerId', verifyToken, isAdmin, async (req, re
             { where: { farmer_id: farmerId, is_from_admin: false, is_read: false } }
         );
 
-        // Format messages to ensure ISO strings
+        // Format messages
         const formattedMessages = messages.map(msg => ({
             id: msg.id,
             farmer_id: msg.farmer_id,
@@ -166,7 +170,7 @@ router.get('/admin/conversation/:farmerId', verifyToken, isAdmin, async (req, re
             message: msg.message,
             is_from_admin: msg.is_from_admin,
             is_read: msg.is_read,
-            created_at: msg.created_at ? msg.created_at.toISOString() : null
+            created_at: msg.created_at ? new Date(msg.created_at).toISOString() : null
         }));
 
         res.json({ success: true, messages: formattedMessages });
@@ -188,7 +192,7 @@ router.post('/admin/reply', verifyToken, isAdmin, async (req, res) => {
     }
 
     try {
-        const farmer = await User.findByPk(farmer_id);
+        const farmer = await User.findByPk(farmer_id, { raw: true });
         if (!farmer) {
             return res.status(404).json({ success: false, message: 'Farmer not found' });
         }
@@ -201,19 +205,20 @@ router.post('/admin/reply', verifyToken, isAdmin, async (req, res) => {
             is_read: false
         });
 
-        console.log(`✅ Reply saved with ID: ${reply.id}`);
+        // Reload raw
+        const freshReply = await ChatMessage.findByPk(reply.id, { raw: true });
 
         res.json({
             success: true,
             message: 'Reply sent successfully',
             reply: {
-                id: reply.id,
-                farmer_id: reply.farmer_id,
-                admin_id: reply.admin_id,
-                message: reply.message,
-                is_from_admin: reply.is_from_admin,
-                is_read: reply.is_read,
-                created_at: reply.created_at ? reply.created_at.toISOString() : null
+                id: freshReply.id,
+                farmer_id: freshReply.farmer_id,
+                admin_id: freshReply.admin_id,
+                message: freshReply.message,
+                is_from_admin: freshReply.is_from_admin,
+                is_read: freshReply.is_read,
+                created_at: freshReply.created_at ? new Date(freshReply.created_at).toISOString() : null
             }
         });
     } catch (error) {
