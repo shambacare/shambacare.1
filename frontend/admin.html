@@ -10,6 +10,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+    
+    function formatTimestamp(isoString) {
+        if (!isoString) return '';
+        const date = new Date(isoString);
+        const options = {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        };
+        return date.toLocaleString(undefined, options);
+    }
+    
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -1009,7 +1024,7 @@
                 if(response.success && response.messages && response.messages.length) {
                     container.innerHTML = response.messages.map(msg =>
                         `<div class="chat-message ${msg.is_from_admin ? 'admin' : 'farmer'}">
-                            <div class="chat-bubble"><p class="text-sm">${escapeHtml(msg.message)}</p><span class="chat-time">${new Date(msg.created_at).toLocaleString()}</span></div>
+                            <div class="chat-bubble"><p class="text-sm">${escapeHtml(msg.message)}</p><span class="chat-time">${formatTimestamp(msg.created_at)}</span></div>
                         </div>`
                     ).join('');
                     container.scrollTop = container.scrollHeight;
