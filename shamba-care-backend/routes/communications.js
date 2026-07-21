@@ -5,7 +5,6 @@ const router = express.Router();
 
 // ==================== FARMER ENDPOINTS ====================
 
-// Farmer sends a message
 router.post('/send', verifyToken, async (req, res) => {
     const { message } = req.body;
     const farmerId = req.user.id;
@@ -24,8 +23,9 @@ router.post('/send', verifyToken, async (req, res) => {
             is_read: false
         });
 
-        // Reload with raw: true to bypass any model transformations
+        // Reload with raw: true
         const fresh = await ChatMessage.findByPk(chatMessage.id, { raw: true });
+        console.log('🔥 Fresh message from DB:', fresh); // <- DEBUG
 
         res.json({
             success: true,
@@ -46,19 +46,18 @@ router.post('/send', verifyToken, async (req, res) => {
     }
 });
 
-// Get farmer's own messages
 router.get('/my-messages', verifyToken, async (req, res) => {
     const farmerId = req.user.id;
 
     try {
-        // Use raw: true to get plain objects with database values
         const messages = await ChatMessage.findAll({
             where: { farmer_id: farmerId },
             order: [['created_at', 'ASC']],
             raw: true
         });
 
-        // Format each message manually
+        console.log('🔥 Raw messages from DB:', messages); // <- DEBUG
+
         const formattedMessages = messages.map(msg => ({
             id: msg.id,
             farmer_id: msg.farmer_id,
@@ -78,19 +77,15 @@ router.get('/my-messages', verifyToken, async (req, res) => {
 
 // ==================== ADMIN ENDPOINTS ====================
 
-// Get all conversations with farmers (admin inbox)
 router.get('/admin/inbox', verifyToken, isAdmin, async (req, res) => {
     console.log('📋 Admin fetching inbox...');
 
     try {
-        // Get distinct farmer IDs
         const farmersWithMessages = await ChatMessage.findAll({
             attributes: ['farmer_id'],
             group: ['farmer_id'],
             raw: true
         });
-
-        console.log('Farmers with messages:', farmersWithMessages);
 
         const inbox = [];
 
@@ -103,14 +98,12 @@ router.get('/admin/inbox', verifyToken, isAdmin, async (req, res) => {
 
             if (!farmer) continue;
 
-            // Get last message (raw)
             const lastMessage = await ChatMessage.findOne({
                 where: { farmer_id: farmerId },
                 order: [['created_at', 'DESC']],
                 raw: true
             });
 
-            // Count unread messages
             const unreadCount = await ChatMessage.count({
                 where: {
                     farmer_id: farmerId,
@@ -130,10 +123,8 @@ router.get('/admin/inbox', verifyToken, isAdmin, async (req, res) => {
             });
         }
 
-        // Sort by last message time (most recent first)
         inbox.sort((a, b) => new Date(b.last_message_time) - new Date(a.last_message_time));
 
-        console.log(`📋 Returning ${inbox.length} conversations`);
         res.json({ success: true, farmers: inbox });
     } catch (error) {
         console.error('Error loading inbox:', error);
@@ -141,11 +132,8 @@ router.get('/admin/inbox', verifyToken, isAdmin, async (req, res) => {
     }
 });
 
-// Get conversation with specific farmer
 router.get('/admin/conversation/:farmerId', verifyToken, isAdmin, async (req, res) => {
     const { farmerId } = req.params;
-
-    console.log(`💬 Fetching conversation with farmer ${farmerId}`);
 
     try {
         const messages = await ChatMessage.findAll({
@@ -154,15 +142,11 @@ router.get('/admin/conversation/:farmerId', verifyToken, isAdmin, async (req, re
             raw: true
         });
 
-        console.log(`Found ${messages.length} messages`);
-
-        // Mark messages from farmer as read
         await ChatMessage.update(
             { is_read: true, read_at: new Date() },
             { where: { farmer_id: farmerId, is_from_admin: false, is_read: false } }
         );
 
-        // Format messages
         const formattedMessages = messages.map(msg => ({
             id: msg.id,
             farmer_id: msg.farmer_id,
@@ -180,12 +164,9 @@ router.get('/admin/conversation/:farmerId', verifyToken, isAdmin, async (req, re
     }
 });
 
-// Admin replies to farmer
 router.post('/admin/reply', verifyToken, isAdmin, async (req, res) => {
     const { farmer_id, message } = req.body;
     const adminId = req.user.id;
-
-    console.log(`💬 Admin replying to farmer ${farmer_id}:`, message);
 
     if (!farmer_id || !message || message.trim() === '') {
         return res.status(400).json({ success: false, message: 'Farmer ID and message required' });
@@ -205,7 +186,6 @@ router.post('/admin/reply', verifyToken, isAdmin, async (req, res) => {
             is_read: false
         });
 
-        // Reload raw
         const freshReply = await ChatMessage.findByPk(reply.id, { raw: true });
 
         res.json({
@@ -227,7 +207,6 @@ router.post('/admin/reply', verifyToken, isAdmin, async (req, res) => {
     }
 });
 
-// Mark conversation as read
 router.put('/admin/mark-read/:farmerId', verifyToken, isAdmin, async (req, res) => {
     const { farmerId } = req.params;
 
