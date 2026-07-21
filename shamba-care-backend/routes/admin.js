@@ -176,7 +176,6 @@ router.delete('/users/:id', async (req, res) => {
 });
 
 // ==================== DIAGNOSES ====================
-// FIXED: Select only columns that exist in the diagnoses table
 router.get('/diagnoses/all', async (req, res) => {
     try {
         const [diagnoses] = await sequelize.query(`
@@ -197,7 +196,6 @@ router.get('/diagnoses/all', async (req, res) => {
             ORDER BY d.created_at DESC
         `);
 
-        // Format to match frontend expected structure
         const formatted = diagnoses.map(d => ({
             id: d.id,
             user_id: d.user_id,
@@ -429,6 +427,19 @@ router.post('/send-alert', async (req, res) => {
             else failedCount++;
         }
 
+        // Save alert to database (assuming you have an Alert model or table)
+        try {
+            await sequelize.query(`
+                INSERT INTO alerts (type, subject, message, target_region, sent_by, is_broadcast, sent_at, updated_at)
+                VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+            `, {
+                bind: [type || 'general', subject, message, region || 'all', req.user.id, true]
+            });
+        } catch (insertError) {
+            console.warn('Failed to save alert to database:', insertError);
+            // Continue anyway – email sending is the primary function
+        }
+
         res.json({
             success: true,
             message: `Alert sent to ${emailCount} farmers (${failedCount} failed)`,
@@ -438,6 +449,22 @@ router.post('/send-alert', async (req, res) => {
         });
     } catch (error) {
         console.error('Alert error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ==================== ALERTS (GET) ====================
+router.get('/alerts', async (req, res) => {
+    try {
+        const [alerts] = await sequelize.query(`
+            SELECT id, type, subject, message, target_region, sent_by, is_broadcast, sent_at, updated_at
+            FROM alerts
+            ORDER BY sent_at DESC
+            LIMIT 50
+        `);
+        res.json({ success: true, alerts });
+    } catch (error) {
+        console.error('Error fetching alerts:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
