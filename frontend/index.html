@@ -2399,8 +2399,7 @@ async function sendNewMessage() {
             }
             document.getElementById('pendingTasks').innerText = total;
         }
-
-       // ==================== DIAGNOSIS ====================
+// ==================== DIAGNOSIS ====================
 function openCameraDirect() {
     const input = document.createElement('input');
     input.type = 'file';
@@ -2468,6 +2467,26 @@ function findLocalDisease(diseaseName) {
     return found || null;
 }
 
+// ---- Helper: Extract crop name from disease string ----
+function extractCropFromDisease(diseaseName) {
+    if (!diseaseName) return null;
+    // Known crop keywords (case-insensitive)
+    const cropKeywords = ['tomato', 'potato', 'maize', 'coffee', 'bean', 'wheat', 'rice', 'cassava', 'sweet potato', 'onion', 'cabbage', 'kale', 'spinach'];
+    const lower = diseaseName.toLowerCase();
+    for (const crop of cropKeywords) {
+        if (lower.includes(crop)) {
+            // Capitalize first letter
+            return crop.charAt(0).toUpperCase() + crop.slice(1);
+        }
+    }
+    // If no keyword found, check for " - " pattern (e.g., "Potato - healthy")
+    const parts = diseaseName.split(' - ');
+    if (parts.length > 1 && parts[0].trim()) {
+        return parts[0].trim();
+    }
+    return null;
+}
+
 async function analyzeImage() {
     const fileInput = document.getElementById('imageInput');
     if (!fileInput.files || !fileInput.files.length) {
@@ -2510,10 +2529,21 @@ async function analyzeImage() {
                 confidence = Math.min(confidence + 70, 95);
             }
 
-            // ---- Crop name: prefer AI response, then dropdown, then fallback ----
+            // ---- Crop name: prefer AI response, then dropdown, then extract from disease ----
             const aiCrop = data.crop_name || data.crop || data.crop_type || '';
             const dropdownCrop = cropSelect.value && cropSelect.value !== '' ? cropSelect.value : '';
-            const cropName = aiCrop || dropdownCrop || 'Unknown';
+            let cropName = aiCrop || dropdownCrop || '';
+
+            // If cropName is still empty or "Unknown", try to extract from disease name
+            if (!cropName || cropName === 'Unknown') {
+                const extracted = extractCropFromDisease(diseaseName);
+                if (extracted) {
+                    cropName = extracted;
+                    console.log('🌾 Extracted crop from disease name:', cropName);
+                } else {
+                    cropName = 'Unknown';
+                }
+            }
 
             const localDisease = findLocalDisease(diseaseName);
             const organic = localDisease?.organic_solution || data.organic_solution ||
@@ -2533,7 +2563,7 @@ async function analyzeImage() {
                     body: JSON.stringify({
                         crop_name: cropName,
                         disease_name: diseaseName,
-                        confidence_score: Math.round(confidence) // ROUNDED to integer
+                        confidence_score: Math.round(confidence)
                     })
                 });
                 if (saveResponse.success) {
