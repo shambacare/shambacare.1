@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* ... (all styles unchanged, keep as original) ... */
         * { font-family: 'Inter', sans-serif; }
         .background-slideshow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; overflow: hidden; }
         .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 0; transition: opacity 1.5s ease-in-out; animation: kenBurns 20s ease-in-out infinite alternate; }
@@ -447,7 +448,7 @@
     <div class="fixed bottom-24 right-4 z-50">
         <div class="float-message-btn" onclick="openCommunications()">
             <i class="fas fa-comment-dots text-white text-2xl"></i>
-        </div>~~~
+        </div>
     </div>
 
     <script>
@@ -498,12 +499,110 @@
         });
     }
 
+    // --- Dashboard stats: fetch real diagnoses and build graphs ---
     async function loadDashboardStats() {
-        try { const data = await apiCall('/admin/dashboard/stats'); if(data.success) { document.getElementById('totalFarmers').innerText = data.stats.totalFarmers || 0; document.getElementById('activeSubs').innerText = data.stats.totalSubscriptions || 0; document.getElementById('totalDiagnoses').innerText = data.stats.totalDiagnoses || 0; document.getElementById('alertCount').innerText = sentAlerts.length; const recentActivity = data.recentActivity || []; document.getElementById('recentActivityTable').innerHTML = recentActivity.length ? recentActivity.map(a => `<table><td class="px-4 py-3">${a.farmer?.name || '-'}</td><td class="px-4 py-3">Diagnosed ${a.crop_name} with ${a.disease_name || 'pending'}</td><td class="px-4 py-3">${new Date(a.created_at).toLocaleDateString()}</td><td class="px-4 py-3"><span class="badge-pending">${a.status || 'Pending'}</span></td></tr>`).join('') : '<tr><td colspan="4" class="text-center py-8 text-gray-500">No recent activity</td></tr>'; const cropCount = { Maize: 0, Coffee: 0, Vegetables: 0, Tomato: 0, Potato: 0 }; if(data.recentActivity) data.recentActivity.forEach(d => { if(cropCount[d.crop_name] !== undefined) cropCount[d.crop_name]++; }); if(cropChart) cropChart.destroy(); cropChart = new Chart(document.getElementById('cropChart'), { type: 'bar', data: { labels: Object.keys(cropCount), datasets: [{ label: 'Diagnoses', data: Object.values(cropCount), backgroundColor: '#3b82f6' }] }, options: { responsive: true, maintainAspectRatio: true } }); if(trendChart) trendChart.destroy(); trendChart = new Chart(document.getElementById('trendChart'), { type: 'line', data: { labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], datasets: [{ label: 'Diagnoses', data: [12, 19, 15, 17], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true }] }, options: { responsive: true } }); } } catch(e) { console.error(e); showToast('Error loading stats', 'error'); }
+        try {
+            // Fetch stats (expects { success, stats: { totalFarmers, totalSubscriptions, totalDiagnoses, ... } })
+            const statsData = await apiCall('/admin/dashboard/stats');
+            if (statsData.success && statsData.stats) {
+                document.getElementById('totalFarmers').innerText = statsData.stats.totalFarmers || 0;
+                document.getElementById('activeSubs').innerText = statsData.stats.totalSubscriptions || 0;
+                document.getElementById('totalDiagnoses').innerText = statsData.stats.totalDiagnoses || 0;
+                // If recentActivity provided, use it
+                const recent = statsData.recentActivity || [];
+                document.getElementById('recentActivityTable').innerHTML = recent.length ? recent.map(a => 
+                    `<tr><td class="px-4 py-3">${a.farmer?.name || '-'}</td><td class="px-4 py-3">Diagnosed ${a.crop_name} with ${a.disease_name || 'pending'}</td><td class="px-4 py-3">${new Date(a.created_at).toLocaleDateString()}</td><td class="px-4 py-3"><span class="badge-pending">${a.status || 'Pending'}</span></td></tr>`
+                ).join('') : '<tr><td colspan="4" class="text-center py-8 text-gray-500">No recent activity</td></tr>';
+            } else {
+                // Fallback: fetch diagnoses list to count
+                const diagData = await apiCall('/admin/diagnoses/all');
+                if (diagData.success && diagData.diagnoses) {
+                    allDiagnoses = diagData.diagnoses;
+                    document.getElementById('totalDiagnoses').innerText = allDiagnoses.length;
+                }
+            }
+
+            // --- Build real graphs from diagnosis data ---
+            // Ensure we have diagnoses list
+            if (allDiagnoses.length === 0) {
+                const diagData = await apiCall('/admin/diagnoses/all');
+                if (diagData.success && diagData.diagnoses) {
+                    allDiagnoses = diagData.diagnoses;
+                }
+            }
+
+            // Crop chart: group by crop_name
+            const cropCounts = {};
+            allDiagnases.forEach(d => {
+                const crop = d.crop_name || 'Unknown';
+                cropCounts[crop] = (cropCounts[crop] || 0) + 1;
+            });
+            const cropLabels = Object.keys(cropCounts);
+            const cropData = Object.values(cropCounts);
+
+            if (cropChart) cropChart.destroy();
+            cropChart = new Chart(document.getElementById('cropChart'), {
+                type: 'bar',
+                data: {
+                    labels: cropLabels.length ? cropLabels : ['No Data'],
+                    datasets: [{
+                        label: 'Diagnoses',
+                        data: cropData.length ? cropData : [0],
+                        backgroundColor: '#3b82f6'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: true }
+            });
+
+            // Trend chart: group by week (last 4 weeks)
+            const now = new Date();
+            const weekLabels = [];
+            const weekData = [];
+            for (let i = 3; i >= 0; i--) {
+                const weekStart = new Date(now);
+                weekStart.setDate(now.getDate() - (i*7 + 6));
+                const weekEnd = new Date(now);
+                weekEnd.setDate(now.getDate() - i*7);
+                weekLabels.push(`Week ${4-i}`);
+                const count = allDiagnases.filter(d => {
+                    const date = new Date(d.created_at);
+                    return date >= weekStart && date <= weekEnd;
+                }).length;
+                weekData.push(count);
+            }
+
+            if (trendChart) trendChart.destroy();
+            trendChart = new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: weekLabels,
+                    datasets: [{
+                        label: 'Diagnoses',
+                        data: weekData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16,185,129,0.1)',
+                        fill: true
+                    }]
+                },
+                options: { responsive: true }
+            });
+
+        } catch(e) {
+            console.error('Error loading dashboard stats:', e);
+            showToast('Error loading stats', 'error');
+        }
     }
+
+    // --- Load Farmers ---
     async function loadUsers() { try { const data = await apiCall('/admin/users'); if(data.success) { allUsers = data.users || []; const farmers = allUsers.filter(u => u.role === 'farmer'); document.getElementById('farmersTable').innerHTML = farmers.length ? farmers.map(u => `<tr data-id="${u.id}"><td class="px-4 py-3">${u.name || '-'}</td><td class="px-4 py-3">${u.email}</td><td class="px-4 py-3">${u.phone || '-'}</td><td class="px-4 py-3">${u.county || '-'}</td><td class="px-4 py-3"><span class="badge-active">${u.subscription?.plan || 'Basic'}</span></td><td class="px-4 py-3">${u.created_at ? new Date(u.created_at).toLocaleDateString() : '-'}</td><td class="px-4 py-3"><button onclick="event.stopPropagation(); deleteUser(${u.id})" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button></td></tr>`).join('') : '<tr><td colspan="7" class="text-center py-8 text-gray-500">No farmers registered yet</td></tr>'; bindTableRowClicks(); } } catch(e) { console.error(e); } }
+
+    // --- Load Diagnoses ---
     async function loadAllDiagnoses() { try { const data = await apiCall('/admin/diagnoses/all'); if(data.success) { allDiagnoses = data.diagnoses || []; document.getElementById('diagnosesTable').innerHTML = allDiagnoses.length ? allDiagnoses.map(d => `<tr data-id="${d.id}"><td class="px-4 py-3">${d.farmer?.name || '-'}</td><td class="px-4 py-3">${d.crop_name}</td><td class="px-4 py-3">${d.disease_name || 'Pending'}</td><td class="px-4 py-3">${d.confidence_score || '-'}%</td><td class="px-4 py-3">${new Date(d.created_at).toLocaleDateString()}</td><td class="px-4 py-3"><select onchange="updateDiagnosisStatus(${d.id}, this.value)" class="badge-pending" onclick="event.stopPropagation()">${d.status === 'Pending' ? '<option selected>Pending</option><option>Reviewed</option><option>Resolved</option>' : d.status === 'Reviewed' ? '<option>Pending</option><option selected>Reviewed</option><option>Resolved</option>' : '<option>Pending</option><option>Reviewed</option><option selected>Resolved</option>'}</select></td><td class="px-4 py-3"><button onclick="event.stopPropagation(); deleteDiagnosis(${d.id})" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button></td></tr>`).join('') : '<tr><td colspan="7" class="text-center py-8 text-gray-500">No diagnoses yet</td></tr>'; bindTableRowClicks(); } } catch(e) { console.error(e); } }
+
+    // --- Load Subscriptions ---
     async function loadSubscriptions() { try { const data = await apiCall('/subscriptions/all'); if(data.success) { allSubscriptions = data.subscriptions || []; document.getElementById('subscriptionsTable').innerHTML = allSubscriptions.length ? allSubscriptions.map(s => `<tr data-id="${s.id}"><td class="px-4 py-3">${s.subscriber?.name || '-'}</td><td class="px-4 py-3"><span class="badge-active">${s.plan}</span></td><td class="px-4 py-3">${s.started_at ? new Date(s.started_at).toLocaleDateString() : '-'}</td><td class="px-4 py-3">${s.expires_at ? new Date(s.expires_at).toLocaleDateString() : '-'}</td><td class="px-4 py-3"><span class="badge-active">${s.status}</span></td><td class="px-4 py-3"><button onclick="event.stopPropagation(); renewSubscription(${s.id})" class="text-blue-600 hover:text-blue-800"><i class="fas fa-sync-alt"></i> Renew</button></td></tr>`).join('') : '<tr><td colspan="6" class="text-center py-8 text-gray-500">No subscriptions found</td></tr>'; bindTableRowClicks(); } } catch(e) { console.error(e); } }
+
+    // --- Status update, delete, etc. (unchanged) ---
     async function updateDiagnosisStatus(id, status) { try { await apiCall(`/diagnoses/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }); showToast('Status updated', 'success'); loadAllDiagnoses(); loadDashboardStats(); } catch(e) { showToast('Error updating status', 'error'); } }
     async function deleteDiagnosis(id) { if(!confirm('Delete this diagnosis?')) return; try { await apiCall(`/diagnoses/${id}`, { method: 'DELETE' }); showToast('Deleted', 'success'); loadAllDiagnoses(); loadDashboardStats(); } catch(e) { showToast('Error deleting', 'error'); } }
     async function deleteUser(id) { if(!confirm('Delete this user?')) return; try { await apiCall(`/admin/users/${id}`, { method: 'DELETE' }); showToast('User deleted', 'success'); loadUsers(); loadDashboardStats(); } catch(e) { showToast('Error deleting user', 'error'); } }
@@ -514,7 +613,7 @@
     function clearAlerts() { sentAlerts = []; document.getElementById('recentAlertsList').innerHTML = '<div class="text-center py-8 text-gray-500 bg-white rounded-xl p-8">No email alerts sent yet.</div>'; showToast('Alert history cleared', 'success'); }
     document.getElementById('alertForm')?.addEventListener('submit', async (e) => { e.preventDefault(); const subject = document.getElementById('alertSubject').value, message = document.getElementById('alertMessage').value, type = document.getElementById('alertType').value, region = document.getElementById('alertRegion').value; if(!subject || !message) { showToast('Fill all fields', 'error'); return; } showToast('Sending email alerts...', 'info'); try { const response = await apiCall('/admin/send-alert', { method: 'POST', body: JSON.stringify({ subject, message, type, region }) }); if(response.success) { showToast(`Email alert sent to ${response.emailCount} farmers!`, 'success'); document.getElementById('alertSubject').value = ''; document.getElementById('alertMessage').value = ''; const newAlert = { subject, message, type, region, date: new Date().toLocaleString() }; sentAlerts.unshift(newAlert); document.getElementById('recentAlertsList').innerHTML = sentAlerts.map(a => `<div class="bg-white rounded-lg p-4 shadow-sm border-l-4 border-blue-500 card-hover"><div class="flex justify-between items-start"><div><p class="font-bold text-gray-800">📧 ${a.subject}</p><p class="text-sm text-gray-600 mt-1">${a.message}</p></div><span class="text-xs text-gray-400">${a.date}</span></div><div class="flex justify-between mt-2"><span class="text-xs text-blue-600"><i class="fas fa-tag mr-1"></i> ${a.type}</span><span class="text-xs text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i> ${a.region}</span></div></div>`).join(''); } else showToast('Failed to send', 'error'); } catch(e) { showToast('Error sending alerts', 'error'); } });
 
-    // Communications functions (original)
+    // Communications functions (unchanged, but ensure they work)
     async function loadChatInbox() { try { const res = await apiCall('/communications/admin/inbox'); if(res.success && res.farmers) { allFarmers = res.farmers; renderFarmerList(allFarmers); } else renderFarmerList([]); } catch(e) { console.error(e); renderFarmerList([]); } }
     function renderFarmerList(farmers) { const container = document.getElementById('farmerChatList'); if(!container) return; if(!farmers.length) { container.innerHTML = '<div class="text-center py-8 text-gray-500">No conversations yet</div>'; return; } container.innerHTML = farmers.map(farmer => `<div class="farmer-chat-item p-3 border-b border-gray-100 dark:border-gray-700 ${farmer.unread_count > 0 ? 'unread' : ''}" onclick="selectFarmer(${farmer.id})" data-farmer-id="${farmer.id}"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center text-white font-bold">${farmer.name ? farmer.name.charAt(0).toUpperCase() : '?'}</div><div class="flex-1 min-w-0"><div class="flex justify-between items-center"><p class="font-semibold text-gray-800 dark:text-white truncate">${farmer.name || 'Unknown Farmer'}</p><span class="text-xs text-gray-400">${formatTimeAgo(farmer.last_message_time)}</span></div><p class="text-sm text-gray-600 dark:text-gray-400 truncate">${farmer.last_message || 'No messages'}</p></div>${farmer.unread_count > 0 ? `<span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">${farmer.unread_count}</span>` : ''}</div></div>`).join(''); }
     function formatTimeAgo(dateString) { if(!dateString) return 'Unknown'; const date = new Date(dateString), now = new Date(), diffMins = Math.floor((now - date) / 60000); if(diffMins < 1) return 'Just now'; if(diffMins < 60) return `${diffMins}m ago`; if(diffMins < 1440) return `${Math.floor(diffMins/60)}h ago`; return `${Math.floor(diffMins/1440)}d ago`; }
