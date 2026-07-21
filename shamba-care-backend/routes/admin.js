@@ -34,7 +34,6 @@ router.post('/create-admin', async (req, res) => {
             email_verified: true,
             is_active: true
         });
-        // Send welcome email
         await sendEmail({
             to: email,
             subject: 'Welcome to ShambaCare Admin Panel! 🌾',
@@ -177,7 +176,7 @@ router.delete('/users/:id', async (req, res) => {
 });
 
 // ==================== DIAGNOSES ====================
-// FIXED: Use raw SQL to get diagnoses with farmer details reliably
+// FIXED: Select only columns that exist in the diagnoses table
 router.get('/diagnoses/all', async (req, res) => {
     try {
         const [diagnoses] = await sequelize.query(`
@@ -190,11 +189,6 @@ router.get('/diagnoses/all', async (req, res) => {
                 d.confidence_score,
                 d.status,
                 d.created_at,
-                d.organic_solution,
-                d.chemical_solution,
-                d.symptoms,
-                d.prevention_tips,
-                d.estimated_cost,
                 u.name as farmer_name,
                 u.email as farmer_email,
                 u.phone as farmer_phone
@@ -213,11 +207,6 @@ router.get('/diagnoses/all', async (req, res) => {
             confidence_score: d.confidence_score,
             status: d.status,
             created_at: d.created_at,
-            organic_solution: d.organic_solution,
-            chemical_solution: d.chemical_solution,
-            symptoms: d.symptoms,
-            prevention_tips: d.prevention_tips,
-            estimated_cost: d.estimated_cost,
             farmer: {
                 id: d.user_id,
                 name: d.farmer_name || 'Unknown',
@@ -320,7 +309,6 @@ router.post('/add-farmer', async (req, res) => {
             email_verified: true,
             is_active: true
         });
-        // Send welcome email
         await sendEmail({
             to: email,
             subject: 'Welcome to ShambaCare! 🌾',
@@ -382,14 +370,10 @@ router.post('/send-alert', async (req, res) => {
         if (region && region !== 'all') {
             whereClause.county = region;
         }
-        console.log('🔍 Alert query whereClause:', JSON.stringify(whereClause));
-
         const farmers = await User.findAll({
             where: whereClause,
             attributes: ['id', 'email', 'name', 'county', 'is_active']
         });
-
-        console.log(`📊 Found ${farmers.length} farmers matching query`);
 
         if (farmers.length === 0) {
             return res.json({
@@ -489,8 +473,6 @@ router.post('/reply-chat', async (req, res) => {
         if (!farmer) {
             return res.status(404).json({ success: false, message: 'Farmer not found' });
         }
-        // (Optional) Save the reply to a database table if you have one.
-        // For now, just respond with success – no email is sent.
         res.json({ success: true, message: 'Reply recorded successfully' });
     } catch (error) {
         console.error('Reply chat error:', error);
