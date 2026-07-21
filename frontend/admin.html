@@ -414,7 +414,7 @@
                 </form>
             </div>
             <div class="section-header-container"><h3 class="font-bold"><i class="fas fa-history text-green-600 mr-2"></i> Recent Email Alerts</h3><button onclick="clearAlerts()" class="blue-button text-sm"><i class="fas fa-trash"></i> Clear All</button></div>
-            <div id="recentAlertsList" class="space-y-3"><div class="text-center py-8 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-xl p-8">No email alerts sent yet. Create your first alert above!</div></div>
+            <div id="recentAlertsList" class="space-y-3"><div class="text-center py-8 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-xl p-8">Loading alerts...</div></div>
         </div>
 
         <!-- COMMUNICATIONS SECTION -->
@@ -548,6 +548,61 @@
             });
         }
 
+        // ===== FETCH ALERTS =====
+        async function fetchAlerts() {
+            try {
+                const response = await apiCall('/admin/alerts');
+                if (response.success && response.alerts) {
+                    sentAlerts = response.alerts;
+                    renderAlerts(sentAlerts);
+                    document.getElementById('alertCount').innerText = sentAlerts.length;
+                    return sentAlerts;
+                } else {
+                    sentAlerts = [];
+                    renderAlerts([]);
+                    document.getElementById('alertCount').innerText = 0;
+                    return [];
+                }
+            } catch (e) {
+                console.error('Error fetching alerts:', e);
+                sentAlerts = [];
+                renderAlerts([]);
+                document.getElementById('alertCount').innerText = 0;
+                return [];
+            }
+        }
+
+        function renderAlerts(alerts) {
+            const container = document.getElementById('recentAlertsList');
+            if (!container) return;
+            if (!alerts || alerts.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-xl p-8">No email alerts sent yet.</div>';
+                return;
+            }
+            container.innerHTML = alerts.map(a => {
+                const date = a.sent_at ? new Date(a.sent_at).toLocaleString() : new Date().toLocaleString();
+                const typeIcon = {
+                    'weather': '🌤️',
+                    'disease': '🦠',
+                    'tip': '💡',
+                    'emergency': '🚨'
+                }[a.type] || '📧';
+                return `<div class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border-l-4 border-blue-500 card-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-bold text-gray-800 dark:text-white">${typeIcon} ${a.subject}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">${a.message}</p>
+                        </div>
+                        <span class="text-xs text-gray-400">${date}</span>
+                    </div>
+                    <div class="flex justify-between mt-2">
+                        <span class="text-xs text-blue-600"><i class="fas fa-tag mr-1"></i> ${a.type}</span>
+                        <span class="text-xs text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i> ${a.target_region || 'All'}</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
         // ===== HELPER: Fetch diagnoses from admin endpoint =====
         async function fetchDiagnoses() {
             try {
@@ -583,45 +638,34 @@
         // ===== LOAD DASHBOARD STATS =====
         async function loadDashboardStats() {
             try {
-                // Fetch stats (farmers, subscriptions, etc.)
                 const statsData = await apiCall('/admin/dashboard/stats');
                 console.log('📊 Dashboard stats response:', statsData);
-                
+
                 if (statsData.success && statsData.stats) {
-                    document.getElementById('totalFarmers').innerText = statsData.stats.totalFarmers || 0;
-                    document.getElementById('activeSubs').innerText = statsData.stats.totalSubscriptions || 0;
-                    // Total diagnoses will be updated from fetched list, but we can also use stats value
-                    const totalFromStats = statsData.stats.totalDiagnoses || 0;
-                    document.getElementById('totalDiagnoses').innerText = totalFromStats;
-                }
+                    const totalFarmers = statsData.stats.totalFarmers || 0;
+                    const totalSubs = statsData.stats.totalSubscriptions || 0;
 
-                // Fetch diagnoses using helper
-                allDiagnoses = await fetchDiagnoses();
-                // Override total diagnoses with actual count from fetched data
-                document.getElementById('totalDiagnoses').innerText = allDiagnoses.length;
+                    document.getElementById('totalFarmers').innerText = totalFarmers;
+                    document.getElementById('activeSubs').innerText = totalSubs > 0 ? totalSubs : totalFarmers;
+                    document.getElementById('totalDiagnoses').innerText = statsData.stats.totalDiagnoses || 0;
+                    document.getElementById('alertCount').innerText = sentAlerts.length;
 
-                // Recent activity from stats (if available)
-                if (statsData.success && statsData.recentActivity) {
-                    const recent = statsData.recentActivity;
+                    const recent = statsData.recentActivity || [];
                     document.getElementById('recentActivityTable').innerHTML = recent.length ? recent.map(a => 
                         `<tr><td class="px-4 py-3">${a.farmer_name || a.farmer?.name || '-'}</td>
                          <td class="px-4 py-3">Diagnosed ${a.crop_name} with ${a.disease_name || 'pending'}</td>
                          <td class="px-4 py-3">${new Date(a.created_at).toLocaleDateString()}</td>
                          <td class="px-4 py-3"><span class="badge-pending">${a.status || 'Pending'}</span></td></tr>`
                     ).join('') : '<tr><td colspan="4" class="text-center py-8 text-gray-500 dark:text-gray-400">No recent activity</td></tr>';
-                } else {
-                    // Fallback: use allDiagnoses for recent activity
-                    const recent = allDiagnoses.slice(0, 10);
-                    document.getElementById('recentActivityTable').innerHTML = recent.length ? recent.map(d => 
-                        `<tr><td class="px-4 py-3">${d.farmer?.name || '-'}</td>
-                         <td class="px-4 py-3">Diagnosed ${d.crop_name} with ${d.disease_name || 'pending'}</td>
-                         <td class="px-4 py-3">${new Date(d.created_at).toLocaleDateString()}</td>
-                         <td class="px-4 py-3"><span class="badge-pending">${d.status || 'Pending'}</span></td></tr>`
-                    ).join('') : '<tr><td colspan="4" class="text-center py-8 text-gray-500 dark:text-gray-400">No recent activity</td></tr>';
                 }
 
-                // --- Build graphs from allDiagnoses ---
+                // Fetch diagnoses for charts
+                allDiagnoses = await fetchDiagnoses();
                 buildCharts(allDiagnoses);
+
+                // Fetch alerts
+                await fetchAlerts();
+
             } catch(e) {
                 console.error('Error loading dashboard stats:', e);
                 showToast('Error loading stats', 'error');
@@ -629,7 +673,6 @@
         }
 
         function buildCharts(diagnoses) {
-            // Crop chart
             const cropCounts = {};
             diagnoses.forEach(d => {
                 const crop = d.crop_name || 'Unknown';
@@ -652,7 +695,6 @@
                 options: { responsive: true, maintainAspectRatio: true }
             });
 
-            // Trend chart (last 4 weeks)
             const now = new Date();
             const weekLabels = [];
             const weekData = [];
@@ -721,15 +763,47 @@
         // ===== LOAD SUBSCRIPTIONS =====
         async function loadSubscriptions() {
             try {
-                const data = await apiCall('/subscriptions/all');
-                if(data.success) {
-                    allSubscriptions = data.subscriptions || [];
-                    document.getElementById('subscriptionsTable').innerHTML = allSubscriptions.length ? allSubscriptions.map(s => 
-                        `<tr data-id="${s.id}"><td class="px-4 py-3">${s.subscriber?.name || '-'}</td><td class="px-4 py-3"><span class="badge-active">${s.plan}</span></td><td class="px-4 py-3">${s.started_at ? new Date(s.started_at).toLocaleDateString() : '-'}</td><td class="px-4 py-3">${s.expires_at ? new Date(s.expires_at).toLocaleDateString() : '-'}</td><td class="px-4 py-3"><span class="badge-active">${s.status}</span></td><td class="px-4 py-3"><button onclick="event.stopPropagation(); renewSubscription(${s.id})" class="text-blue-600 hover:text-blue-800"><i class="fas fa-sync-alt"></i> Renew</button></td></tr>`
-                    ).join('') : '<tr><td colspan="6" class="text-center py-8 text-gray-500 dark:text-gray-400">No subscriptions found</td></tr>';
-                    bindTableRowClicks();
+                const usersData = await apiCall('/admin/users');
+                if (!usersData.success) {
+                    throw new Error('Failed to fetch users');
                 }
-            } catch(e) { console.error(e); }
+                const farmers = (usersData.users || []).filter(u => u.role === 'farmer');
+
+                let subs = [];
+                try {
+                    const subsData = await apiCall('/subscriptions/all');
+                    if (subsData.success && subsData.subscriptions) {
+                        subs = subsData.subscriptions;
+                    }
+                } catch (e) {
+                    console.warn('Subscriptions endpoint failed, using farmers as Basic', e);
+                }
+
+                const subMap = {};
+                subs.forEach(s => {
+                    subMap[s.subscriber_id] = s.plan;
+                });
+
+                const rows = farmers.map(farmer => {
+                    const plan = subMap[farmer.id] || 'Basic';
+                    const started = farmer.created_at ? new Date(farmer.created_at).toLocaleDateString() : '-';
+                    const expires = farmer.created_at ? new Date(new Date(farmer.created_at).setFullYear(new Date(farmer.created_at).getFullYear() + 1)).toLocaleDateString() : '-';
+                    return `<tr data-id="${farmer.id}">
+                        <td class="px-4 py-3">${farmer.name || '-'}</td>
+                        <td class="px-4 py-3"><span class="badge-active">${plan}</span></td>
+                        <td class="px-4 py-3">${started}</td>
+                        <td class="px-4 py-3">${expires}</td>
+                        <td class="px-4 py-3"><span class="badge-active">Active</span></td>
+                        <td class="px-4 py-3"><button onclick="event.stopPropagation(); renewSubscription(${farmer.id})" class="text-blue-600 hover:text-blue-800"><i class="fas fa-sync-alt"></i> Renew</button></td>
+                    </tr>`;
+                });
+
+                document.getElementById('subscriptionsTable').innerHTML = rows.length ? rows.join('') : '<tr><td colspan="6" class="text-center py-8 text-gray-500 dark:text-gray-400">No farmers found</td></tr>';
+                bindTableRowClicks();
+            } catch(e) {
+                console.error('Error loading subscriptions:', e);
+                document.getElementById('subscriptionsTable').innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500 dark:text-gray-400">Error loading data</td></tr>';
+            }
         }
 
         // ===== ACTIONS =====
@@ -809,8 +883,9 @@
 
         function clearAlerts() {
             sentAlerts = [];
-            document.getElementById('recentAlertsList').innerHTML = '<div class="text-center py-8 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-xl p-8">No email alerts sent yet.</div>';
-            showToast('Alert history cleared', 'success');
+            renderAlerts([]);
+            document.getElementById('alertCount').innerText = 0;
+            showToast('Alert list cleared (local)', 'success');
         }
 
         // ===== ALERT FORM =====
@@ -834,11 +909,8 @@
                     showToast(`Email alert sent to ${response.emailCount} farmers!`, 'success');
                     document.getElementById('alertSubject').value = '';
                     document.getElementById('alertMessage').value = '';
-                    const newAlert = { subject, message, type, region, date: new Date().toLocaleString() };
-                    sentAlerts.unshift(newAlert);
-                    document.getElementById('recentAlertsList').innerHTML = sentAlerts.map(a =>
-                        `<div class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border-l-4 border-blue-500 card-hover"><div class="flex justify-between items-start"><div><p class="font-bold text-gray-800 dark:text-white">📧 ${a.subject}</p><p class="text-sm text-gray-600 dark:text-gray-300 mt-1">${a.message}</p></div><span class="text-xs text-gray-400">${a.date}</span></div><div class="flex justify-between mt-2"><span class="text-xs text-blue-600"><i class="fas fa-tag mr-1"></i> ${a.type}</span><span class="text-xs text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i> ${a.region}</span></div></div>`
-                    ).join('');
+                    // Refresh alerts from DB
+                    await fetchAlerts();
                 } else {
                     showToast('Failed to send', 'error');
                 }
@@ -1042,6 +1114,7 @@
             if(section === 'farmers') loadUsers();
             if(section === 'diagnoses') loadAllDiagnoses();
             if(section === 'subscriptions') loadSubscriptions();
+            if(section === 'alerts') fetchAlerts();
             if(section === 'communications') {
                 loadChatInbox();
                 if(window.innerWidth < 1024) showInboxView();
@@ -1126,7 +1199,6 @@
             loadAdminProfile();
             if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
 
-            // Background slideshow
             const slides = document.querySelectorAll('.slide');
             if(slides.length) {
                 new BackgroundSlideshow(slides, 8000).init();
