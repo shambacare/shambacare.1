@@ -2406,37 +2406,50 @@ function openCameraDirect() {
     input.type = 'file';
     input.accept = 'image/*';
     input.capture = 'environment';
-    input.onchange = function(e) { if (e.target.files.length) { const file = e.target.files[0];
-            handleImageUploadAndShow(file); } };
+    input.onchange = function(e) {
+        if (e.target.files.length) {
+            const file = e.target.files[0];
+            handleImageUploadAndShow(file);
+        }
+    };
     input.click();
 }
 
-function openFilePicker() { document.getElementById('imageInput').click(); }
+function openFilePicker() {
+    document.getElementById('imageInput').click();
+}
 
-function handleImageUpload(input) { const file = input.files[0]; if (file) { handleImageUploadAndShow(file); } }
+function handleImageUpload(input) {
+    const file = input.files[0];
+    if (file) {
+        handleImageUploadAndShow(file);
+    }
+}
 
 function handleImageUploadAndShow(file) {
     if (!file) return;
-    compressImage(file, 800, 800, 0.8).then(compressedFile => {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('previewImg').src = e.target.result;
-            document.getElementById('uploadArea').classList.add('hidden');
-            document.getElementById('imagePreview').classList.remove('hidden');
-            showToast('Image uploaded! Click "Analyze Crop Now" to diagnose.', 'success');
-        };
-        reader.readAsDataURL(compressedFile);
-    }).catch(err => {
-        console.error('Compression error:', err);
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('previewImg').src = e.target.result;
-            document.getElementById('uploadArea').classList.add('hidden');
-            document.getElementById('imagePreview').classList.remove('hidden');
-            showToast('Image uploaded! Click "Analyze Crop Now" to diagnose.', 'success');
-        };
-        reader.readAsDataURL(file);
-    });
+    compressImage(file, 800, 800, 0.8)
+        .then(compressedFile => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('uploadArea').classList.add('hidden');
+                document.getElementById('imagePreview').classList.remove('hidden');
+                showToast('Image uploaded! Click "Analyze Crop Now" to diagnose.', 'success');
+            };
+            reader.readAsDataURL(compressedFile);
+        })
+        .catch(err => {
+            console.error('Compression error:', err);
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('uploadArea').classList.add('hidden');
+                document.getElementById('imagePreview').classList.remove('hidden');
+                showToast('Image uploaded! Click "Analyze Crop Now" to diagnose.', 'success');
+            };
+            reader.readAsDataURL(file);
+        });
 }
 
 function clearImage() {
@@ -2450,8 +2463,8 @@ function findLocalDisease(diseaseName) {
     if (!allDiseases || allDiseases.length === 0) return null;
     let found = allDiseases.find(d => d.name.toLowerCase() === diseaseName.toLowerCase());
     if (found) return found;
-    found = allDiseases.find(d => diseaseName.toLowerCase().includes(d.name.toLowerCase()) || d.name
-        .toLowerCase().includes(diseaseName.toLowerCase()));
+    found = allDiseases.find(d => diseaseName.toLowerCase().includes(d.name.toLowerCase()) ||
+        d.name.toLowerCase().includes(diseaseName.toLowerCase()));
     return found || null;
 }
 
@@ -2483,7 +2496,11 @@ async function analyzeImage() {
     resultDiv.classList.remove('hidden');
 
     try {
-        const response = await fetch(`${AI_SERVICE_URL}/predict`, { method: 'POST', mode: 'cors', body: formData });
+        const response = await fetch(`${AI_SERVICE_URL}/predict`, {
+            method: 'POST',
+            mode: 'cors',
+            body: formData
+        });
         const data = await response.json();
 
         if (data.success) {
@@ -2504,9 +2521,8 @@ async function analyzeImage() {
                 'Practice crop rotation, use resistant varieties, and monitor regularly.';
             const cost = localDisease?.cost || data.estimated_cost || 500;
 
-            // ---- Save diagnosis to backend ----
+            // ---- Save ONLY essential fields to backend ----
             const cropName = cropSelect.value || 'Unknown';
-            const imageUrl = document.getElementById('previewImg')?.src || '';
             try {
                 const saveResponse = await apiCall('/diagnoses/analyze', {
                     method: 'POST',
@@ -2514,16 +2530,12 @@ async function analyzeImage() {
                         crop_name: cropName,
                         disease_name: diseaseName,
                         confidence_score: confidence,
-                        organic_solution: organic,
-                        chemical_solution: chemical,
-                        symptoms: symptoms,
-                        prevention_tips: prevention,
-                        estimated_cost: cost,
-                        image_url: imageUrl
+                        // The backend will set status to 'Pending' by default
+                        // No image_url, solutions, symptoms, etc. to avoid DB errors
                     })
                 });
                 if (saveResponse.success) {
-                    console.log('✅ Diagnosis saved to database');
+                    console.log('✅ Diagnosis saved to database (minimal)');
                 } else {
                     console.warn('⚠️ Failed to save diagnosis:', saveResponse.message);
                 }
@@ -2532,7 +2544,7 @@ async function analyzeImage() {
                 // Don't show error to user – still display results
             }
 
-            // ---- Display results ----
+            // ---- Display full results to the farmer ----
             resultDiv.innerHTML = `
                 <div class="bg-green-50 dark:bg-gray-800 p-5 rounded-xl border border-green-200 dark:border-gray-700 animate-scaleIn">
                     <div class="flex justify-between items-center border-b pb-3 mb-3 border-gray-200 dark:border-gray-600">
