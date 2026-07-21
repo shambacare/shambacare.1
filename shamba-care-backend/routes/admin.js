@@ -177,16 +177,59 @@ router.delete('/users/:id', async (req, res) => {
 });
 
 // ==================== DIAGNOSES ====================
+// FIXED: Use raw SQL to get diagnoses with farmer details reliably
 router.get('/diagnoses/all', async (req, res) => {
     try {
-        const diagnoses = await Diagnosis.findAll({
-            order: [['created_at', 'DESC']],
-            include: [{ model: User, as: 'farmer', attributes: ['id', 'name', 'email', 'phone'] }]
-        });
-        res.json({ success: true, diagnoses });
+        const [diagnoses] = await sequelize.query(`
+            SELECT 
+                d.id,
+                d.user_id,
+                d.image_url,
+                d.crop_name,
+                d.disease_name,
+                d.confidence_score,
+                d.status,
+                d.created_at,
+                d.organic_solution,
+                d.chemical_solution,
+                d.symptoms,
+                d.prevention_tips,
+                d.estimated_cost,
+                u.name as farmer_name,
+                u.email as farmer_email,
+                u.phone as farmer_phone
+            FROM diagnoses d
+            LEFT JOIN users u ON d.user_id = u.id
+            ORDER BY d.created_at DESC
+        `);
+
+        // Format to match frontend expected structure
+        const formatted = diagnoses.map(d => ({
+            id: d.id,
+            user_id: d.user_id,
+            image_url: d.image_url,
+            crop_name: d.crop_name,
+            disease_name: d.disease_name,
+            confidence_score: d.confidence_score,
+            status: d.status,
+            created_at: d.created_at,
+            organic_solution: d.organic_solution,
+            chemical_solution: d.chemical_solution,
+            symptoms: d.symptoms,
+            prevention_tips: d.prevention_tips,
+            estimated_cost: d.estimated_cost,
+            farmer: {
+                id: d.user_id,
+                name: d.farmer_name || 'Unknown',
+                email: d.farmer_email || '',
+                phone: d.farmer_phone || ''
+            }
+        }));
+
+        res.json({ success: true, diagnoses: formatted });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: 'Server error' });
+        console.error('❌ Error fetching diagnoses:', error);
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -328,14 +371,13 @@ router.post('/add-farmer', async (req, res) => {
     }
 });
 
-// ==================== SEND BROADCAST ALERT (with debug) ====================
+// ==================== SEND BROADCAST ALERT ====================
 router.post('/send-alert', async (req, res) => {
     const { subject, message, type, region } = req.body;
     if (!subject || !message) {
         return res.status(400).json({ success: false, message: 'Subject and message required' });
     }
     try {
-        // Build where clause – temporarily ignore is_active to see if any farmers exist
         const whereClause = { role: 'farmer' };
         if (region && region !== 'all') {
             whereClause.county = region;
@@ -350,7 +392,6 @@ router.post('/send-alert', async (req, res) => {
         console.log(`📊 Found ${farmers.length} farmers matching query`);
 
         if (farmers.length === 0) {
-            // Return detailed debug info
             return res.json({
                 success: false,
                 message: 'No farmers found matching the criteria.',
@@ -368,8 +409,7 @@ router.post('/send-alert', async (req, res) => {
             });
         }
 
-        // Optional: filter only active farmers (if is_active column exists)
-        const activeFarmers = farmers.filter(f => f.is_active !== false); // if is_active is true or null
+        const activeFarmers = farmers.filter(f => f.is_active !== false);
         if (activeFarmers.length === 0) {
             return res.json({
                 success: false,
