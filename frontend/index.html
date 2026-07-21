@@ -2526,14 +2526,14 @@ async function analyzeImage() {
                 'Practice crop rotation, use resistant varieties, and monitor regularly.';
             const cost = localDisease?.cost || data.estimated_cost || 500;
 
-            // ---- Save ONLY essential fields to backend ----
+            // ---- Save ONLY essential fields to backend (with integer confidence) ----
             try {
                 const saveResponse = await apiCall('/diagnoses/analyze', {
                     method: 'POST',
                     body: JSON.stringify({
-                        crop_name: cropName,   // Now uses AI-detected crop
+                        crop_name: cropName,
                         disease_name: diseaseName,
-                        confidence_score: confidence,
+                        confidence_score: Math.round(confidence) // ROUNDED to integer
                     })
                 });
                 if (saveResponse.success) {
@@ -2554,15 +2554,15 @@ async function analyzeImage() {
                             <h4 class="font-bold text-lg text-red-600 dark:text-red-400">${diseaseName}</h4>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">ShambaCare Model</p>
                         </div>
-                        <span class="bg-green-100 dark:bg-green-900 px-3 py-1 rounded-full text-sm font-semibold text-green-700 dark:text-green-300">${confidence}% confidence</span>
+                        <span class="bg-green-100 dark:bg-green-900 px-3 py-1 rounded-full text-sm font-semibold text-green-700 dark:text-green-300">${Math.round(confidence)}% confidence</span>
                     </div>
                     <div class="mb-3">
                         <div class="flex justify-between text-xs mb-1">
                             <span class="text-gray-600 dark:text-gray-300">Confidence Level</span>
-                            <span class="font-semibold text-gray-800 dark:text-white">${confidence}%</span>
+                            <span class="font-semibold text-gray-800 dark:text-white">${Math.round(confidence)}%</span>
                         </div>
                         <div class="confidence-meter">
-                            <div class="confidence-fill" style="width: ${Math.min(confidence, 100)}%"></div>
+                            <div class="confidence-fill" style="width: ${Math.min(Math.round(confidence), 100)}%"></div>
                         </div>
                         ${confidence < 50 ? '<p class="text-xs text-orange-600 dark:text-orange-400 mt-1">Low confidence. Try a clearer photo.</p>' : ''}
                     </div>
@@ -2592,7 +2592,7 @@ async function analyzeImage() {
                             <button onclick="clearImage()" class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-600 transition">
                                 <i class="fas fa-times mr-1"></i> Close
                             </button>
-                            <button onclick="shareDiagnosis('${diseaseName.replace(/'/g, "\\'")}', '${confidence}', '${organic.replace(/'/g, "\\'")}', '${chemical.replace(/'/g, "\\'")}')" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition">
+                            <button onclick="shareDiagnosis('${diseaseName.replace(/'/g, "\\'")}', '${Math.round(confidence)}', '${organic.replace(/'/g, "\\'")}', '${chemical.replace(/'/g, "\\'")}')" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition">
                                 <i class="fab fa-whatsapp mr-1"></i> Share
                             </button>
                         </div>
